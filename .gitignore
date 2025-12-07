@@ -32,3 +32,4 @@ build/
 # Documentation
 docs/.vitepress/cache
 docs/.vitepress/dist
+.vercel
