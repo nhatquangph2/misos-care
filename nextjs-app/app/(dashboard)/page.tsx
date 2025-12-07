@@ -82,11 +82,11 @@ export default function DashboardPage() {
 
       setStats({
         testsCompleted: count || 0,
-        personalityType: personality?.mbti_type,
+        personalityType: (personality as any)?.mbti_type,
         latestMentalHealthScore: latestRecord ? {
-          type: latestRecord.test_type,
-          severity: latestRecord.severity_level,
-          date: new Date(latestRecord.completed_at).toLocaleDateString('vi-VN'),
+          type: (latestRecord as any).test_type,
+          severity: (latestRecord as any).severity_level,
+          date: new Date((latestRecord as any).completed_at).toLocaleDateString('vi-VN'),
         } : undefined,
         currentStreak: userStats.currentStreak,
         activeGoals: goalsCount || 0,
@@ -94,9 +94,10 @@ export default function DashboardPage() {
 
       // Set mascot mood based on latest score
       if (latestRecord) {
-        if (latestRecord.severity_level === 'normal' || latestRecord.severity_level === 'mild') {
+        const severity = (latestRecord as any).severity_level
+        if (severity === 'normal' || severity === 'mild') {
           setMood('happy')
-        } else if (latestRecord.severity_level === 'severe' || latestRecord.severity_level === 'extremely_severe') {
+        } else if (severity === 'severe' || severity === 'extremely_severe') {
           setMood('concerned')
         } else {
           setMood('encouraging')
