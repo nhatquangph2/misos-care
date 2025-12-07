@@ -1,0 +1,93 @@
+'use client';
+
+import { Card } from '@/components/ui/card';
+import type { MentalHealthRecord } from '@/types/profile';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
+
+interface TestHistoryProps {
+  records: MentalHealthRecord[];
+}
+
+const TEST_LABELS: Record<string, string> = {
+  'DASS21-depression': 'Trầm Cảm',
+  'DASS21-anxiety': 'Lo Âu',
+  'DASS21-stress': 'Stress',
+  'PHQ-9': 'PHQ-9 (Trầm Cảm)',
+  'GAD-7': 'GAD-7 (Lo Âu)',
+  'PSS-10': 'PSS-10 (Stress)',
+};
+
+const SEVERITY_CONFIG: Record<string, { label: string; color: string; bgColor: string }> = {
+  normal: { label: 'Bình thường', color: 'text-green-700', bgColor: 'bg-green-100' },
+  mild: { label: 'Nhẹ', color: 'text-yellow-700', bgColor: 'bg-yellow-100' },
+  moderate: { label: 'Trung bình', color: 'text-orange-700', bgColor: 'bg-orange-100' },
+  severe: { label: 'Nặng', color: 'text-red-700', bgColor: 'bg-red-100' },
+  'extremely-severe': { label: 'Rất nặng', color: 'text-red-900', bgColor: 'bg-red-200' },
+  critical: { label: 'Nguy kịch', color: 'text-red-900', bgColor: 'bg-red-300' },
+};
+
+export default function TestHistory({ records }: TestHistoryProps) {
+  if (!records || records.length === 0) {
+    return (
+      <Card className="p-8 text-center">
+        <div className="text-gray-400 mb-4 text-5xl">📋</div>
+        <h3 className="text-xl font-semibold mb-2">Chưa Có Lịch Sử Test</h3>
+        <p className="text-gray-600">
+          Các bài test bạn làm sẽ được lưu lại ở đây
+        </p>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <span>📋</span>
+        Lịch Sử Bài Test
+      </h3>
+
+      <div className="space-y-3">
+        {records.map((record) => {
+          const severity = SEVERITY_CONFIG[record.severity_level] || SEVERITY_CONFIG.normal;
+
+          return (
+            <div
+              key={record.id}
+              className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="font-medium text-gray-900">
+                    {TEST_LABELS[record.test_type] || record.test_type}
+                  </span>
+                  <span className={`text-xs px-2 py-1 rounded-full ${severity.bgColor} ${severity.color} font-medium`}>
+                    {severity.label}
+                  </span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  {format(new Date(record.created_at), 'dd MMMM yyyy, HH:mm', { locale: vi })}
+                </div>
+              </div>
+
+              <div className="text-right">
+                <div className={`text-2xl font-bold ${severity.color}`}>
+                  {record.score}
+                </div>
+                <div className="text-xs text-gray-500">điểm</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {records.length > 5 && (
+        <div className="mt-4 text-center">
+          <button className="text-sm text-purple-600 hover:text-purple-700 font-medium">
+            Xem tất cả ({records.length} bài test)
+          </button>
+        </div>
+      )}
+    </Card>
+  );
+}
