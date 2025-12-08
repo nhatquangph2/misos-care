@@ -1,23 +1,46 @@
 @import "tailwindcss";
 
 :root {
-  /* Professional Clean Palette - Material Design 3 Inspired */
-  --background: #ffffff;
-  --foreground: #1e293b;
-  --card: #ffffff;
-  --card-foreground: #1e293b;
+  /* ============================================
+     MISO'S CARE DESIGN SYSTEM v2.0
+     Professional Mental Health & Personality Platform
+     ============================================ */
 
-  /* Primary - Calm Indigo (Mental Health Friendly) */
-  --primary: #6366f1;
+  /* Background & Surfaces */
+  --background: #fafafa;
+  --foreground: #1f2937;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+
+  /* Brand Colors - Miso Identity */
+  --miso-blue: #3b82f6;      /* Primary - Trust, calm, stability */
+  --miso-purple: #8b5cf6;    /* Creativity, wisdom */
+  --miso-pink: #ec4899;      /* Warmth, compassion */
+  --miso-green: #10b981;     /* Growth, healing */
+
+  /* Primary System */
+  --primary: var(--miso-blue);
   --primary-foreground: #ffffff;
 
-  /* Secondary - Soft Teal (Trustworthy & Calming) */
-  --secondary: #14b8a6;
+  /* Secondary - Wellness & Growth */
+  --secondary: var(--miso-green);
   --secondary-foreground: #ffffff;
 
-  /* Accent - Subtle for highlights only */
-  --accent: #8b5cf6;
+  /* Accent - Highlights & CTAs */
+  --accent: var(--miso-purple);
   --accent-foreground: #ffffff;
+
+  /* Mental Health Severity Scale */
+  --severity-minimal: #10b981;    /* Green - Good mental health */
+  --severity-mild: #fcd34d;       /* Yellow - Mild symptoms */
+  --severity-moderate: #fb923c;   /* Orange - Moderate symptoms */
+  --severity-severe: #ef4444;     /* Red - Severe symptoms */
+
+  /* Personality Type Colors (MBTI) */
+  --personality-analyst: #8b5cf6;   /* Purple - INTJ, INTP, ENTJ, ENTP */
+  --personality-diplomat: #10b981;  /* Green - INFJ, INFP, ENFJ, ENFP */
+  --personality-sentinel: #3b82f6;  /* Blue - ISTJ, ISFJ, ESTJ, ESFJ */
+  --personality-explorer: #f59e0b;  /* Orange - ISTP, ISFP, ESTP, ESFP */
 
   /* Semantic Colors */
   --success: #10b981;
@@ -26,47 +49,103 @@
   --warning: #f59e0b;
   --warning-foreground: #ffffff;
 
-  /* Muted - Neutral Gray System */
-  --muted: #f8fafc;
-  --muted-foreground: #64748b;
+  --error: #ef4444;
+  --error-foreground: #ffffff;
 
-  /* Border - Light Gray */
-  --border: #e2e8f0;
-  --input: #f1f5f9;
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
 
-  /* Destructive - Professional Red */
+  /* Neutral Grays */
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+
+  /* Borders & Inputs */
+  --border: #e5e7eb;
+  --input: #f9fafb;
+
+  /* Destructive */
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
 
-  /* Radius - Consistent System */
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  /* Border Radius System */
+  --radius: 0.75rem;      /* 12px */
+  --radius-sm: 0.5rem;    /* 8px */
+  --radius-md: 0.75rem;   /* 12px */
+  --radius-lg: 1rem;      /* 16px */
+  --radius-xl: 1.5rem;    /* 24px */
+
+  /* Shadows - Depth System */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
 }
 
 @theme inline {
+  /* Base Colors */
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
+
+  /* Brand Colors */
+  --color-miso-blue: var(--miso-blue);
+  --color-miso-purple: var(--miso-purple);
+  --color-miso-pink: var(--miso-pink);
+  --color-miso-green: var(--miso-green);
+
+  /* System Colors */
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  /* Severity Scale */
+  --color-severity-minimal: var(--severity-minimal);
+  --color-severity-mild: var(--severity-mild);
+  --color-severity-moderate: var(--severity-moderate);
+  --color-severity-severe: var(--severity-severe);
+
+  /* Personality Types */
+  --color-personality-analyst: var(--personality-analyst);
+  --color-personality-diplomat: var(--personality-diplomat);
+  --color-personality-sentinel: var(--personality-sentinel);
+  --color-personality-explorer: var(--personality-explorer);
+
+  /* Semantic */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  /* Neutrals */
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+
+  /* Typography */
   --font-sans: var(--font-inter);
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 24px;
+
+  /* Border Radius */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+
+  /* Shadows */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -75,11 +154,33 @@
     --foreground: #f1f5f9;
     --card: #1e293b;
     --card-foreground: #f1f5f9;
-    --primary: #818cf8;
-    --secondary: #2dd4bf;
-    --accent: #a78bfa;
+
+    /* Brand Colors - Lighter for dark mode */
+    --miso-blue: #60a5fa;
+    --miso-purple: #a78bfa;
+    --miso-pink: #f472b6;
+    --miso-green: #34d399;
+
+    --primary: var(--miso-blue);
+    --secondary: var(--miso-green);
+    --accent: var(--miso-purple);
+
+    /* Severity - Adjusted for dark mode */
+    --severity-minimal: #34d399;
+    --severity-mild: #fde047;
+    --severity-moderate: #fb923c;
+    --severity-severe: #f87171;
+
+    /* Personality Types - Lighter */
+    --personality-analyst: #a78bfa;
+    --personality-diplomat: #34d399;
+    --personality-sentinel: #60a5fa;
+    --personality-explorer: #fbbf24;
+
     --success: #34d399;
     --warning: #fbbf24;
+    --error: #f87171;
+    --info: #60a5fa;
     --muted: #1e293b;
     --muted-foreground: #94a3b8;
     --border: #334155;
@@ -139,4 +240,103 @@ body {
 *:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
+}
+
+/* ============================================
+   MISO CHARACTER ANIMATIONS
+   ============================================ */
+
+/* Floating animation for Miso character */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Gentle bounce for celebrations */
+@keyframes gentle-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 1s ease-in-out infinite;
+}
+
+/* ============================================
+   AUTH PAGE ANIMATIONS
+   ============================================ */
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-5px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Slide down animation for success messages */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Scale animation for buttons */
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
 }

@@ -1,47 +1,67 @@
 /**
- * Big5 Personality Test Page
- * OCEAN personality assessment
+ * Big Five Personality Test Page - BFI-2 Version
+ * Big Five Inventory-2: 60 items, 5 domains, 15 facets
+ * Chuẩn hóa theo nghiên cứu Soto & John (2017)
  */
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ScrollableQuestionFlow } from '@/components/features/tests/ScrollableQuestionFlow'
-import { BIG5_QUESTIONS_FLOW, BIG5_QUESTIONS, calculateBig5 } from '@/constants/tests/big5-questions'
-import type { Big5QuestionResponse } from '@/constants/tests/big5-questions'
+import { BFI2_QUESTIONS_FLOW } from '@/constants/tests/bfi2-questions'
+import { calculateBFI2Score } from '@/services/bfi2-scoring.service'
+import type { BFI2Response } from '@/constants/tests/bfi2-questions'
 
 export default function Big5TestPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const [startTime, setStartTime] = useState<number>(0)
+
+  // Track start time để tính completion time
+  useEffect(() => {
+    setStartTime(Date.now())
+  }, [])
 
   const handleComplete = async (answers: { questionId: number; value: number }[]) => {
     setIsLoading(true)
 
     try {
-      // Convert to Big5QuestionResponse format
-      const big5Answers: Big5QuestionResponse[] = answers.map((a) => {
-        // Map answer index to question ID
-        const question = BIG5_QUESTIONS[a.questionId - 1]
-        return {
-          questionId: question.id,
-          score: a.value,
+      // Tính thời gian hoàn thành (giây)
+      const completionTime = Math.floor((Date.now() - startTime) / 1000)
+
+      // Convert to BFI2Response format
+      const bfi2Responses: BFI2Response[] = answers.map((a) => ({
+        itemId: a.questionId,
+        value: a.value,
+      }))
+
+      // Calculate results với quality check
+      const { score, qualityReport } = calculateBFI2Score(bfi2Responses, completionTime)
+
+      // Kiểm tra data quality
+      if (!qualityReport.isValid) {
+        const continueAnyway = confirm(
+          `⚠️ Cảnh báo chất lượng dữ liệu:\n\n${qualityReport.warnings.join('\n')}\n\nBạn có muốn tiếp tục xem kết quả không?`
+        )
+        if (!continueAnyway) {
+          setIsLoading(false)
+          return
         }
-      })
+      }
 
-      // Calculate results
-      const result = calculateBig5(big5Answers)
-
-      // Store results in localStorage (temporary - will use Supabase later)
-      localStorage.setItem('big5_result', JSON.stringify(result))
-      localStorage.setItem('big5_answers', JSON.stringify(answers))
-      localStorage.setItem('big5_completed_at', new Date().toISOString())
+      // Store results in localStorage
+      localStorage.setItem('bfi2_result', JSON.stringify(score))
+      localStorage.setItem('bfi2_responses', JSON.stringify(bfi2Responses))
+      localStorage.setItem('bfi2_quality_report', JSON.stringify(qualityReport))
+      localStorage.setItem('bfi2_completed_at', new Date().toISOString())
+      localStorage.setItem('bfi2_completion_time', completionTime.toString())
 
       // Navigate to results page
       router.push('/tests/big5/results')
     } catch (error) {
-      console.error('Error calculating Big5:', error)
-      alert('Có lỗi xảy ra. Vui lòng thử lại.')
+      console.error('Error calculating BFI-2:', error)
+      alert('Có lỗi xảy ra khi tính toán kết quả. Vui lòng thử lại.')
       setIsLoading(false)
     }
   }
@@ -60,9 +80,9 @@ export default function Big5TestPage() {
 
   return (
     <ScrollableQuestionFlow
-      questions={BIG5_QUESTIONS_FLOW}
+      questions={BFI2_QUESTIONS_FLOW}
       onComplete={handleComplete}
-      testTitle="Big Five - OCEAN Personality"
+      testTitle="Big Five Inventory-2 (BFI-2)"
       testType="personality"
     />
   )

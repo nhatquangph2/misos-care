@@ -13,7 +13,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Misos Care - Mental Health & Personality Tests",
   description: "Ứng dụng sàng lọc sức khỏe tinh thần và trắc nghiệm tính cách",
-  manifest: "/manifest.json",
+  // manifest: "/manifest.json", // Disabled until icons are created
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  icons: {
-    icon: "/icon-192x192.png",
-    apple: "/icon-192x192.png",
-  },
+  // icons: {
+  //   icon: "/icon-192x192.png",
+  //   apple: "/icon-192x192.png",
+  // },
   viewport: {
     width: "device-width",
     initialScale: 1,

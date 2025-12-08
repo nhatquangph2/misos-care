@@ -152,6 +152,38 @@ export function ScrollableQuestionFlow({
     return questionId === currentQuestionId ? 'font-bold' : 'font-medium'
   }
 
+  // Get scale options from first question
+  const scaleOptions = questions[0]?.options || []
+
+  // Define color mapping for each option value
+  const getOptionColor = (value: number, totalOptions: number) => {
+    if (totalOptions === 4) {
+      // 4-point scale (e.g., PHQ-9, GAD-7, DASS-21)
+      // Values: 0-3
+      const colors = [
+        { border: 'border-green-400', bg: 'bg-green-500', ring: 'ring-green-400/30', text: 'text-green-600' },
+        { border: 'border-yellow-400', bg: 'bg-yellow-500', ring: 'ring-yellow-400/30', text: 'text-yellow-600' },
+        { border: 'border-orange-400', bg: 'bg-orange-500', ring: 'ring-orange-400/30', text: 'text-orange-600' },
+        { border: 'border-red-400', bg: 'bg-red-500', ring: 'ring-red-400/30', text: 'text-red-600' },
+      ]
+      return colors[value] || colors[0]
+    } else if (totalOptions === 5) {
+      // 5-point scale (e.g., PSS, SISRI-24)
+      // Values: 0-4 or 1-5 (need to normalize)
+      const normalizedValue = value >= 1 && value <= 5 ? value - 1 : value // Convert 1-5 to 0-4
+      const colors = [
+        { border: 'border-green-400', bg: 'bg-green-500', ring: 'ring-green-400/30', text: 'text-green-600' },
+        { border: 'border-lime-400', bg: 'bg-lime-500', ring: 'ring-lime-400/30', text: 'text-lime-600' },
+        { border: 'border-gray-400', bg: 'bg-gray-500', ring: 'ring-gray-400/30', text: 'text-gray-600' },
+        { border: 'border-orange-400', bg: 'bg-orange-500', ring: 'ring-orange-400/30', text: 'text-orange-600' },
+        { border: 'border-teal-500', bg: 'bg-teal-600', ring: 'ring-teal-500/30', text: 'text-teal-700' },
+      ]
+      return colors[normalizedValue] || colors[2]
+    }
+    // Default fallback
+    return { border: 'border-gray-400', bg: 'bg-gray-500', ring: 'ring-gray-400/30', text: 'text-gray-600' }
+  }
+
   const colorScheme = testType === 'personality'
     ? {
         primary: 'bg-primary',
@@ -189,6 +221,30 @@ export function ScrollableQuestionFlow({
               </span>
             </div>
           </div>
+
+          {/* Scale Legend - Show once at top */}
+          {scaleOptions.length > 0 && (
+            <div className="mt-6 pt-6 border-t border-border">
+              <p className="text-center text-sm text-muted-foreground font-medium mb-4">
+                Chọn mức độ phù hợp với bạn:
+              </p>
+              <div className="flex justify-between items-start max-w-3xl mx-auto">
+                {scaleOptions.map((option) => {
+                  const colors = getOptionColor(option.value, scaleOptions.length)
+                  return (
+                    <div key={option.value} className="flex flex-col items-center flex-1 px-1">
+                      <div className={`w-10 h-10 rounded-full border-4 ${colors.border} mb-2`} />
+                      <div className="text-center">
+                        <div className={`text-xs font-medium ${colors.text} leading-tight`}>
+                          {option.label}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -256,6 +312,7 @@ export function ScrollableQuestionFlow({
                     <div className="flex items-center gap-4 flex-1 justify-center">
                       {question.options.map((option) => {
                         const isSelected = answer?.value === option.value
+                        const colors = getOptionColor(option.value, question.options.length)
 
                         return (
                           <button
@@ -266,8 +323,8 @@ export function ScrollableQuestionFlow({
                             className={`
                               relative w-12 h-12 rounded-full transition-all duration-200
                               ${isSelected
-                                ? `${colorScheme.primary} scale-110 shadow-lg ring-4 ring-offset-2 ${colorScheme.ring}`
-                                : `bg-white border-2 ${colorScheme.border} border-opacity-30 hover:${colorScheme.border} hover:border-opacity-60 hover:scale-105 hover:shadow-md`
+                                ? `${colors.bg} scale-110 shadow-lg ring-4 ring-offset-2 ${colors.ring}`
+                                : `bg-white border-4 ${colors.border} hover:scale-105 hover:shadow-md`
                               }
                               ${isCurrent ? 'opacity-100' : 'opacity-60'}
                               active:scale-95

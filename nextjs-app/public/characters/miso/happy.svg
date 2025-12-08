@@ -1,0 +1,8 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Simple placeholder dolphin - Happy -->
+  <circle cx="64" cy="64" r="40" fill="#3b82f6"/>
+  <circle cx="52" cy="56" r="4" fill="#1e293b"/>
+  <circle cx="76" cy="56" r="4" fill="#1e293b"/>
+  <path d="M 48 72 Q 64 80 80 72" stroke="#1e293b" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <text x="64" y="110" font-size="12" text-anchor="middle" fill="#6b7280">🐬 Happy</text>
+</svg>

@@ -1,0 +1,51 @@
+#!/bin/bash
+
+echo "🔍 Verifying OAuth Setup"
+echo "======================="
+echo ""
+
+echo "Opening verification pages..."
+echo ""
+
+# Open Supabase Auth Providers to check if enabled
+open "https://app.supabase.com/project/suzsukdrnoarzsixfycr/auth/providers"
+
+echo "✅ Opened: Supabase Auth Providers"
+echo ""
+echo "Please verify:"
+echo ""
+echo "📋 Google Provider:"
+echo "   - [ ] 'Enable Sign in with Google' is ON"
+echo "   - [ ] Client ID is filled"
+echo "   - [ ] Client Secret is filled"
+echo ""
+echo "📋 Facebook Provider:"
+echo "   - [ ] 'Enable Sign in with Facebook' is ON"
+echo "   - [ ] Facebook client ID is filled"
+echo "   - [ ] Facebook client secret is filled"
+echo ""
+echo "📋 GitHub Provider:"
+echo "   - [ ] 'Enable Sign in with GitHub' is ON"
+echo "   - [ ] Client ID is filled"
+echo "   - [ ] Client Secret is filled"
+echo ""
+echo "Press Enter to open URL Configuration page..."
+read
+
+open "https://app.supabase.com/project/suzsukdrnoarzsixfycr/auth/url-configuration"
+
+echo ""
+echo "✅ Opened: URL Configuration"
+echo ""
+echo "Please verify:"
+echo ""
+echo "📋 Site URL:"
+echo "   - Should be: http://localhost:3000"
+echo ""
+echo "📋 Redirect URLs should include:"
+echo "   - http://localhost:3000/**"
+echo "   - http://localhost:3000/auth/callback"
+echo ""
+echo "If all verified, you're ready to test!"
+echo ""
+echo "Run: ./test-oauth.sh"

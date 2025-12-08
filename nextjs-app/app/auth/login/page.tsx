@@ -1,19 +1,83 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<'login' | 'signup'>('login');
+  const [success, setSuccess] = useState<string | null>(null);
+  const [mode, setMode] = useState<'login' | 'signup' | 'reset'>('login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState(0);
   const router = useRouter();
   const searchParams = useSearchParams();
   const supabase = createClient();
+
+  // Check for OAuth/callback errors in URL
+  useEffect(() => {
+    const errorParam = searchParams.get('error');
+    if (errorParam) {
+      setError(decodeURIComponent(errorParam));
+    }
+  }, [searchParams]);
+
+  // Password strength calculator
+  useEffect(() => {
+    if (mode !== 'signup' || !password) {
+      setPasswordStrength(0);
+      return;
+    }
+
+    let strength = 0;
+    if (password.length >= 8) strength += 25;
+    if (password.length >= 12) strength += 25;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 25;
+    if (/[0-9]/.test(password)) strength += 15;
+    if (/[^a-zA-Z0-9]/.test(password)) strength += 10;
+
+    setPasswordStrength(Math.min(strength, 100));
+  }, [password, mode]);
+
+  // Email validation
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email là bắt buộc');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Email không hợp lệ');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  // Password validation
+  const validatePassword = (password: string, isSignup: boolean) => {
+    if (!password) {
+      setPasswordError('Mật khẩu là bắt buộc');
+      return false;
+    }
+    if (isSignup && password.length < 8) {
+      setPasswordError('Mật khẩu phải có ít nhất 8 ký tự');
+      return false;
+    }
+    if (isSignup && password.length < 6) {
+      setPasswordError('Mật khẩu phải có ít nhất 6 ký tự');
+      return false;
+    }
+    setPasswordError('');
+    return true;
+  };
 
   const getRedirectUrl = () => {
     const origin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -46,10 +110,55 @@ function LoginForm() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    if (!validateEmail(email)) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw error;
+
+      setSuccess('Email đặt lại mật khẩu đã được gửi! Vui lòng kiểm tra hộp thư của bạn.');
+      setEmail('');
+    } catch (err: any) {
+      setError(err.message || 'Không thể gửi email đặt lại mật khẩu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccess(null);
+
+    // Validate inputs
+    if (!validateEmail(email)) {
+      setLoading(false);
+      return;
+    }
+
+    if (!validatePassword(password, mode === 'signup')) {
+      setLoading(false);
+      return;
+    }
+
+    if (mode === 'signup' && password !== confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      setLoading(false);
+      return;
+    }
 
     try {
       if (mode === 'login') {
@@ -58,20 +167,58 @@ function LoginForm() {
           password,
         });
         if (error) throw error;
+
+        setSuccess('Đăng nhập thành công! Đang chuyển hướng...');
+
+        // Redirect after short delay
+        setTimeout(() => {
+          const redirectTo = searchParams.get('redirect') || '/dashboard';
+          router.push(redirectTo);
+          router.refresh();
+        }, 1000);
       } else {
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
         });
-        if (error) throw error;
-      }
 
-      // Redirect to the page user was trying to access, or dashboard
-      const redirectTo = searchParams.get('redirect') || '/dashboard';
-      router.push(redirectTo);
-      router.refresh();
+        if (error) throw error;
+
+        console.log('Signup response:', {
+          hasUser: !!data?.user,
+          hasSession: !!data?.session,
+          userId: data?.user?.id
+        });
+
+        // Check if email confirmation is required
+        if (data?.user && !data.session) {
+          setSuccess('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');
+          setMode('login');
+          setPassword('');
+          setConfirmPassword('');
+        } else if (data?.session) {
+          setSuccess('Đăng ký thành công! Đang chuyển hướng...');
+          setTimeout(() => {
+            const redirectTo = searchParams.get('redirect') || '/dashboard';
+            router.push(redirectTo);
+            router.refresh();
+          }, 1000);
+        } else {
+          // No user and no session - unexpected state
+          throw new Error('Không thể tạo tài khoản. Vui lòng thử lại.');
+        }
+      }
     } catch (err: any) {
-      setError(err.message || 'Đã xảy ra lỗi');
+      if (err.message.includes('Invalid login credentials')) {
+        setError('Email hoặc mật khẩu không đúng');
+      } else if (err.message.includes('User already registered')) {
+        setError('Email này đã được đăng ký. Vui lòng đăng nhập.');
+      } else {
+        setError(err.message || 'Đã xảy ra lỗi');
+      }
     } finally {
       setLoading(false);
     }
@@ -125,18 +272,36 @@ function LoginForm() {
     },
   ];
 
+  const getPasswordStrengthColor = () => {
+    if (passwordStrength < 30) return 'bg-red-500';
+    if (passwordStrength < 60) return 'bg-yellow-500';
+    if (passwordStrength < 80) return 'bg-blue-500';
+    return 'bg-green-500';
+  };
+
+  const getPasswordStrengthText = () => {
+    if (passwordStrength < 30) return 'Yếu';
+    if (passwordStrength < 60) return 'Trung bình';
+    if (passwordStrength < 80) return 'Tốt';
+    return 'Mạnh';
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white rounded-2xl shadow-xl p-8 transition-all duration-300">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="text-5xl mb-3">🐬</div>
+            <div className="text-5xl mb-3 animate-bounce">🐬</div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
               Miso's Care
             </h1>
             <p className="text-gray-600 mb-1">
-              {mode === 'login' ? 'Đăng nhập để lưu kết quả' : 'Tạo tài khoản để lưu kết quả'}
+              {mode === 'reset'
+                ? 'Đặt lại mật khẩu của bạn'
+                : mode === 'login'
+                ? 'Đăng nhập để lưu kết quả'
+                : 'Tạo tài khoản để lưu kết quả'}
             </p>
             <p className="text-xs text-gray-500">
               Bạn có thể làm test tự do mà không cần đăng nhập
@@ -145,99 +310,265 @@ function LoginForm() {
 
           {/* Error Message */}
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-              {error}
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-start gap-2 animate-shake">
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <span>{error}</span>
             </div>
           )}
 
-          {/* OAuth Buttons */}
-          <div className="space-y-3 mb-6">
-            {oauthProviders.map((provider) => (
-              <button
-                key={provider.provider}
-                onClick={() => handleOAuthLogin(provider.provider)}
-                disabled={oauthLoading !== null}
-                className={`w-full py-3 px-4 rounded-lg font-medium transition flex items-center justify-center gap-3 ${provider.color} disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {oauthLoading === provider.provider ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                    <span>Đang kết nối...</span>
-                  </>
-                ) : (
-                  <>
-                    {provider.icon}
-                    <span>Tiếp tục với {provider.name}</span>
-                  </>
-                )}
-              </button>
-            ))}
-          </div>
+          {/* Success Message */}
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm flex items-start gap-2 animate-slideDown">
+              <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>{success}</span>
+            </div>
+          )}
 
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">hoặc tiếp tục với email</span>
-            </div>
-          </div>
+          {/* OAuth Buttons - Only show for login/signup */}
+          {mode !== 'reset' && (
+            <>
+              <div className="space-y-3 mb-6">
+                {oauthProviders.map((provider) => (
+                  <button
+                    key={provider.provider}
+                    onClick={() => handleOAuthLogin(provider.provider)}
+                    disabled={oauthLoading !== null || loading}
+                    className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 flex items-center justify-center gap-3 ${provider.color} disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] active:scale-[0.98]`}
+                  >
+                    {oauthLoading === provider.provider ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        <span>Đang kết nối...</span>
+                      </>
+                    ) : (
+                      <>
+                        {provider.icon}
+                        <span>Tiếp tục với {provider.name}</span>
+                      </>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-4 bg-white text-gray-500">hoặc tiếp tục với email</span>
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Email/Password Form */}
-          <form onSubmit={handleAuth} className="space-y-4">
+          <form onSubmit={mode === 'reset' ? handleResetPassword : handleAuth} className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="your@email.com"
-              />
+              <div className="relative">
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setEmailError('');
+                    setError(null);
+                  }}
+                  onBlur={() => validateEmail(email)}
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+                    emailError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+                  placeholder="your@email.com"
+                />
+                {emailError && (
+                  <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    {emailError}
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                Mật khẩu
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="••••••••"
-              />
-              <p className="text-xs text-gray-500 mt-1">Tối thiểu 6 ký tự</p>
-            </div>
+            {mode !== 'reset' && (
+              <>
+                <div>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                    Mật khẩu
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setPasswordError('');
+                        setError(null);
+                      }}
+                      onBlur={() => validatePassword(password, mode === 'signup')}
+                      minLength={mode === 'signup' ? 8 : 6}
+                      className={`w-full px-4 py-2.5 pr-10 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+                        passwordError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                      }`}
+                      placeholder="••••••••"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    >
+                      {showPassword ? (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                      {passwordError}
+                    </p>
+                  )}
+                  {mode === 'signup' && password && !passwordError && (
+                    <div className="mt-2">
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-xs text-gray-600">Độ mạnh mật khẩu:</span>
+                        <span className={`text-xs font-semibold ${
+                          passwordStrength < 30 ? 'text-red-600' :
+                          passwordStrength < 60 ? 'text-yellow-600' :
+                          passwordStrength < 80 ? 'text-blue-600' : 'text-green-600'
+                        }`}>
+                          {getPasswordStrengthText()}
+                        </span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${getPasswordStrengthColor()}`}
+                          style={{ width: `${passwordStrength}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {mode === 'signup' && 'Tối thiểu 8 ký tự, nên có chữ hoa, số và ký tự đặc biệt'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {mode === 'signup' && (
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      Xác nhận mật khẩu
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="confirmPassword"
+                        type={showPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          setError(null);
+                        }}
+                        className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all ${
+                          confirmPassword && password !== confirmPassword ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                        }`}
+                        placeholder="••••••••"
+                      />
+                      {confirmPassword && password !== confirmPassword && (
+                        <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                          Mật khẩu không khớp
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
 
             <button
               type="submit"
               disabled={loading || oauthLoading !== null}
-              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
+              className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-medium rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-lg hover:shadow-xl"
             >
-              {loading ? 'Đang xử lý...' : mode === 'login' ? 'Đăng Nhập' : 'Đăng Ký'}
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Đang xử lý...
+                </span>
+              ) : mode === 'reset' ? (
+                'Gửi Email Đặt Lại Mật Khẩu'
+              ) : mode === 'login' ? (
+                'Đăng Nhập'
+              ) : (
+                'Đăng Ký'
+              )}
             </button>
           </form>
 
-          {/* Toggle Mode */}
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => {
-                setMode(mode === 'login' ? 'signup' : 'login');
-                setError(null);
-              }}
-              className="text-sm text-purple-600 hover:text-purple-700 font-medium"
-            >
-              {mode === 'login' ? 'Chưa có tài khoản? Đăng ký ngay' : 'Đã có tài khoản? Đăng nhập'}
-            </button>
+          {/* Toggle Mode & Forgot Password */}
+          <div className="mt-6 space-y-3">
+            {mode === 'login' && (
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode('reset');
+                    setError(null);
+                    setSuccess(null);
+                    setPassword('');
+                  }}
+                  className="text-sm text-gray-600 hover:text-purple-600 transition-colors"
+                >
+                  Quên mật khẩu?
+                </button>
+              </div>
+            )}
+
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  if (mode === 'reset') {
+                    setMode('login');
+                  } else {
+                    setMode(mode === 'login' ? 'signup' : 'login');
+                  }
+                  setError(null);
+                  setSuccess(null);
+                  setEmailError('');
+                  setPasswordError('');
+                  setPassword('');
+                  setConfirmPassword('');
+                }}
+                className="text-sm text-purple-600 hover:text-purple-700 font-medium transition-colors"
+              >
+                {mode === 'reset'
+                  ? '← Quay lại đăng nhập'
+                  : mode === 'login'
+                  ? 'Chưa có tài khoản? Đăng ký ngay'
+                  : 'Đã có tài khoản? Đăng nhập'}
+              </button>
+            </div>
           </div>
 
           {/* Info Box */}
