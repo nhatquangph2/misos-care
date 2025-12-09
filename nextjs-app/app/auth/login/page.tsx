@@ -187,12 +187,6 @@ function LoginForm() {
 
         if (error) throw error;
 
-        console.log('Signup response:', {
-          hasUser: !!data?.user,
-          hasSession: !!data?.session,
-          userId: data?.user?.id
-        });
-
         // Check if email confirmation is required
         if (data?.user && !data.session) {
           setSuccess('Đăng ký thành công! Vui lòng kiểm tra email để xác thực tài khoản.');

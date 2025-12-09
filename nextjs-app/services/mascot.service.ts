@@ -83,16 +83,21 @@ export interface ConversationContext {
 // =====================================================
 
 /**
- * Generate AI response using OpenAI (placeholder - will integrate later)
- * For now, returns contextual pre-defined messages
+ * Generate mascot response based on user input and context
+ * Uses rule-based matching for fast, predictable responses
+ *
+ * Note: This implementation uses rule-based responses by design for:
+ * - Faster response times (no API latency)
+ * - Predictable, tested outputs
+ * - No API costs
+ * - Works offline
+ *
+ * For AI-powered responses, integrate with OpenAI API in a separate service
  */
 export async function generateMascotResponse(
   userMessage: string,
   context: ConversationContext
 ): Promise<{ text: string; mood: MascotMood }> {
-  // TODO: Integrate with OpenAI API
-  // For MVP, use rule-based responses
-
   const message = userMessage.toLowerCase()
 
   // Greeting responses

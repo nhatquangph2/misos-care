@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
@@ -10,10 +10,15 @@ const inter = Inter({
   weight: ["300", "400", "500", "600", "700"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Misos Care - Mental Health & Personality Tests",
   description: "Ứng dụng sàng lọc sức khỏe tinh thần và trắc nghiệm tính cách",
-  // manifest: "/manifest.json", // Disabled until icons are created
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -21,15 +26,6 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
-  },
-  // icons: {
-  //   icon: "/icon-192x192.png",
-  //   apple: "/icon-192x192.png",
-  // },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
   },
 };
 
