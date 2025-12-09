@@ -72,7 +72,7 @@ export default function TestHistory({ records }: TestHistoryProps) {
 
               <div className="text-right">
                 <div className={`text-2xl font-bold ${severity.color}`}>
-                  {record.score}
+                  {record.total_score || record.score || 0}
                 </div>
                 <div className="text-xs text-gray-500">điểm</div>
               </div>

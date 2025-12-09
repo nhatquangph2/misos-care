@@ -61,6 +61,7 @@ export default function BFI2ResultsPage() {
   const [score, setScore] = useState<BFI2Score | null>(null)
   const [qualityReport, setQualityReport] = useState<QualityReport | null>(null)
   const [completedAt, setCompletedAt] = useState<string>('')
+  const [completedAtRaw, setCompletedAtRaw] = useState<Date | null>(null)
   const [completionTime, setCompletionTime] = useState<number>(0)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -85,6 +86,7 @@ export default function BFI2ResultsPage() {
     if (storedQuality) setQualityReport(JSON.parse(storedQuality))
 
     const completedDate = storedDate ? new Date(storedDate) : new Date()
+    setCompletedAtRaw(completedDate)
     if (storedDate) {
       setCompletedAt(completedDate.toLocaleDateString('vi-VN', {
         year: 'numeric',
@@ -115,6 +117,7 @@ export default function BFI2ResultsPage() {
       }
     }
 
+    // Only auto-save if user is authenticated
     saveResults()
 
     // Get user name for PDF
@@ -144,7 +147,7 @@ export default function BFI2ResultsPage() {
       await exportBFI2ToPDF({
         score,
         userName: userName || undefined,
-        completedAt: completedAt ? new Date(completedAt) : new Date(),
+        completedAt: completedAtRaw || new Date(),
       })
     } catch (error) {
       console.error('Export PDF error:', error)

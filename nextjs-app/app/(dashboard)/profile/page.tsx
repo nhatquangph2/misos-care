@@ -9,11 +9,17 @@ import TestHistory from '@/components/profile/TestHistory';
 import RecommendationsCard from '@/components/profile/RecommendationsCard';
 import GoalsAndPlansView from '@/components/goals/GoalsAndPlansView';
 import { profileService } from '@/services/profile.service';
+import { getTestTimeline, getTestHistorySummary, exportTestHistoryData, type TimelineEntry } from '@/services/test-history.service';
 import { createClient } from '@/lib/supabase/client';
 import type { ProfileSummary } from '@/types/profile';
+import { Button } from '@/components/ui/button';
+import { Download, Calendar, Activity, Brain, AlertTriangle, Clock } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function ProfilePage() {
   const [profileData, setProfileData] = useState<ProfileSummary | null>(null);
+  const [timeline, setTimeline] = useState<TimelineEntry[]>([]);
   const [userId, setUserId] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,13 +43,40 @@ export default function ProfilePage() {
       }
 
       setUserId(user.id);
-      const data = await profileService.getProfileSummary(user.id);
+
+      // Load both profile data and timeline
+      const [data, timelineData] = await Promise.all([
+        profileService.getProfileSummary(user.id),
+        getTestTimeline()
+      ]);
+
       setProfileData(data);
+      setTimeline(timelineData);
     } catch (err) {
       console.error('Error loading profile:', err);
       setError('Không thể tải dữ liệu profile. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExportHistory = async () => {
+    try {
+      const data = await exportTestHistoryData();
+
+      // Create downloadable JSON file
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `test-history-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Export failed:', err);
+      alert('Không thể xuất lịch sử');
     }
   };
 
@@ -140,10 +173,14 @@ export default function ProfilePage() {
 
       {/* Main Content with Tabs */}
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
           <TabsTrigger value="overview" className="gap-2">
             <span>🎯</span>
             <span className="hidden sm:inline">Tổng Quan</span>
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="gap-2">
+            <span>📅</span>
+            <span className="hidden sm:inline">Lịch Sử</span>
           </TabsTrigger>
           <TabsTrigger value="personality" className="gap-2">
             <span>🧠</span>
@@ -174,6 +211,129 @@ export default function ProfilePage() {
               <MentalHealthChart trends={profileData?.trends || []} />
               <TestHistory records={profileData?.mentalHealthRecords.slice(0, 5) || []} />
             </div>
+          </div>
+        </TabsContent>
+
+        {/* Timeline Tab */}
+        <TabsContent value="timeline" className="space-y-6">
+          {/* Export Button */}
+          <div className="flex justify-end">
+            <Button onClick={handleExportHistory} variant="outline" className="gap-2">
+              <Download className="h-4 w-4" />
+              Xuất lịch sử
+            </Button>
+          </div>
+
+          {/* Timeline */}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+            <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <Clock className="h-6 w-6 text-purple-500" />
+              Lịch Sử Đầy Đủ
+            </h3>
+
+            {timeline.length === 0 ? (
+              <div className="text-center py-12">
+                <Activity className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 mb-4">Chưa có dữ liệu test nào</p>
+                <Button variant="outline" onClick={() => router.push('/tests')}>
+                  Bắt đầu làm test
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {timeline.map((entry, index) => (
+                  <div key={entry.id} className="relative">
+                    {/* Timeline connector line */}
+                    {index < timeline.length - 1 && (
+                      <div className="absolute left-6 top-14 bottom-0 w-0.5 bg-gradient-to-b from-purple-300 to-transparent" />
+                    )}
+
+                    <div className="flex gap-4">
+                      {/* Icon */}
+                      <div className={`
+                        w-12 h-12 rounded-full flex items-center justify-center shrink-0 z-10 shadow-lg
+                        ${entry.type === 'personality'
+                          ? 'bg-gradient-to-br from-purple-500 to-pink-500'
+                          : 'bg-gradient-to-br from-blue-500 to-cyan-500'}
+                      `}>
+                        {entry.type === 'personality' ? (
+                          <Brain className="h-6 w-6 text-white" />
+                        ) : (
+                          <Activity className="h-6 w-6 text-white" />
+                        )}
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1">
+                        <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700">
+                          <div className="flex items-start justify-between mb-3">
+                            <div>
+                              <h4 className="font-bold text-lg mb-1">{entry.testName}</h4>
+                              <p className="text-sm text-gray-500 flex items-center gap-2">
+                                <Calendar className="h-3 w-3" />
+                                {new Date(entry.date).toLocaleDateString('vi-VN', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })}
+                              </p>
+                            </div>
+
+                            {entry.crisisFlag && (
+                              <Badge className="bg-red-500 text-white gap-1">
+                                <AlertTriangle className="h-3 w-3" />
+                                Cần hỗ trợ
+                              </Badge>
+                            )}
+                          </div>
+
+                          {/* Test Results */}
+                          {entry.type === 'mental_health' && entry.score !== undefined && (
+                            <div className="grid grid-cols-2 gap-4 mt-4">
+                              <div className="bg-white/70 dark:bg-gray-600/30 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                <p className="text-xs text-gray-500 mb-1">Điểm số</p>
+                                <p className="text-2xl font-bold text-purple-600">{entry.score}</p>
+                              </div>
+                              <div className="bg-white/70 dark:bg-gray-600/30 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                <p className="text-xs text-gray-500 mb-1">Mức độ</p>
+                                <Badge variant="outline" className="mt-1">
+                                  {entry.severity === 'normal' && 'Bình thường'}
+                                  {entry.severity === 'mild' && 'Nhẹ'}
+                                  {entry.severity === 'moderate' && 'Trung bình'}
+                                  {entry.severity === 'severe' && 'Nặng'}
+                                  {entry.severity === 'extremely_severe' && 'Rất nặng'}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+
+                          {entry.type === 'personality' && entry.domains && (
+                            <div className="grid grid-cols-5 gap-2 mt-4">
+                              {Object.entries(entry.domains).map(([key, value]) => (
+                                <div key={key} className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-lg p-3 text-center border border-purple-200 dark:border-purple-700">
+                                  <p className="text-xs font-semibold text-purple-600 dark:text-purple-300 mb-1">{key}</p>
+                                  <p className="text-lg font-bold text-purple-700 dark:text-purple-200">{value?.toFixed(1)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {entry.mbtiType && (
+                            <div className="mt-4">
+                              <Badge className="text-lg px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                                {entry.mbtiType}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </TabsContent>
 

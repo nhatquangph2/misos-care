@@ -14,6 +14,7 @@ export interface PersonalityProfile {
   big5_extraversion: number
   big5_agreeableness: number
   big5_neuroticism: number
+  mbti_type?: string | null
   last_updated: string
   created_at: string
 }
@@ -103,6 +104,45 @@ export async function getPersonalityProfile(): Promise<PersonalityProfile | null
 export async function hasBFI2Profile(): Promise<boolean> {
   const profile = await getPersonalityProfile()
   return profile !== null
+}
+
+/**
+ * Save MBTI type to user's personality profile
+ * Creates new profile if doesn't exist, updates if exists
+ */
+export async function saveMBTIResult(mbtiType: string, completedAt?: Date) {
+  const supabase = createClient()
+
+  // Get current user
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    throw new Error('User not authenticated')
+  }
+
+  // Prepare profile data
+  const profileData = {
+    user_id: user.id,
+    mbti_type: mbtiType,
+    last_updated: completedAt?.toISOString() || new Date().toISOString(),
+  }
+
+  // Upsert (insert or update) personality profile
+  const { data, error } = await supabase
+    .from('personality_profiles')
+    .upsert(profileData as any, {
+      onConflict: 'user_id',
+      ignoreDuplicates: false,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error saving MBTI results:', error)
+    throw new Error(`Failed to save results: ${error.message}`)
+  }
+
+  return data
 }
 
 /**

@@ -8,18 +8,24 @@ export interface PersonalityProfile {
   big5_extraversion: number | null;
   big5_agreeableness: number | null;
   big5_neuroticism: number | null;
-  test_completed_at: string | null;
+  last_updated: string;
   created_at: string;
-  updated_at: string;
 }
 
 export interface MentalHealthRecord {
   id: string;
   user_id: string;
-  test_type: 'DASS21-depression' | 'DASS21-anxiety' | 'DASS21-stress' | 'PHQ-9' | 'GAD-7' | 'PSS-10';
-  score: number;
-  severity_level: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely-severe' | 'critical';
-  responses: Record<string, number>;
+  test_type: 'PHQ9' | 'GAD7' | 'DASS21' | 'PSS' | 'DASS21-depression' | 'DASS21-anxiety' | 'DASS21-stress' | 'PHQ-9' | 'GAD-7' | 'PSS-10';
+  total_score: number;
+  score?: number; // Alias for backwards compatibility
+  severity_level: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe' | 'extremely-severe' | 'critical';
+  test_version: string;
+  subscale_scores: Record<string, number> | null;
+  crisis_flag: boolean;
+  crisis_reason: string | null;
+  raw_responses: any;
+  responses?: Record<string, number>; // Alias for backwards compatibility
+  completed_at: string;
   created_at: string;
 }
 

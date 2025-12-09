@@ -6,7 +6,6 @@
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import type { BFI2Score } from '@/constants/tests/bfi2-questions'
-import { BFI2_DOMAINS } from '@/constants/tests/bfi2-questions'
 
 export interface ExportPDFOptions {
   score: BFI2Score
@@ -16,126 +15,91 @@ export interface ExportPDFOptions {
 }
 
 /**
- * Export BFI-2 results to PDF
+ * Export BFI-2 results to PDF using html2canvas
+ * Captures the results page with proper Vietnamese text support
  */
 export async function exportBFI2ToPDF(options: ExportPDFOptions): Promise<void> {
-  const { score, userName, completedAt } = options
+  const { completedAt } = options
 
-  const pdf = new jsPDF('p', 'mm', 'a4')
-  const pageWidth = pdf.internal.pageSize.getWidth()
-  const pageHeight = pdf.internal.pageSize.getHeight()
-  const margin = 20
-  let currentY = margin
+  try {
+    // Wait for page to render
+    await new Promise(resolve => setTimeout(resolve, 200))
 
-  // Helper function to add text
-  const addText = (text: string, size: number, style: 'normal' | 'bold' = 'normal', color: string = '#000000') => {
-    pdf.setFontSize(size)
-    pdf.setFont('helvetica', style)
-    const rgb = hexToRgb(color)
-    pdf.setTextColor(rgb.r, rgb.g, rgb.b)
-    pdf.text(text, margin, currentY)
-    currentY += size * 0.5
-  }
+    // Find main container
+    const container = document.querySelector('.container.max-w-7xl') || document.querySelector('main') || document.body
 
-  // Helper function to check if we need new page
-  const checkPageBreak = (spaceNeeded: number) => {
-    if (currentY + spaceNeeded > pageHeight - margin) {
+    // Clone the container to avoid modifying the original
+    const clone = container.cloneNode(true) as HTMLElement
+
+    // Remove unwanted elements from clone
+    const buttonsToRemove = clone.querySelectorAll('button')
+    buttonsToRemove.forEach(btn => {
+      const text = btn.textContent || ''
+      if (text.includes('Tải PDF') || text.includes('Sao chép') ||
+          text.includes('Về trang') || text.includes('Làm lại')) {
+        btn.remove()
+      }
+    })
+
+    // Simplify gradients to solid colors to avoid lab() color issues
+    const elementsWithGradient = clone.querySelectorAll('[class*="gradient"]')
+    elementsWithGradient.forEach(el => {
+      const element = el as HTMLElement
+      element.style.background = '#8B5CF6' // Fallback to solid purple
+    })
+
+    // Append clone to body temporarily (hidden)
+    clone.style.position = 'absolute'
+    clone.style.left = '-9999px'
+    clone.style.top = '0'
+    document.body.appendChild(clone)
+
+    // Capture with html2canvas
+    const canvas = await html2canvas(clone, {
+      scale: 1.5,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      windowWidth: 1200,
+      allowTaint: false,
+      foreignObjectRendering: false,
+    })
+
+    // Remove clone
+    document.body.removeChild(clone)
+
+    // Create PDF
+    const imgData = canvas.toDataURL('image/png', 0.95)
+    const pdf = new jsPDF('p', 'mm', 'a4')
+
+    const pdfWidth = pdf.internal.pageSize.getWidth()
+    const pdfHeight = pdf.internal.pageSize.getHeight()
+    const imgWidth = pdfWidth
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width
+
+    let heightLeft = imgHeight
+    let position = 0
+
+    // Add pages
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST')
+    heightLeft -= pdfHeight
+
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight
       pdf.addPage()
-      currentY = margin
-      return true
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST')
+      heightLeft -= pdfHeight
     }
-    return false
+
+    // Save
+    const date = completedAt ? completedAt.toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+    const filename = `BFI2_Personality_Report_${date}.pdf`
+    pdf.save(filename)
+
+  } catch (error) {
+    console.error('Error generating PDF:', error)
+    throw new Error(`Không thể tạo PDF: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
-
-  // Title
-  addText('BÁO CÁO PHÂN TÍCH TÍNH CÁCH BFI-2', 20, 'bold', '#4F46E5')
-  currentY += 5
-  addText('Big Five Inventory-2: Đánh giá 5 đặc điểm tính cách', 12, 'normal', '#6B7280')
-  currentY += 10
-
-  // User Info
-  if (userName) {
-    addText(`Họ và tên: ${userName}`, 11, 'normal')
-  }
-  if (completedAt) {
-    addText(`Ngày làm test: ${completedAt.toLocaleDateString('vi-VN')}`, 11, 'normal')
-  }
-  currentY += 10
-
-  // Separator
-  pdf.setDrawColor(229, 231, 235)
-  pdf.line(margin, currentY, pageWidth - margin, currentY)
-  currentY += 10
-
-  // 5 Domains Overview
-  addText('5 ĐẶC ĐIỂM TÍNH CÁCH CHÍNH', 14, 'bold', '#4F46E5')
-  currentY += 5
-
-  for (const domain of BFI2_DOMAINS) {
-    checkPageBreak(30)
-
-    const domainScore = score.domains[domain.code]
-    const tScore = score.tScores.domains[domain.code]
-    const percentile = score.percentiles.domains[domain.code]
-
-    // Domain name
-    addText(`${domain.name} (${domain.nameEn})`, 12, 'bold', '#1F2937')
-    currentY += 3
-
-    // Score
-    pdf.setFontSize(10)
-    pdf.setTextColor(75, 85, 99)
-    pdf.text(`Điểm: ${domainScore.toFixed(2)}/5.0  |  T-Score: ${Math.round(tScore)}  |  Phân vị: ${percentile}`, margin, currentY)
-    currentY += 5
-
-    // Description
-    pdf.setFontSize(9)
-    pdf.setTextColor(107, 114, 128)
-    const lines = pdf.splitTextToSize(domain.description, pageWidth - 2 * margin)
-    pdf.text(lines, margin, currentY)
-    currentY += lines.length * 4
-
-    // Progress bar
-    const barWidth = pageWidth - 2 * margin
-    const barHeight = 8
-    const fillWidth = (domainScore / 5) * barWidth
-
-    // Background
-    pdf.setFillColor(229, 231, 235)
-    pdf.rect(margin, currentY, barWidth, barHeight, 'F')
-
-    // Fill based on score
-    if (domain.code === 'N') {
-      // Neuroticism: red gradient
-      pdf.setFillColor(239, 68, 68)
-    } else {
-      // Other domains: purple gradient
-      pdf.setFillColor(139, 92, 246)
-    }
-    pdf.rect(margin, currentY, fillWidth, barHeight, 'F')
-
-    currentY += barHeight + 10
-  }
-
-  // Footer
-  checkPageBreak(30)
-  currentY = pageHeight - margin - 20
-  pdf.setDrawColor(229, 231, 235)
-  pdf.line(margin, currentY, pageWidth - margin, currentY)
-  currentY += 5
-
-  pdf.setFontSize(8)
-  pdf.setTextColor(107, 114, 128)
-  pdf.text('Kết quả này chỉ mang tính tham khảo. Tính cách có thể thay đổi theo thời gian.', margin, currentY)
-  currentY += 4
-  pdf.text('Tạo bởi Miso\'s Care - https://misos-care.vercel.app', margin, currentY)
-
-  // Generate filename
-  const date = completedAt ? completedAt.toISOString().split('T')[0] : 'latest'
-  const filename = `BFI2_Report_${date}.pdf`
-
-  // Save PDF
-  pdf.save(filename)
 }
 
 /**
@@ -194,16 +158,4 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     console.error('Failed to copy to clipboard:', error)
     return false
   }
-}
-
-// Helper function to convert hex color to RGB
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : { r: 0, g: 0, b: 0 }
 }

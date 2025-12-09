@@ -148,10 +148,10 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
       )}
 
       {/* Test Info */}
-      {profile.test_completed_at && (
+      {profile.last_updated && (
         <div className="text-sm text-gray-600 text-center">
           Làm test lần cuối:{' '}
-          {new Date(profile.test_completed_at).toLocaleDateString('vi-VN', {
+          {new Date(profile.last_updated).toLocaleDateString('vi-VN', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',

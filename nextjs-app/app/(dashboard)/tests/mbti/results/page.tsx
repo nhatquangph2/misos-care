@@ -11,15 +11,19 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useFadeIn, useStagger } from '@/hooks/useGSAP'
 import { MBTI_DESCRIPTIONS } from '@/constants/tests/mbti-questions'
 import type { MBTIResult } from '@/services/test.service'
-import { Home, Share2, Download, RefreshCw, Brain, Briefcase, Heart } from 'lucide-react'
+import { saveMBTIResult } from '@/services/personality-profile.service'
+import { Home, Share2, Download, RefreshCw, Brain, Briefcase, Heart, AlertTriangle } from 'lucide-react'
 
 export default function MBTIResultsPage() {
   const router = useRouter()
   const [result, setResult] = useState<MBTIResult | null>(null)
   const [completedAt, setCompletedAt] = useState<string>('')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const pageRef = useFadeIn(0.8)
   const cardsRef = useStagger(0.15)
@@ -34,11 +38,32 @@ export default function MBTIResultsPage() {
       return
     }
 
-    setResult(JSON.parse(storedResult))
+    const parsedResult = JSON.parse(storedResult)
+    setResult(parsedResult)
     if (storedDate) {
       const date = new Date(storedDate)
       setCompletedAt(date.toLocaleDateString('vi-VN'))
     }
+
+    // Auto-save results to database
+    const saveResults = async () => {
+      try {
+        setSaveStatus('saving')
+
+        await saveMBTIResult(
+          parsedResult.type,
+          storedDate ? new Date(storedDate) : new Date()
+        )
+
+        setSaveStatus('saved')
+      } catch (error) {
+        console.error('Failed to save MBTI results:', error)
+        setSaveStatus('error')
+        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+      }
+    }
+
+    saveResults()
   }, [router])
 
   if (!result) {
@@ -83,6 +108,27 @@ export default function MBTIResultsPage() {
               Hoàn thành ngày {completedAt}
             </p>
           )}
+
+          {/* Save Status */}
+          <div className="mt-4">
+            {saveStatus === 'saved' && (
+              <Badge variant="outline" className="text-sm px-4 py-2 bg-green-50 text-green-700 border-green-300">
+                ✓ Đã lưu vào hồ sơ
+              </Badge>
+            )}
+            {saveStatus === 'saving' && (
+              <Badge variant="outline" className="text-sm px-4 py-2 bg-blue-50 text-blue-700 border-blue-300">
+                ⏳ Đang lưu...
+              </Badge>
+            )}
+            {saveStatus === 'error' && saveError && (
+              <Alert variant="destructive" className="mt-4 max-w-md mx-auto">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Không thể lưu kết quả</AlertTitle>
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
 
         {/* Dimension Bars */}

@@ -14,6 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useFadeIn } from '@/hooks/useGSAP'
 import { GAD7_RECOMMENDATIONS, ANXIETY_HOTLINES } from '@/constants/tests/gad7-questions'
+import { saveMentalHealthRecord } from '@/services/mental-health-records.service'
 import { Home, RefreshCw, Share2, Brain, AlertTriangle, Phone, CheckCircle2 } from 'lucide-react'
 
 interface GAD7Result {
@@ -32,6 +33,8 @@ export default function GAD7ResultsPage() {
   const router = useRouter()
   const [result, setResult] = useState<GAD7Result | null>(null)
   const [completedAt, setCompletedAt] = useState<string>('')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const pageRef = useFadeIn(0.8)
 
@@ -45,11 +48,44 @@ export default function GAD7ResultsPage() {
       return
     }
 
-    setResult(JSON.parse(storedResult))
+    const parsedResult = JSON.parse(storedResult)
+    setResult(parsedResult)
     if (storedDate) {
       const date = new Date(storedDate)
       setCompletedAt(date.toLocaleDateString('vi-VN'))
     }
+
+    // Auto-save results to database
+    const saveResults = async () => {
+      try {
+        setSaveStatus('saving')
+
+        // Map severity label to severity level
+        const severityMap: Record<string, 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe'> = {
+          'Tối thiểu': 'normal',
+          'Nhẹ': 'mild',
+          'Trung bình': 'moderate',
+          'Nặng': 'severe'
+        }
+
+        await saveMentalHealthRecord({
+          testType: 'GAD7',
+          totalScore: parsedResult.totalScore,
+          severityLevel: severityMap[parsedResult.severity.label] || 'normal',
+          crisisFlag: parsedResult.needsCrisisIntervention,
+          crisisReason: parsedResult.needsCrisisIntervention ? 'Severe anxiety' : undefined,
+          completedAt: storedDate ? new Date(storedDate) : new Date(),
+        })
+
+        setSaveStatus('saved')
+      } catch (error) {
+        console.error('Failed to save GAD-7 results:', error)
+        setSaveStatus('error')
+        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+      }
+    }
+
+    saveResults()
   }, [router])
 
   if (!result) {
@@ -108,6 +144,27 @@ export default function GAD7ResultsPage() {
               Hoàn thành ngày {completedAt}
             </p>
           )}
+
+          {/* Save Status */}
+          <div className="mt-4">
+            {saveStatus === 'saved' && (
+              <Badge variant="outline" className="text-sm px-4 py-2 bg-green-50 text-green-700 border-green-300">
+                ✓ Đã lưu vào hồ sơ
+              </Badge>
+            )}
+            {saveStatus === 'saving' && (
+              <Badge variant="outline" className="text-sm px-4 py-2 bg-blue-50 text-blue-700 border-blue-300">
+                ⏳ Đang lưu...
+              </Badge>
+            )}
+            {saveStatus === 'error' && saveError && (
+              <Alert variant="destructive" className="mt-4 max-w-md mx-auto">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Không thể lưu kết quả</AlertTitle>
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
 
         {/* Crisis Alert */}

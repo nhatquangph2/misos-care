@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useFadeIn, useStagger } from '@/hooks/useGSAP'
 import { DASS21_SUBSCALES, CRISIS_RESOURCES } from '@/constants/tests/dass21-questions'
 import type { DASS21SubscaleScore } from '@/constants/tests/dass21-questions'
+import { saveMentalHealthRecord } from '@/services/mental-health-records.service'
 import { Home, RefreshCw, Share2, Brain, AlertTriangle, Phone } from 'lucide-react'
 
 interface DASS21Result {
@@ -27,6 +28,8 @@ export default function DASS21ResultsPage() {
   const router = useRouter()
   const [result, setResult] = useState<DASS21Result | null>(null)
   const [completedAt, setCompletedAt] = useState<string>('')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const pageRef = useFadeIn(0.8)
   const cardsRef = useStagger(0.15)
@@ -41,11 +44,62 @@ export default function DASS21ResultsPage() {
       return
     }
 
-    setResult(JSON.parse(storedResult))
+    const parsedResult = JSON.parse(storedResult)
+    setResult(parsedResult)
     if (storedDate) {
       const date = new Date(storedDate)
       setCompletedAt(date.toLocaleDateString('vi-VN'))
     }
+
+    // Auto-save results to database
+    const saveResults = async () => {
+      try {
+        setSaveStatus('saving')
+
+        // Calculate total score and get worst severity level
+        let totalScore = 0
+        const subscaleScoresObj: Record<string, number> = {}
+        let worstSeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe' = 'normal'
+        const severityOrder = ['normal', 'mild', 'moderate', 'severe', 'extremely_severe']
+
+        parsedResult.subscaleScores.forEach((subscale: DASS21SubscaleScore) => {
+          totalScore += subscale.rawScore
+          subscaleScoresObj[subscale.subscaleName] = subscale.rawScore
+
+          // Map severity level from object to string
+          const severityMap: Record<string, 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe'> = {
+            'normal': 'normal',
+            'mild': 'mild',
+            'moderate': 'moderate',
+            'severe': 'severe',
+            'extremely-severe': 'extremely_severe'
+          }
+
+          const severityValue = severityMap[subscale.severity.level] || 'normal'
+          if (severityOrder.indexOf(severityValue) > severityOrder.indexOf(worstSeverity)) {
+            worstSeverity = severityValue
+          }
+        })
+
+        await saveMentalHealthRecord({
+          testType: 'DASS21',
+          totalScore: totalScore,
+          severityLevel: worstSeverity,
+          subscaleScores: subscaleScoresObj,
+          crisisFlag: parsedResult.needsCrisisIntervention,
+          crisisReason: parsedResult.needsCrisisIntervention ? 'Severe mental health symptoms' : undefined,
+          completedAt: storedDate ? new Date(storedDate) : new Date(),
+        })
+
+        setSaveStatus('saved')
+      } catch (error) {
+        console.error('Failed to save DASS-21 results:', error)
+        setSaveStatus('error')
+        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+      }
+    }
+
+    saveResults()
   }, [router])
 
   if (!result) {
@@ -87,6 +141,27 @@ export default function DASS21ResultsPage() {
               Hoàn thành ngày {completedAt}
             </p>
           )}
+
+          {/* Save Status */}
+          <div className="mt-4">
+            {saveStatus === 'saved' && (
+              <Badge variant="outline" className="text-sm px-4 py-2 bg-green-50 text-green-700 border-green-300">
+                ✓ Đã lưu vào hồ sơ
+              </Badge>
+            )}
+            {saveStatus === 'saving' && (
+              <Badge variant="outline" className="text-sm px-4 py-2 bg-blue-50 text-blue-700 border-blue-300">
+                ⏳ Đang lưu...
+              </Badge>
+            )}
+            {saveStatus === 'error' && saveError && (
+              <Alert variant="destructive" className="mt-4 max-w-md mx-auto">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Không thể lưu kết quả</AlertTitle>
+                <AlertDescription>{saveError}</AlertDescription>
+              </Alert>
+            )}
+          </div>
         </div>
 
         {/* Crisis Alert */}
