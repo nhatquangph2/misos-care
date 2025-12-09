@@ -16,14 +16,16 @@ import { useFadeIn, useStagger } from '@/hooks/useGSAP'
 import { MBTI_DESCRIPTIONS } from '@/constants/tests/mbti-questions'
 import type { MBTIResult } from '@/services/test.service'
 import { saveMBTIResult } from '@/services/personality-profile.service'
+import { createClient } from '@/lib/supabase/client'
 import { Home, Share2, Download, RefreshCw, Brain, Briefcase, Heart, AlertTriangle } from 'lucide-react'
 
 export default function MBTIResultsPage() {
   const router = useRouter()
   const [result, setResult] = useState<MBTIResult | null>(null)
   const [completedAt, setCompletedAt] = useState<string>('')
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated'>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   const pageRef = useFadeIn(0.8)
   const cardsRef = useStagger(0.15)
@@ -45,16 +47,26 @@ export default function MBTIResultsPage() {
       setCompletedAt(date.toLocaleDateString('vi-VN'))
     }
 
-    // Auto-save results to database
-    const saveResults = async () => {
+    // Check authentication and auto-save results
+    const checkAuthAndSave = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        // User not authenticated
+        setIsAuthenticated(false)
+        setSaveStatus('unauthenticated')
+        return
+      }
+
+      // User is authenticated, save results
+      setIsAuthenticated(true)
       try {
         setSaveStatus('saving')
-
         await saveMBTIResult(
           parsedResult.type,
           storedDate ? new Date(storedDate) : new Date()
         )
-
         setSaveStatus('saved')
       } catch (error) {
         console.error('Failed to save MBTI results:', error)
@@ -63,7 +75,7 @@ export default function MBTIResultsPage() {
       }
     }
 
-    saveResults()
+    checkAuthAndSave()
   }, [router])
 
   if (!result) {
@@ -121,15 +133,36 @@ export default function MBTIResultsPage() {
                 ⏳ Đang lưu...
               </Badge>
             )}
-            {saveStatus === 'error' && saveError && (
-              <Alert variant="destructive" className="mt-4 max-w-md mx-auto">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Không thể lưu kết quả</AlertTitle>
-                <AlertDescription>{saveError}</AlertDescription>
-              </Alert>
-            )}
           </div>
         </div>
+
+        {/* Login Required Alert */}
+        {saveStatus === 'unauthenticated' && (
+          <Alert className="mb-8 border-blue-300 bg-blue-50">
+            <AlertTriangle className="h-5 w-5 text-blue-600" />
+            <AlertTitle className="text-blue-900">Đăng nhập để lưu kết quả</AlertTitle>
+            <AlertDescription className="text-blue-800">
+              <p className="mb-3">
+                Kết quả của bạn đang được lưu tạm thời trên thiết bị này. Để lưu vĩnh viễn vào hồ sơ cá nhân và truy cập từ bất kỳ thiết bị nào, vui lòng đăng nhập.
+              </p>
+              <Button
+                onClick={() => router.push('/auth/login?redirect=/tests/mbti/results')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Đăng nhập ngay
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Save Error Alert */}
+        {saveStatus === 'error' && saveError && (
+          <Alert variant="destructive" className="mb-8 max-w-md mx-auto">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Không thể lưu kết quả</AlertTitle>
+            <AlertDescription>{saveError}</AlertDescription>
+          </Alert>
+        )}
 
         {/* Dimension Bars */}
         <Card className="mb-8 shadow-xl border-2">

@@ -63,10 +63,11 @@ export default function BFI2ResultsPage() {
   const [completedAt, setCompletedAt] = useState<string>('')
   const [completedAtRaw, setCompletedAtRaw] = useState<Date | null>(null)
   const [completionTime, setCompletionTime] = useState<number>(0)
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated'>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [userName, setUserName] = useState<string>('')
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   useEffect(() => {
     // Load results from localStorage
@@ -100,8 +101,20 @@ export default function BFI2ResultsPage() {
     const completionTimeNum = storedTime ? parseInt(storedTime) : 0
     if (storedTime) setCompletionTime(completionTimeNum)
 
-    // Auto-save results to database
-    const saveResults = async () => {
+    // Check authentication and auto-save results
+    const checkAuthAndSave = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (!user) {
+        // User not authenticated
+        setIsAuthenticated(false)
+        setSaveStatus('unauthenticated')
+        return
+      }
+
+      // User is authenticated, save results
+      setIsAuthenticated(true)
       try {
         setSaveStatus('saving')
         await saveBFI2Results({
@@ -117,8 +130,7 @@ export default function BFI2ResultsPage() {
       }
     }
 
-    // Only auto-save if user is authenticated
-    saveResults()
+    checkAuthAndSave()
 
     // Get user name for PDF
     const getUserName = async () => {
@@ -229,6 +241,25 @@ export default function BFI2ResultsPage() {
             )}
           </div>
         </div>
+
+        {/* Login Required Alert */}
+        {saveStatus === 'unauthenticated' && (
+          <Alert className="mb-8 border-blue-300 bg-blue-50">
+            <AlertTriangle className="h-5 w-5 text-blue-600" />
+            <AlertTitle className="text-blue-900">Đăng nhập để lưu kết quả</AlertTitle>
+            <AlertDescription className="text-blue-800">
+              <p className="mb-3">
+                Kết quả của bạn đang được lưu tạm thời trên thiết bị này. Để lưu vĩnh viễn vào hồ sơ cá nhân và truy cập từ bất kỳ thiết bị nào, vui lòng đăng nhập.
+              </p>
+              <Button
+                onClick={() => router.push('/auth/login?redirect=/tests/big5/results')}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Đăng nhập ngay
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Save Error Alert */}
         {saveStatus === 'error' && saveError && (
