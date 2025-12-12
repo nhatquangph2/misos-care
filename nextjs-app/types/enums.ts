@@ -87,6 +87,21 @@ export type InterventionType = 'modal' | 'email' | 'sms' | 'notification'
 // Currency
 export type Currency = 'VND' | 'USD'
 
+// User Roles
+export type UserRole = 'user' | 'mentor' | 'admin'
+
+// Profile Visibility
+export type ProfileVisibility = 'private' | 'mentors_only' | 'public'
+
+// Mentor Relationship Status
+export type MentorRelationshipStatus = 'pending' | 'active' | 'paused' | 'ended'
+
+// Mentor Note Type
+export type MentorNoteType = 'general' | 'session' | 'observation' | 'recommendation' | 'follow_up'
+
+// Consent Type
+export type ConsentType = 'terms' | 'privacy' | 'data_sharing' | 'mentor_access' | 'marketing'
+
 // Specialties for mentors
 export const MentorSpecialties = [
   'Career Counseling',

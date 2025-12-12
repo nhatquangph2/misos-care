@@ -73,26 +73,51 @@ export class ProfileService {
 
   /**
    * Calculate mental health trends over time
+   * Maps different test types to depression/anxiety/stress:
+   * - PHQ9 -> depression
+   * - GAD7 -> anxiety
+   * - DASS21 -> all three (from subscale_scores)
+   * - PSS -> stress
    */
   private calculateTrends(records: MentalHealthRecord[]): MentalHealthTrend[] {
     // Group records by date
     const recordsByDate = new Map<string, { depression?: number; anxiety?: number; stress?: number }>();
 
     records.forEach(record => {
-      const date = new Date(record.created_at).toISOString().split('T')[0];
+      // Use completed_at if available, otherwise created_at
+      const dateStr = record.completed_at || record.created_at;
+      const date = new Date(dateStr).toISOString().split('T')[0];
 
       if (!recordsByDate.has(date)) {
         recordsByDate.set(date, {});
       }
 
       const dayData = recordsByDate.get(date)!;
+      const score = record.total_score || (record as any).score || 0;
 
-      if (record.test_type === 'DASS21-depression') {
-        dayData.depression = record.total_score || record.score || 0;
-      } else if (record.test_type === 'DASS21-anxiety') {
-        dayData.anxiety = record.total_score || record.score || 0;
-      } else if (record.test_type === 'DASS21-stress') {
-        dayData.stress = record.total_score || record.score || 0;
+      // Map test types to mental health categories
+      switch (record.test_type) {
+        case 'PHQ9':
+          dayData.depression = score;
+          break;
+        case 'GAD7':
+          dayData.anxiety = score;
+          break;
+        case 'PSS':
+          dayData.stress = score;
+          break;
+        case 'DASS21':
+          // DASS-21 has subscale scores for all three
+          const subscales = record.subscale_scores as Record<string, number> | null;
+          if (subscales) {
+            if (subscales.depression !== undefined) dayData.depression = subscales.depression;
+            if (subscales.anxiety !== undefined) dayData.anxiety = subscales.anxiety;
+            if (subscales.stress !== undefined) dayData.stress = subscales.stress;
+          } else {
+            // If no subscales, use total score as general indicator
+            dayData.stress = score;
+          }
+          break;
       }
     });
 
@@ -100,9 +125,9 @@ export class ProfileService {
     const trends: MentalHealthTrend[] = Array.from(recordsByDate.entries())
       .map(([date, data]) => ({
         date,
-        depression: data.depression || 0,
-        anxiety: data.anxiety || 0,
-        stress: data.stress || 0,
+        depression: data.depression ?? 0,
+        anxiety: data.anxiety ?? 0,
+        stress: data.stress ?? 0,
       }))
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
@@ -395,14 +420,21 @@ export class ProfileService {
   /**
    * Get Big Five personality-based recommendations
    * Research shows Big Five traits explain ~36% variance in depression
+   * Note: Big Five scores are stored on 1-5 scale
+   * - High: > 3.5 (equivalent to ~62.5% on percentage scale)
+   * - Low: < 2.5 (equivalent to ~37.5% on percentage scale)
    */
   private getBigFiveRecommendations(personality: PersonalityProfile): Recommendation[] {
     const recommendations: Recommendation[] = [];
 
+    // Threshold constants for 1-5 scale
+    const HIGH_THRESHOLD = 3.5;
+    const LOW_THRESHOLD = 2.5;
+
     // High Neuroticism → CBT and stress management
     // Research: High neuroticism strongly correlates with anxiety/depression
     // Neuroticism associated with reduced willingness to exercise
-    if (personality.big5_neuroticism && personality.big5_neuroticism > 60) {
+    if (personality.big5_neuroticism && personality.big5_neuroticism > HIGH_THRESHOLD) {
       recommendations.push({
         id: 'stress-reframing',
         type: 'habit',
@@ -425,7 +457,7 @@ export class ProfileService {
 
     // Low Extraversion → Social support building
     // Research: Low extraversion linked to depression/anxiety
-    if (personality.big5_extraversion && personality.big5_extraversion < 40) {
+    if (personality.big5_extraversion && personality.big5_extraversion < LOW_THRESHOLD) {
       recommendations.push({
         id: 'gentle-socializing',
         type: 'activity',
@@ -438,7 +470,7 @@ export class ProfileService {
 
     // High Extraversion → Group activities
     // Research: Extraversion predicts greater levels of physical activity and organized sport
-    if (personality.big5_extraversion && personality.big5_extraversion > 60) {
+    if (personality.big5_extraversion && personality.big5_extraversion > HIGH_THRESHOLD) {
       recommendations.push({
         id: 'group-fitness',
         type: 'activity',
@@ -451,7 +483,7 @@ export class ProfileService {
 
     // High Conscientiousness → Structured exercise programs
     // Research: Conscientiousness strongest predictor of exercise adherence
-    if (personality.big5_conscientiousness && personality.big5_conscientiousness > 60) {
+    if (personality.big5_conscientiousness && personality.big5_conscientiousness > HIGH_THRESHOLD) {
       recommendations.push({
         id: 'structured-program',
         type: 'activity',
@@ -463,7 +495,7 @@ export class ProfileService {
     }
 
     // Low Conscientiousness → Flexible, fun activities
-    if (personality.big5_conscientiousness && personality.big5_conscientiousness < 40) {
+    if (personality.big5_conscientiousness && personality.big5_conscientiousness < LOW_THRESHOLD) {
       recommendations.push({
         id: 'small-goals',
         type: 'habit',
@@ -485,7 +517,7 @@ export class ProfileService {
 
     // High Openness → Creative and varied activities
     // Research: High openness rated strenuous exercise lower, prefer variety
-    if (personality.big5_openness && personality.big5_openness > 60) {
+    if (personality.big5_openness && personality.big5_openness > HIGH_THRESHOLD) {
       recommendations.push({
         id: 'explore-meaning',
         type: 'activity',
@@ -507,7 +539,7 @@ export class ProfileService {
 
     // High Agreeableness → Cooperative activities
     // Research: Agreeableness relates to positive experience in sport
-    if (personality.big5_agreeableness && personality.big5_agreeableness > 60) {
+    if (personality.big5_agreeableness && personality.big5_agreeableness > HIGH_THRESHOLD) {
       recommendations.push({
         id: 'cooperative-sports',
         type: 'activity',
@@ -519,7 +551,7 @@ export class ProfileService {
     }
 
     // Low Agreeableness → Compassion practices
-    if (personality.big5_agreeableness && personality.big5_agreeableness < 40) {
+    if (personality.big5_agreeableness && personality.big5_agreeableness < LOW_THRESHOLD) {
       recommendations.push({
         id: 'self-compassion',
         type: 'habit',

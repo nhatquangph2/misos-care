@@ -92,7 +92,7 @@ export default function ProfilePage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Đang tải dữ liệu...</p>
+          <p className="text-gray-600 dark:text-gray-400">Đang tải dữ liệu...</p>
         </div>
       </div>
     );
@@ -104,7 +104,7 @@ export default function ProfilePage() {
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
           <h2 className="text-2xl font-bold mb-2">Có Lỗi Xảy Ra</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">{error}</p>
           <button
             onClick={loadProfileData}
             className="px-6 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600"
@@ -119,55 +119,55 @@ export default function ProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
             Hồ Sơ Của Tôi
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Quản lý tính cách, theo dõi sức khỏe tinh thần và nhận đề xuất cá nhân hóa
           </p>
         </div>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition self-start sm:self-auto"
         >
           Đăng Xuất
         </button>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-6 rounded-2xl shadow-lg">
-          <div className="text-3xl mb-2">🧠</div>
-          <div className="text-2xl font-bold mb-1">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
+          <div className="text-2xl sm:text-3xl mb-2">🧠</div>
+          <div className="text-xl sm:text-2xl font-bold mb-1">
             {profileData?.personality?.mbti_type || '---'}
           </div>
-          <div className="text-sm opacity-90">Loại MBTI</div>
+          <div className="text-xs sm:text-sm opacity-90">Loại MBTI</div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg">
-          <div className="text-3xl mb-2">📊</div>
-          <div className="text-2xl font-bold mb-1">
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
+          <div className="text-2xl sm:text-3xl mb-2">📊</div>
+          <div className="text-xl sm:text-2xl font-bold mb-1">
             {profileData?.mentalHealthRecords?.length || 0}
           </div>
-          <div className="text-sm opacity-90">Bài Test</div>
+          <div className="text-xs sm:text-sm opacity-90">Bài Test</div>
         </div>
 
-        <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-2xl shadow-lg">
-          <div className="text-3xl mb-2">📈</div>
-          <div className="text-2xl font-bold mb-1">
+        <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
+          <div className="text-2xl sm:text-3xl mb-2">📈</div>
+          <div className="text-xl sm:text-2xl font-bold mb-1">
             {profileData?.trends?.length || 0}
           </div>
-          <div className="text-sm opacity-90">Ngày Theo Dõi</div>
+          <div className="text-xs sm:text-sm opacity-90">Ngày Theo Dõi</div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-6 rounded-2xl shadow-lg">
-          <div className="text-3xl mb-2">💡</div>
-          <div className="text-2xl font-bold mb-1">
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
+          <div className="text-2xl sm:text-3xl mb-2">💡</div>
+          <div className="text-xl sm:text-2xl font-bold mb-1">
             {profileData?.recommendations?.length || 0}
           </div>
-          <div className="text-sm opacity-90">Đề Xuất</div>
+          <div className="text-xs sm:text-sm opacity-90">Đề Xuất</div>
         </div>
       </div>
 
@@ -342,14 +342,14 @@ export default function ProfilePage() {
           <PersonalityOverview profile={profileData?.personality || null} />
 
           {profileData?.personality?.mbti_type && (
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-8 rounded-2xl">
-              <h3 className="text-2xl font-bold mb-4">Về Tính Cách {profileData.personality.mbti_type}</h3>
-              <div className="prose max-w-none">
-                <p className="text-gray-700 mb-4">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 sm:p-8 rounded-2xl">
+              <h3 className="text-xl sm:text-2xl font-bold mb-4">Về Tính Cách {profileData.personality.mbti_type}</h3>
+              <div className="prose max-w-none dark:prose-invert">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   Tính cách {profileData.personality.mbti_type} là một trong 16 loại tính cách theo MBTI.
                   Mỗi chữ cái đại diện cho một sở thích cá nhân:
                 </p>
-                <ul className="space-y-2 text-gray-700">
+                <ul className="space-y-2 text-gray-700 dark:text-gray-300">
                   <li>
                     <strong>{profileData.personality.mbti_type[0]}:</strong>{' '}
                     {profileData.personality.mbti_type[0] === 'E' ? 'Hướng ngoại (Extraversion) - Năng lượng từ bên ngoài' : 'Hướng nội (Introversion) - Năng lượng từ bên trong'}
@@ -377,12 +377,12 @@ export default function ProfilePage() {
           <MentalHealthChart trends={profileData?.trends || []} />
           <TestHistory records={profileData?.mentalHealthRecords || []} />
 
-          <div className="bg-blue-50 p-6 rounded-xl">
+          <div className="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl">
             <h4 className="font-semibold mb-2 flex items-center gap-2">
               <span>ℹ️</span>
               Lưu Ý Quan Trọng
             </h4>
-            <p className="text-sm text-gray-700">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
               Các bài test này chỉ mang tính chất tham khảo. Nếu bạn cảm thấy lo lắng về sức khỏe tinh thần,
               hãy tìm kiếm sự hỗ trợ từ chuyên gia. Hotline: <strong>1800-599-920</strong> (24/7, miễn phí).
             </p>
@@ -399,63 +399,63 @@ export default function ProfilePage() {
           <RecommendationsCard recommendations={profileData?.recommendations || []} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl">
+            <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-6 rounded-xl">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <span>🌱</span>
                 Thói Quen Lành Mạnh
               </h4>
-              <ul className="space-y-2 text-sm text-gray-700">
+              <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <li className="flex items-start gap-2">
-                  <span>✓</span>
+                  <span className="text-green-600 dark:text-green-400">✓</span>
                   <span>Ngủ đủ 7-8 giờ mỗi đêm</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span>✓</span>
+                  <span className="text-green-600 dark:text-green-400">✓</span>
                   <span>Tập thể dục ít nhất 30 phút/ngày</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span>✓</span>
+                  <span className="text-green-600 dark:text-green-400">✓</span>
                   <span>Ăn uống cân bằng, đủ dinh dưỡng</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span>✓</span>
+                  <span className="text-green-600 dark:text-green-400">✓</span>
                   <span>Giảm sử dụng mạng xã hội</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span>✓</span>
+                  <span className="text-green-600 dark:text-green-400">✓</span>
                   <span>Duy trì mối quan hệ tích cực</span>
                 </li>
               </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl">
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 rounded-xl">
               <h4 className="font-semibold mb-3 flex items-center gap-2">
                 <span>📚</span>
                 Tài Nguyên Hữu Ích
               </h4>
               <ul className="space-y-3 text-sm">
                 <li>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     📖 Thư viện bài viết sức khỏe tinh thần (Sắp ra mắt)
                   </span>
                 </li>
                 <li>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     🎧 Podcast về tâm lý học (Sắp ra mắt)
                   </span>
                 </li>
                 <li>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     🧘 Bài tập thiền hướng dẫn (Sắp ra mắt)
                   </span>
                 </li>
                 <li>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     👥 Cộng đồng hỗ trợ (Sắp ra mắt)
                   </span>
                 </li>
                 <li>
-                  <span className="text-gray-600">
+                  <span className="text-gray-600 dark:text-gray-400">
                     👨‍⚕️ Tìm chuyên gia tâm lý (Sắp ra mắt)
                   </span>
                 </li>

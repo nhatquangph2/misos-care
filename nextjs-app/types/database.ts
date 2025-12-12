@@ -25,6 +25,11 @@ import type {
   CrisisSeverity,
   InterventionType,
   Currency,
+  UserRole,
+  ProfileVisibility,
+  MentorRelationshipStatus,
+  MentorNoteType,
+  ConsentType,
 } from './enums'
 
 export type Json =
@@ -50,6 +55,141 @@ export interface User {
   onboarding_completed: boolean
   created_at: string
   updated_at: string
+
+  // Extended profile fields
+  full_name: string | null
+  nickname: string | null
+  bio: string | null
+  occupation: string | null
+  education: string | null
+  location: string | null
+  timezone: string
+
+  // Contact information
+  phone_secondary: string | null
+  zalo: string | null
+  facebook: string | null
+  instagram: string | null
+  linkedin: string | null
+
+  // Emergency contact
+  emergency_contact_name: string | null
+  emergency_contact_phone: string | null
+  emergency_contact_relationship: string | null
+
+  // Role and status
+  role: UserRole
+  is_verified: boolean
+  is_active: boolean
+  profile_visibility: ProfileVisibility
+
+  // Preferences
+  language: string
+  notification_preferences: Json
+  consent_data_sharing: boolean
+  consent_mentor_access: boolean
+}
+
+export interface MentorProfile {
+  id: string
+  user_id: string
+
+  // Professional info
+  title: string | null
+  specializations: string[]
+  qualifications: string[]
+  experience_years: number
+  organization: string | null
+
+  // Bio and description
+  professional_bio: string | null
+  approach_description: string | null
+
+  // Availability
+  is_available: boolean
+  max_mentees: number
+  current_mentee_count: number
+
+  // Ratings
+  rating: number
+  total_reviews: number
+
+  // Verification
+  verified_at: string | null
+  verified_by: string | null
+
+  created_at: string
+  updated_at: string
+}
+
+export interface MentorRelationship {
+  id: string
+  mentor_id: string
+  user_id: string
+
+  // Relationship status
+  status: MentorRelationshipStatus
+
+  // Request details
+  request_message: string | null
+  request_date: string
+
+  // Response details
+  response_message: string | null
+  response_date: string | null
+
+  // Access permissions
+  can_view_test_results: boolean
+  can_view_goals: boolean
+  can_view_contact_info: boolean
+  can_add_notes: boolean
+
+  // Relationship details
+  started_at: string | null
+  ended_at: string | null
+  end_reason: string | null
+
+  created_at: string
+  updated_at: string
+}
+
+export interface MentorNote {
+  id: string
+  relationship_id: string
+  mentor_id: string
+  user_id: string
+
+  // Note content
+  title: string | null
+  content: string
+  note_type: MentorNoteType
+
+  // Reference to specific records (optional)
+  related_test_id: string | null
+  related_goal_id: string | null
+
+  // Privacy
+  is_private: boolean
+  shared_with_user: boolean
+
+  // Follow up
+  requires_follow_up: boolean
+  follow_up_date: string | null
+  follow_up_completed: boolean
+
+  created_at: string
+  updated_at: string
+}
+
+export interface UserConsentLog {
+  id: string
+  user_id: string
+  consent_type: ConsentType
+  consent_given: boolean
+  consent_version: string
+  ip_address: string | null
+  user_agent: string | null
+  created_at: string
 }
 
 export interface PersonalityProfile {

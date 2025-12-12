@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -17,7 +17,9 @@ import {
   Target,
   LogOut,
   Menu,
-  X
+  X,
+  Users,
+  Settings
 } from 'lucide-react'
 
 export function Navbar() {
@@ -26,6 +28,26 @@ export function Navbar() {
   const supabase = createClient()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [isMentor, setIsMentor] = useState(false)
+
+  // Check if user is a mentor
+  useEffect(() => {
+    async function checkMentorStatus() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await (supabase as any)
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+
+        if (data && (data.role === 'mentor' || data.role === 'admin')) {
+          setIsMentor(true)
+        }
+      }
+    }
+    checkMentorStatus()
+  }, [])
 
   const handleLogout = async () => {
     setLoggingOut(true)
@@ -60,6 +82,16 @@ export function Navbar() {
       name: 'Mục tiêu',
       href: '/goals',
       icon: Target,
+    },
+    ...(isMentor ? [{
+      name: 'Mentor',
+      href: '/mentor',
+      icon: Users,
+    }] : []),
+    {
+      name: 'Cài đặt',
+      href: '/settings',
+      icon: Settings,
     },
   ]
 

@@ -14,9 +14,9 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
   if (!trends || trends.length === 0) {
     return (
       <Card className="p-8 text-center">
-        <div className="text-gray-400 mb-4 text-5xl">📊</div>
+        <div className="text-gray-400 dark:text-gray-500 mb-4 text-5xl">📊</div>
         <h3 className="text-xl font-semibold mb-2">Chưa Có Dữ Liệu Theo Dõi</h3>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Làm bài test DASS-21 để bắt đầu theo dõi sức khỏe tinh thần của bạn
         </p>
       </Card>
@@ -47,10 +47,10 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
   const latest = trends[trends.length - 1];
 
   const getSeverityColor = (score: number) => {
-    if (score < 10) return 'text-green-600';
-    if (score < 20) return 'text-yellow-600';
-    if (score < 30) return 'text-orange-600';
-    return 'text-red-600';
+    if (score < 10) return 'text-green-600 dark:text-green-400';
+    if (score < 20) return 'text-yellow-600 dark:text-yellow-400';
+    if (score < 30) return 'text-orange-600 dark:text-orange-400';
+    return 'text-red-600 dark:text-red-400';
   };
 
   const getSeverityLabel = (score: number) => {
@@ -66,39 +66,39 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-600">Trầm Cảm</h4>
+            <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Trầm Cảm</h4>
             <span className="text-2xl">😔</span>
           </div>
           <div className={`text-3xl font-bold ${getSeverityColor(latest.depression)}`}>
             {latest.depression}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {getSeverityLabel(latest.depression)} • TB: {avgDepression}
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-600">Lo Âu</h4>
+            <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Lo Âu</h4>
             <span className="text-2xl">😰</span>
           </div>
           <div className={`text-3xl font-bold ${getSeverityColor(latest.anxiety)}`}>
             {latest.anxiety}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {getSeverityLabel(latest.anxiety)} • TB: {avgAnxiety}
           </div>
         </Card>
 
         <Card className="p-4">
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-gray-600">Stress</h4>
+            <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Stress</h4>
             <span className="text-2xl">😓</span>
           </div>
           <div className={`text-3xl font-bold ${getSeverityColor(latest.stress)}`}>
             {latest.stress}
           </div>
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {getSeverityLabel(latest.stress)} • TB: {avgStress}
           </div>
         </Card>
@@ -166,20 +166,20 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
           </LineChart>
         </ResponsiveContainer>
 
-        <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+        <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
           <h4 className="font-medium mb-2 text-sm">Cách Đọc Biểu Đồ:</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs text-gray-600 dark:text-gray-400">
             <div>
-              <span className="font-semibold text-green-600">0-9:</span> Bình thường
+              <span className="font-semibold text-green-600 dark:text-green-400">0-9:</span> Bình thường
             </div>
             <div>
-              <span className="font-semibold text-yellow-600">10-19:</span> Nhẹ
+              <span className="font-semibold text-yellow-600 dark:text-yellow-400">10-19:</span> Nhẹ
             </div>
             <div>
-              <span className="font-semibold text-orange-600">20-29:</span> Trung bình
+              <span className="font-semibold text-orange-600 dark:text-orange-400">20-29:</span> Trung bình
             </div>
             <div>
-              <span className="font-semibold text-red-600">30+:</span> Nặng
+              <span className="font-semibold text-red-600 dark:text-red-400">30+:</span> Nặng
             </div>
           </div>
         </div>

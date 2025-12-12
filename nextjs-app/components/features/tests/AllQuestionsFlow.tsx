@@ -64,15 +64,15 @@ export function AllQuestionsFlow({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {/* Fixed Header */}
-      <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+      <div className="sticky top-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-6">
           {/* Title and Progress Badge */}
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">{testTitle}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{testTitle}</h1>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-gray-600">{progress.toFixed(0)}%</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{progress.toFixed(0)}%</span>
               <div className="bg-teal-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-md">
                 {answers.size} / {questions.length}
               </div>
@@ -81,10 +81,10 @@ export function AllQuestionsFlow({
 
           {/* Progress Bar */}
           <div className="mb-4">
-            <div className="text-sm text-gray-600 mb-2">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
               {allAnswered ? 'Hoàn thành' : 'Đang thực hiện'}
             </div>
-            <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
                 className="h-full bg-gradient-to-r from-blue-500 to-teal-500 transition-all duration-500 ease-out"
                 style={{ width: `${progress}%` }}
@@ -94,7 +94,7 @@ export function AllQuestionsFlow({
 
           {/* Scale Legend - Show once at top */}
           <div className="mt-6">
-            <p className="text-center text-base text-gray-700 font-medium mb-4">
+            <p className="text-center text-base text-gray-700 dark:text-gray-300 font-medium mb-4">
               {scaleInstruction}
             </p>
             <div className="flex justify-between items-start max-w-4xl mx-auto">
@@ -104,7 +104,7 @@ export function AllQuestionsFlow({
                     className={`w-12 h-12 rounded-full border-4 ${option.color} mb-2 transition-transform hover:scale-110`}
                   />
                   <div className="text-center px-2">
-                    <div className="text-xs font-medium text-gray-900 leading-tight max-w-[100px]">
+                    <div className="text-xs font-medium text-gray-900 dark:text-gray-100 leading-tight max-w-[100px]">
                       {option.label}
                     </div>
                   </div>
@@ -124,10 +124,10 @@ export function AllQuestionsFlow({
           return (
             <div
               key={question.id}
-              className={`bg-white rounded-xl border-2 p-6 transition-all duration-300 ${
+              className={`bg-white dark:bg-gray-800 rounded-xl border-2 p-6 transition-all duration-300 ${
                 isAnswered
                   ? 'border-teal-500 shadow-md'
-                  : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm'
               }`}
             >
               {/* Question Header */}
@@ -137,7 +137,7 @@ export function AllQuestionsFlow({
                   className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${
                     isAnswered
                       ? 'bg-teal-500 text-white'
-                      : 'bg-gray-200 text-gray-600'
+                      : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                   }`}
                 >
                   {isAnswered ? (
@@ -155,7 +155,7 @@ export function AllQuestionsFlow({
 
                 {/* Question Text */}
                 <div className="flex-1">
-                  <p className="text-base text-gray-800 leading-relaxed font-medium">
+                  <p className="text-base text-gray-800 dark:text-gray-200 leading-relaxed font-medium">
                     {question.question}
                   </p>
                 </div>
@@ -164,7 +164,7 @@ export function AllQuestionsFlow({
               {/* Answer Options */}
               <div className="flex justify-between items-center pl-14">
                 {/* Left Label */}
-                <div className="text-xs text-gray-500 font-medium w-24 text-left">
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium w-24 text-left">
                   {scaleOptions[0].shortLabel || scaleOptions[0].label.split(' ')[0]}
                 </div>
 
@@ -214,7 +214,7 @@ export function AllQuestionsFlow({
                 </div>
 
                 {/* Right Label */}
-                <div className="text-xs text-gray-500 font-medium w-24 text-right">
+                <div className="text-xs text-gray-500 dark:text-gray-400 font-medium w-24 text-right">
                   {scaleOptions[scaleOptions.length - 1].shortLabel ||
                     scaleOptions[scaleOptions.length - 1].label.split(' ').slice(-2).join(' ')}
                 </div>
@@ -225,12 +225,12 @@ export function AllQuestionsFlow({
       </div>
 
       {/* Fixed Bottom Submit Bar */}
-      <div className="sticky bottom-0 z-50 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg">
+      <div className="sticky bottom-0 z-50 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 shadow-lg">
         <div className="max-w-5xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="text-sm">
               {allAnswered ? (
-                <span className="text-green-600 font-semibold flex items-center gap-2">
+                <span className="text-green-600 dark:text-green-400 font-semibold flex items-center gap-2">
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                     <path
                       fillRule="evenodd"
@@ -241,7 +241,7 @@ export function AllQuestionsFlow({
                   Đã trả lời tất cả câu hỏi!
                 </span>
               ) : (
-                <span className="text-gray-600">
+                <span className="text-gray-600 dark:text-gray-400">
                   Còn lại: <span className="font-semibold">{questions.length - answers.size}</span> câu
                 </span>
               )}

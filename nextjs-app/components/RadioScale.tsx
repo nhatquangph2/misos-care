@@ -39,11 +39,11 @@ export function RadioScale({
     <div className="w-full animate-scaleIn">
       {/* Progress Bar */}
       <div className="mb-8">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
+        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
           <span>{progress.toFixed(0)}%</span>
           <span>Step {questionNumber} of {totalQuestions}</span>
         </div>
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500 ease-out"
             style={{ width: `${progress}%` }}
@@ -53,7 +53,7 @@ export function RadioScale({
 
       {/* Scale Legend - Show once at top */}
       <div className="mb-8">
-        <p className="text-center text-lg text-gray-700 font-medium mb-6">
+        <p className="text-center text-lg text-gray-700 dark:text-gray-300 font-medium mb-6">
           Choose how accurately each statement reflects you.
         </p>
         <div className="flex justify-between items-center max-w-3xl mx-auto px-4">
@@ -63,7 +63,7 @@ export function RadioScale({
                 className={`w-12 h-12 rounded-full border-4 ${option.color} mb-2 transition-transform hover:scale-110`}
               />
               <div className="text-center">
-                <div className="text-sm font-medium text-gray-900 leading-tight max-w-[80px]">
+                <div className="text-sm font-medium text-gray-900 dark:text-gray-100 leading-tight max-w-[80px]">
                   {option.label}
                 </div>
               </div>
@@ -73,8 +73,8 @@ export function RadioScale({
       </div>
 
       {/* Question Card */}
-      <div className="bg-white rounded-2xl shadow-lg p-8 mb-6 border border-gray-100 hover:shadow-xl transition-shadow">
-        <p className="text-xl text-gray-800 text-center mb-6 leading-relaxed">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow">
+        <p className="text-xl text-gray-800 dark:text-gray-200 text-center mb-6 leading-relaxed">
           {question}
         </p>
 
@@ -125,7 +125,7 @@ export function RadioScale({
 
       {/* Required indicator */}
       {required && !value && (
-        <p className="text-sm text-gray-500 text-center mt-2">
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2">
           * Please select an option to continue
         </p>
       )}
