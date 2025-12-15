@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "analyze": "cross-env ANALYZE=true npm run build",
     "setup:db": "bash setup-database.sh",
     "setup:db:copy": "pbcopy < supabase/migrations/00001_initial_schema.sql && echo '✅ SQL copied to clipboard! Now paste it in Supabase SQL Editor'",
     "check:db": "tsx scripts/check-database.ts"
@@ -45,10 +46,12 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.0.10",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.6",
     "tailwindcss": "^4",
