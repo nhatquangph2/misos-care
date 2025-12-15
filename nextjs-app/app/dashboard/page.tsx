@@ -143,19 +143,20 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl" ref={fadeRef}>
-      {/* Welcome Section */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
-          Xin chào, {user?.name || 'bạn'}! 👋
+      {/* Welcome Section with Blob */}
+      <div className="mb-10 relative">
+        <div className="blob-purple absolute -top-10 left-0" />
+        <h1 className="text-4xl sm:text-5xl font-heading font-bold mb-2">
+          Xin chào, <span className="gradient-text">{user?.name || 'bạn'}</span>! 👋
         </h1>
-        <p className="text-gray-600 text-lg">
+        <p className="text-slate-600 dark:text-slate-400 text-lg font-medium">
           Chào mừng trở lại với Miso's Care. Hãy cùng chăm sóc sức khỏe tinh thần của bạn!
         </p>
       </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" ref={staggerRef}>
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="glass-card shape-organic-1 group cursor-pointer">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Bài test đã làm
@@ -168,7 +169,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="glass-card shape-organic-1 group cursor-pointer">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Loại tính cách
@@ -183,7 +184,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="glass-card shape-organic-1 group cursor-pointer">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Streak hiện tại
@@ -196,7 +197,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow">
+        <Card className="glass-card shape-organic-1 group cursor-pointer">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
               Mục tiêu
@@ -315,7 +316,7 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">Hành động nhanh</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Link href="/tests">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-blue-500">
+            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer glass-card shape-organic-2">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Brain className="h-5 w-5 text-blue-500" />
@@ -335,7 +336,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/profile">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-purple-500">
+            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer glass-card shape-organic-1">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Sparkles className="h-5 w-5 text-purple-500" />
@@ -355,7 +356,7 @@ export default function DashboardPage() {
           </Link>
 
           <Link href="/goals">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-green-500">
+            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer glass-card shape-organic-2">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Target className="h-5 w-5 text-green-500" />
