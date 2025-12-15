@@ -15,6 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useFadeIn } from '@/hooks/useGSAP'
 import { PHQ9_RECOMMENDATIONS, CRISIS_HOTLINES } from '@/constants/tests/phq9-questions'
 import { saveMentalHealthRecord } from '@/services/mental-health-records.service'
+import { CrisisAlertModal } from '@/components/features/crisis/CrisisAlertModal'
 import { Home, RefreshCw, Share2, Brain, AlertTriangle, Phone, CheckCircle2 } from 'lucide-react'
 
 interface PHQ9Result {
@@ -28,6 +29,7 @@ interface PHQ9Result {
   }
   hasSuicidalIdeation: boolean
   needsCrisisIntervention: boolean
+  question9Score?: number
 }
 
 export default function PHQ9ResultsPage() {
@@ -36,6 +38,7 @@ export default function PHQ9ResultsPage() {
   const [completedAt, setCompletedAt] = useState<string>('')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [showCrisisModal, setShowCrisisModal] = useState(false)
 
   const pageRef = useFadeIn(0.8)
 
@@ -54,6 +57,11 @@ export default function PHQ9ResultsPage() {
     if (storedDate) {
       const date = new Date(storedDate)
       setCompletedAt(date.toLocaleDateString('vi-VN'))
+    }
+
+    // Show crisis modal if needed
+    if (parsedResult.needsCrisisIntervention || parsedResult.hasSuicidalIdeation) {
+      setShowCrisisModal(true)
     }
 
     // Auto-save results to database
@@ -285,6 +293,23 @@ export default function PHQ9ResultsPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Crisis Alert Modal */}
+      {result && (
+        <CrisisAlertModal
+          isOpen={showCrisisModal}
+          onClose={() => setShowCrisisModal(false)}
+          testType="PHQ9"
+          result={{
+            totalScore: result.totalScore,
+            question9Score: result.question9Score,
+            crisisReason: result.hasSuicidalIdeation
+              ? 'Có suy nghĩ tự hại'
+              : 'Điểm số cao - Trầm cảm nặng',
+            severityLevel: result.severity.label === 'Nặng' ? 'extremely_severe' : 'severe',
+          }}
+        />
+      )}
     </div>
   )
 }

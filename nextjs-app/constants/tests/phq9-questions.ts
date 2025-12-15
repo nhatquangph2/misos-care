@@ -116,6 +116,8 @@ export const PHQ9_SEVERITY = {
   severe: { min: 20, max: 27, label: 'Nặng', color: 'darkred', description: 'Triệu chứng trầm cảm nặng' },
 } as const
 
+export type PHQ9SeverityData = typeof PHQ9_SEVERITY[keyof typeof PHQ9_SEVERITY]
+
 // Crisis detection: Question 9 (suicidal ideation) scoring
 export const CRISIS_THRESHOLD = {
   question9: 1, // Any score > 0 on question 9 triggers crisis alert
@@ -160,14 +162,14 @@ export const PHQ9_RECOMMENDATIONS = {
       'Cân nhắc điều trị kết hợp (liệu pháp + thuốc)',
       'Xây dựng mạng lưới hỗ trợ',
       'Tránh đưa ra quyết định quan trọng',
-      'Gọi hotline hỗ trợ nếu cần: 1800-xxxx',
+      'Gọi hotline hỗ trợ nếu cần: 1900 1267',
     ],
   },
   severe: {
     title: '🚨 CẦN HỖ TRỢ KHẨN CẤP',
     actions: [
       '🚨 LIÊN HỆ NGAY với chuyên gia y tế',
-      '📞 Hotline khủng hoảng: 1800-xxxx',
+      '📞 Hotline khủng hoảng: 1900 1267',
       '🏥 Đến phòng cấp cứu nếu có suy nghĩ tự hại',
       'KHÔNG ở một mình - tìm kiếm sự hỗ trợ ngay lập tức',
       'Loại bỏ các phương tiện tự hại',
@@ -177,8 +179,7 @@ export const PHQ9_RECOMMENDATIONS = {
 
 // Hotlines (Vietnam)
 export const CRISIS_HOTLINES = [
-  { name: 'Tổng đài 108', phone: '108', description: 'Cấp cứu y tế' },
-  { name: 'Tổng đài 113', phone: '113', description: 'Công an - Khẩn cấp' },
-  { name: 'Viện Sức khỏe Tâm thần', phone: '024-3835-2141', description: 'Bệnh viện Tâm thần Trung ương' },
-  { name: 'Tư vấn tâm lý', phone: '1800-xxxx', description: 'Hotline tư vấn 24/7 (nếu có)' },
+  { name: 'Tổng đài hỗ trợ sức khỏe tâm thần', phone: '1900 1267', description: 'Tư vấn tâm lý 24/7', isPrimary: true },
+  { name: 'Cấp cứu', phone: '115', description: 'Cấp cứu y tế' },
+  { name: 'Công an', phone: '113', description: 'Công an - Khẩn cấp' },
 ]

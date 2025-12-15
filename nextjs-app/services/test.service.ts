@@ -4,8 +4,8 @@
  */
 
 import type { MBTIType, SeverityLevel } from '@/types/enums'
-import { MBTI_QUESTIONS } from '@/constants/tests/mbti-questions'
-import { PHQ9_SEVERITY, CRISIS_THRESHOLD } from '@/constants/tests/phq9-questions'
+import { MBTI_QUESTIONS, MBTI_DESCRIPTIONS } from '@/constants/tests/mbti-questions'
+import { PHQ9_SEVERITY, CRISIS_THRESHOLD, PHQ9_RECOMMENDATIONS, type PHQ9SeverityData } from '@/constants/tests/phq9-questions'
 import { SISRI_24_QUESTIONS, SISRI_24_SCORING, SISRI_24_DIMENSIONS, type SISRI24Dimension } from '@/constants/tests/sisri-24-questions'
 
 // =====================================================
@@ -141,7 +141,7 @@ export function calculatePHQ9(answers: PHQ9Answer[]): PHQ9Result {
 
   // Determine severity
   let severity: SeverityLevel = 'normal'
-  let severityData = PHQ9_SEVERITY.minimal
+  let severityData: PHQ9SeverityData = PHQ9_SEVERITY.minimal
 
   if (totalScore >= PHQ9_SEVERITY.severe.min) {
     severity = 'severe'
@@ -355,22 +355,32 @@ export function calculateSISRI24(answers: SISRI24Answer[]): SISRI24Result {
  * Get MBTI type description
  */
 export function getMBTIDescription(type: MBTIType) {
-  // Import from mbti-questions.ts
-  return {
-    name: 'To be implemented',
-    description: 'Full description from MBTI_DESCRIPTIONS',
+  const description = MBTI_DESCRIPTIONS[type]
+  if (!description) {
+    return {
+      name: 'Không xác định',
+      description: 'Không tìm thấy mô tả cho loại tính cách này.',
+      strengths: [],
+      careers: [],
+    }
   }
+  return description
 }
 
 /**
  * Get PHQ-9 recommendations based on severity
  */
 export function getPHQ9Recommendations(severity: SeverityLevel) {
-  // Import from phq9-questions.ts
-  return {
-    title: 'Recommendations',
-    actions: ['Action 1', 'Action 2'],
+  // Map SeverityLevel to PHQ9_RECOMMENDATIONS keys
+  const severityMap: Record<SeverityLevel, keyof typeof PHQ9_RECOMMENDATIONS> = {
+    normal: 'minimal',
+    mild: 'mild',
+    moderate: 'moderate',
+    severe: 'severe',
   }
+
+  const key = severityMap[severity] || 'minimal'
+  return PHQ9_RECOMMENDATIONS[key]
 }
 
 /**
