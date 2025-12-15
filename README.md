@@ -187,6 +187,23 @@ Contributions are welcome! Please read our contributing guidelines.
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Open Pull Request
 
+## ⏫ Đẩy code lên GitHub
+
+Nếu bạn đang làm việc trong môi trường local hoặc cloud IDE và cần đẩy các commit lên GitHub, hãy kiểm tra remote và đẩy lên nhánh mong muốn:
+
+```bash
+# Xác nhận remote đã trỏ tới repository GitHub
+git remote -v
+
+# Đẩy nhánh hiện tại (ví dụ: work) lên GitHub
+git push origin work
+
+# Hoặc đẩy nhánh mới
+git push -u origin <branch-name>
+```
+
+Nếu bạn không có quyền push trực tiếp (ví dụ môi trường CI hoặc tài khoản không được cấp quyền), hãy tạo Pull Request từ nhánh hiện tại và nhờ người có quyền merge giúp.
+
 ## 📄 License
 
 This project is licensed under the MIT License.
