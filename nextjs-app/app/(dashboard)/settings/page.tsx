@@ -115,27 +115,37 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-white via-purple-50/30 to-blue-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-900 py-12 px-4 relative overflow-hidden">
+      <div className="blob-purple -top-10 -left-10" />
+      <div className="blob-blue top-20 right-10" />
+      <div className="blob-pink bottom-10 left-20" />
+
+      <div className="max-w-5xl mx-auto relative z-10">
         {/* Header */}
-        <div className="mb-8">
-          <Link href="/profile" className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 mb-4">
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Quay lại hồ sơ
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Cài đặt hồ sơ</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Quản lý thông tin cá nhân và quyền riêng tư</p>
+        <div className="mb-10 relative">
+          <div className="glass-card inline-flex items-center gap-2 px-4 py-2 rounded-full mb-4 text-sm text-slate-700 dark:text-slate-200">
+            <Link href="/profile" className="flex items-center gap-1 hover:text-purple-600 dark:hover:text-purple-300 transition-colors">
+              <ArrowLeft className="w-4 h-4" />
+              Quay lại hồ sơ
+            </Link>
+          </div>
+          <h1 className="text-4xl font-heading font-bold text-slate-900 dark:text-white mb-2">
+            Cài đặt <span className="gradient-text">hồ sơ</span>
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 max-w-2xl">
+            Quản lý thông tin cá nhân, quyền riêng tư và kết nối thông báo của bạn.
+          </p>
         </div>
 
         {/* Messages */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-300 text-sm flex items-center gap-2">
+          <div className="mb-4 p-4 glass-card rounded-2xl text-red-700 dark:text-red-200 text-sm flex items-center gap-2 border border-red-200/60 dark:border-red-800/60">
             <AlertCircle className="w-4 h-4" />
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-300 text-sm flex items-center gap-2">
+          <div className="mb-4 p-4 glass-card rounded-2xl text-green-700 dark:text-green-200 text-sm flex items-center gap-2 border border-green-200/60 dark:border-green-800/60">
             <CheckCircle className="w-4 h-4" />
             {success}
           </div>
@@ -143,20 +153,20 @@ export default function SettingsPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="personal" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 dark:bg-gray-800">
-            <TabsTrigger value="personal" className="dark:data-[state=active]:bg-gray-700">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 glass-card p-1 gap-2 rounded-2xl">
+            <TabsTrigger value="personal" className="data-[state=active]:bg-white/70 dark:data-[state=active]:bg-slate-800 rounded-xl">
               <UserIcon className="w-4 h-4 mr-2" />
               Cá nhân
             </TabsTrigger>
-            <TabsTrigger value="contact" className="dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="contact" className="data-[state=active]:bg-white/70 dark:data-[state=active]:bg-slate-800 rounded-xl">
               <Phone className="w-4 h-4 mr-2" />
               Liên lạc
             </TabsTrigger>
-            <TabsTrigger value="privacy" className="dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="privacy" className="data-[state=active]:bg-white/70 dark:data-[state=active]:bg-slate-800 rounded-xl">
               <Shield className="w-4 h-4 mr-2" />
               Riêng tư
             </TabsTrigger>
-            <TabsTrigger value="notifications" className="dark:data-[state=active]:bg-gray-700">
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-white/70 dark:data-[state=active]:bg-slate-800 rounded-xl">
               <Bell className="w-4 h-4 mr-2" />
               Thông báo
             </TabsTrigger>
@@ -164,10 +174,10 @@ export default function SettingsPage() {
 
           {/* Personal Info Tab */}
           <TabsContent value="personal">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-3 border border-white/60 dark:border-white/10">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Thông tin cá nhân</CardTitle>
-                <CardDescription className="dark:text-gray-400">
+                <CardDescription className="dark:text-gray-300 text-slate-600">
                   Cập nhật thông tin cơ bản của bạn
                 </CardDescription>
               </CardHeader>
@@ -179,7 +189,7 @@ export default function SettingsPage() {
                       id="full_name"
                       value={formData.full_name || ''}
                       onChange={(e) => handleInputChange('full_name', e.target.value)}
-                      className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                      className="mt-1 glass-card border border-white/50 dark:border-white/10"
                     />
                   </div>
                   <div>
@@ -188,7 +198,7 @@ export default function SettingsPage() {
                       id="nickname"
                       value={formData.nickname || ''}
                       onChange={(e) => handleInputChange('nickname', e.target.value)}
-                      className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                      className="mt-1 glass-card border border-white/50 dark:border-white/10"
                     />
                   </div>
                 </div>
@@ -201,7 +211,7 @@ export default function SettingsPage() {
                       type="date"
                       value={formData.date_of_birth || ''}
                       onChange={(e) => handleInputChange('date_of_birth', e.target.value)}
-                      className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                      className="mt-1 glass-card border border-white/50 dark:border-white/10"
                     />
                   </div>
                   <div>
@@ -217,10 +227,10 @@ export default function SettingsPage() {
                           key={option.value}
                           type="button"
                           onClick={() => handleInputChange('gender', option.value as Gender)}
-                          className={`px-3 py-2 rounded-lg border text-sm transition-all ${
+                          className={`px-3 py-2 rounded-lg border text-sm transition-all glass-card ${
                             formData.gender === option.value
-                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                              : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:text-gray-300'
+                              ? 'border-purple-500/60 bg-purple-50/80 dark:bg-purple-900/30 text-purple-700 dark:text-purple-200'
+                              : 'border-white/40 dark:text-gray-200 hover:border-purple-300/60'
                           }`}
                         >
                           {option.label}
@@ -237,7 +247,7 @@ export default function SettingsPage() {
                       id="occupation"
                       value={formData.occupation || ''}
                       onChange={(e) => handleInputChange('occupation', e.target.value)}
-                      className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                      className="mt-1 glass-card border border-white/50 dark:border-white/10"
                     />
                   </div>
                   <div>
@@ -246,7 +256,7 @@ export default function SettingsPage() {
                       id="education"
                       value={formData.education || ''}
                       onChange={(e) => handleInputChange('education', e.target.value)}
-                      className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                      className="mt-1 glass-card border border-white/50 dark:border-white/10"
                     />
                   </div>
                 </div>
@@ -258,7 +268,7 @@ export default function SettingsPage() {
                     value={formData.location || ''}
                     onChange={(e) => handleInputChange('location', e.target.value)}
                     placeholder="Thành phố, Quốc gia"
-                    className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    className="mt-1 glass-card border border-white/50 dark:border-white/10"
                   />
                 </div>
 
@@ -270,7 +280,7 @@ export default function SettingsPage() {
                     onChange={(e) => handleInputChange('bio', e.target.value)}
                     placeholder="Viết vài dòng về bản thân..."
                     rows={3}
-                    className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    className="mt-1 glass-card border border-white/50 dark:border-white/10"
                   />
                 </div>
               </CardContent>
@@ -280,10 +290,10 @@ export default function SettingsPage() {
           {/* Contact Info Tab */}
           <TabsContent value="contact">
             <div className="space-y-6">
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <Card className="glass-card shape-organic-1 border border-white/60 dark:border-white/10">
                 <CardHeader>
                   <CardTitle className="dark:text-gray-100">Thông tin liên lạc</CardTitle>
-                  <CardDescription className="dark:text-gray-400">
+                  <CardDescription className="dark:text-gray-300 text-slate-600">
                     Số điện thoại và mạng xã hội
                   </CardDescription>
                 </CardHeader>
@@ -296,7 +306,7 @@ export default function SettingsPage() {
                         type="tel"
                         value={formData.phone || ''}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                     <div>
@@ -306,7 +316,7 @@ export default function SettingsPage() {
                         type="tel"
                         value={formData.phone_secondary || ''}
                         onChange={(e) => handleInputChange('phone_secondary', e.target.value)}
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                   </div>
@@ -319,7 +329,7 @@ export default function SettingsPage() {
                         value={formData.zalo || ''}
                         onChange={(e) => handleInputChange('zalo', e.target.value)}
                         placeholder="Số điện thoại Zalo"
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                     <div>
@@ -329,7 +339,7 @@ export default function SettingsPage() {
                         value={formData.facebook || ''}
                         onChange={(e) => handleInputChange('facebook', e.target.value)}
                         placeholder="Link Facebook hoặc username"
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                   </div>
@@ -342,7 +352,7 @@ export default function SettingsPage() {
                         value={formData.instagram || ''}
                         onChange={(e) => handleInputChange('instagram', e.target.value)}
                         placeholder="@username"
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                     <div>
@@ -352,17 +362,17 @@ export default function SettingsPage() {
                         value={formData.linkedin || ''}
                         onChange={(e) => handleInputChange('linkedin', e.target.value)}
                         placeholder="Link LinkedIn"
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <Card className="glass-card shape-organic-2 border border-white/60 dark:border-white/10">
                 <CardHeader>
                   <CardTitle className="dark:text-gray-100">Liên hệ khẩn cấp</CardTitle>
-                  <CardDescription className="dark:text-gray-400">
+                  <CardDescription className="dark:text-gray-300 text-slate-600">
                     Người liên hệ trong trường hợp khẩn cấp
                   </CardDescription>
                 </CardHeader>
@@ -373,7 +383,7 @@ export default function SettingsPage() {
                       id="emergency_contact_name"
                       value={formData.emergency_contact_name || ''}
                       onChange={(e) => handleInputChange('emergency_contact_name', e.target.value)}
-                      className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                      className="mt-1 glass-card border border-white/50 dark:border-white/10"
                     />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -384,7 +394,7 @@ export default function SettingsPage() {
                         type="tel"
                         value={formData.emergency_contact_phone || ''}
                         onChange={(e) => handleInputChange('emergency_contact_phone', e.target.value)}
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                     <div>
@@ -394,7 +404,7 @@ export default function SettingsPage() {
                         value={formData.emergency_contact_relationship || ''}
                         onChange={(e) => handleInputChange('emergency_contact_relationship', e.target.value)}
                         placeholder="Cha/Mẹ, Anh/Chị, Bạn..."
-                        className="mt-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                        className="mt-1 glass-card border border-white/50 dark:border-white/10"
                       />
                     </div>
                   </div>
@@ -405,10 +415,10 @@ export default function SettingsPage() {
 
           {/* Privacy Tab */}
           <TabsContent value="privacy">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-3 border border-white/60 dark:border-white/10">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Cài đặt quyền riêng tư</CardTitle>
-                <CardDescription className="dark:text-gray-400">
+                <CardDescription className="dark:text-gray-300 text-slate-600">
                   Kiểm soát ai có thể xem thông tin của bạn
                 </CardDescription>
               </CardHeader>
@@ -423,10 +433,10 @@ export default function SettingsPage() {
                     ].map((option) => (
                       <label
                         key={option.value}
-                        className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                        className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors glass-card ${
                           formData.profile_visibility === option.value
-                            ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30'
-                            : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                            ? 'border-purple-500/60 bg-purple-50/80 dark:bg-purple-900/30'
+                            : 'border-white/40 dark:hover:border-purple-400/60'
                         }`}
                       >
                         <input
@@ -439,17 +449,17 @@ export default function SettingsPage() {
                         />
                         <div>
                           <p className="font-medium text-gray-900 dark:text-gray-100">{option.label}</p>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{option.desc}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">{option.desc}</p>
                         </div>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-4 pt-4 border-t dark:border-gray-700">
+                <div className="space-y-4 pt-4 border-t dark:border-white/10 border-white/40">
                   <h3 className="font-medium text-gray-900 dark:text-gray-100">Quyền truy cập dữ liệu</h3>
 
-                  <label className="flex items-start gap-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer glass-card hover:border-purple-300/60 dark:hover:border-purple-400/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={formData.consent_data_sharing || false}
@@ -460,13 +470,13 @@ export default function SettingsPage() {
                       <p className="font-medium text-gray-900 dark:text-gray-100">
                         Cho phép phân tích dữ liệu ẩn danh
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Dữ liệu được sử dụng để cải thiện dịch vụ (không nhận dạng cá nhân)
                       </p>
                     </div>
                   </label>
 
-                  <label className="flex items-start gap-3 p-4 border border-gray-200 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                  <label className="flex items-start gap-3 p-4 border rounded-lg cursor-pointer glass-card hover:border-purple-300/60 dark:hover:border-purple-400/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={formData.consent_mentor_access || false}
@@ -477,7 +487,7 @@ export default function SettingsPage() {
                       <p className="font-medium text-gray-900 dark:text-gray-100">
                         Cho phép mentor xem kết quả test
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         Mentor của bạn có thể xem kết quả test để hỗ trợ tư vấn
                       </p>
                     </div>
@@ -489,16 +499,16 @@ export default function SettingsPage() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-4 border border-white/60 dark:border-white/10">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Cài đặt thông báo</CardTitle>
-                <CardDescription className="dark:text-gray-400">
+                <CardDescription className="dark:text-gray-300 text-slate-600">
                   Chọn cách bạn muốn nhận thông báo
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                <div className="p-4 glass-card rounded-xl border border-blue-200/60 dark:border-blue-800/40">
+                  <p className="text-sm text-blue-700 dark:text-blue-200">
                     Tính năng thông báo sẽ sớm được cập nhật!
                   </p>
                 </div>
@@ -512,7 +522,7 @@ export default function SettingsPage() {
           <Button
             onClick={handleSave}
             disabled={saving}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            className="btn-liquid"
           >
             {saving ? (
               <>
