@@ -113,22 +113,24 @@ export default function DASS21ResultsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-screen bg-gradient-to-br from-blue-50 via-teal-50 to-cyan-50 dark:from-gray-900 dark:to-gray-800 py-12"
+      className="min-h-screen py-12"
     >
       <div className="container max-w-5xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
+          <div className="blob-blue absolute -top-20 left-1/2 -translate-x-1/2" />
+
           <div className="inline-block mb-4">
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
+            <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-teal-500 shape-organic-3 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-blue-500/30">
               <Brain className="w-12 h-12 text-white" />
             </div>
           </div>
 
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-heading font-bold mb-4 gradient-text">
             Kết quả DASS-21
           </h1>
 
-          <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <p className="text-2xl font-semibold text-foreground/80 mb-2">
             Depression, Anxiety and Stress Scale
           </p>
 
@@ -137,7 +139,7 @@ export default function DASS21ResultsPage() {
           </p>
 
           {completedAt && (
-            <p className="text-sm text-muted-foreground mt-4">
+            <p className="text-sm font-medium text-muted-foreground mt-6 bg-muted px-4 py-2 rounded-full inline-block">
               Hoàn thành ngày {completedAt}
             </p>
           )}
@@ -191,7 +193,7 @@ export default function DASS21ResultsPage() {
         )}
 
         {/* Overall Assessment */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader>
             <CardTitle>Đánh giá tổng quan</CardTitle>
           </CardHeader>
@@ -215,32 +217,30 @@ export default function DASS21ResultsPage() {
             }
 
             return (
-              <Card key={score.subscale} className={`shadow-lg border-2 ${getSeverityColor(score.severity.level)}`}>
-                <CardHeader>
+              <Card key={score.subscale} className="glass-card shape-organic-2 relative overflow-hidden">
+                <CardHeader className="relative z-10">
                   <CardTitle className="text-xl">{score.subscaleName}</CardTitle>
                   <CardDescription className="text-sm">
                     Điểm: {score.normalizedScore}/42
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="relative z-10">
                   <div className="text-center">
                     <Badge
                       variant="secondary"
-                      className="text-lg px-4 py-2 mb-3"
-                      style={{ backgroundColor: score.severity.color, color: 'white' }}
+                      className={`text-lg px-4 py-2 mb-3 rounded-2xl font-bold ${getSeverityColor(score.severity.level)}`}
                     >
                       {score.severity.label}
                     </Badge>
-                    <div className="relative h-4 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden mt-4">
+                    <div className="relative h-3 bg-muted rounded-full overflow-hidden mt-4">
                       <div
-                        className="absolute left-0 top-0 h-full"
+                        className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
                         style={{
                           width: `${(score.normalizedScore / 42) * 100}%`,
-                          backgroundColor: score.severity.color,
                         }}
                       />
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">
+                    <p className="text-xs font-medium text-muted-foreground mt-3">
                       {score.rawScore} điểm thô × 2 = {score.normalizedScore}
                     </p>
                   </div>
@@ -285,7 +285,7 @@ export default function DASS21ResultsPage() {
         </div>
 
         {/* Info Box */}
-        <Card className="mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200">
+        <Card className="glass-card shape-organic-1 mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
               <strong>Lưu ý:</strong> DASS-21 là công cụ sàng lọc, không phải là công cụ chẩn đoán.

@@ -4,6 +4,7 @@ import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
 import { defaultMetadata } from "@/lib/metadata";
 import OceanBackground from "@/components/gamification/OceanBackground";
+import RippleCursor from "@/components/effects/RippleCursor";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -53,6 +54,9 @@ export default function RootLayout({
       >
         {/* Đại dương của Miso - Background layer */}
         <OceanBackground />
+
+        {/* Con trỏ gợn sóng - Ripple cursor effect */}
+        <RippleCursor />
 
         {/* Nội dung chính - Positioned above ocean */}
         <div className="relative z-0 min-h-screen pb-24">

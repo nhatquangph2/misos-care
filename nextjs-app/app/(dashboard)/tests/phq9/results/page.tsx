@@ -128,18 +128,19 @@ export default function PHQ9ResultsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-screen bg-background py-16"
+      className="min-h-screen py-16"
     >
       <div className="container max-w-5xl mx-auto px-6">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-16 relative">
+          <div className="blob-purple absolute -top-20 left-1/2 -translate-x-1/2" />
           <div className="inline-block mb-6">
-            <div className="w-28 h-28 bg-gradient-to-br from-primary to-secondary rounded-[28px] flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20">
+            <div className="w-28 h-28 bg-gradient-to-br from-blue-500 to-purple-500 shape-organic-3 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-purple-500/30">
               <Brain className="w-14 h-14 text-white" />
             </div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent tracking-tight">
+          <h1 className="text-5xl md:text-6xl font-heading font-bold mb-6 gradient-text tracking-tight">
             Kết quả PHQ-9
           </h1>
 
@@ -207,15 +208,18 @@ export default function PHQ9ResultsPage() {
         )}
 
         {/* Score Card */}
-        <Card className={`mb-10 ${getSeverityColor(result.severity.color)}`}>
-          <CardHeader className="pb-4">
+        <Card className="glass-card shape-organic-2 mb-10 relative overflow-hidden">
+          {/* Blob effect based on severity */}
+          <div className={`blob-${result.severity.color === 'green' ? 'blue' : result.severity.color === 'yellow' ? 'yellow' : result.severity.color === 'orange' ? 'orange' : 'purple'} absolute -top-10 -right-10 opacity-30`} />
+
+          <CardHeader className="pb-4 relative z-10">
             <CardTitle className="text-center text-2xl">Điểm số của bạn</CardTitle>
           </CardHeader>
-          <CardContent className="text-center pt-4">
+          <CardContent className="text-center pt-4 relative z-10">
             <div className="text-7xl font-bold mb-6 bg-gradient-to-br from-foreground to-muted-foreground bg-clip-text text-transparent">{result.totalScore}</div>
             <Badge
               variant="secondary"
-              className="text-2xl px-8 py-4 mb-6 rounded-2xl font-bold"
+              className={`text-2xl px-8 py-4 mb-6 rounded-2xl font-bold ${getSeverityColor(result.severity.color)}`}
             >
               {result.severity.label}
             </Badge>
@@ -224,7 +228,7 @@ export default function PHQ9ResultsPage() {
             </p>
             <div className="relative h-3 bg-muted rounded-full overflow-hidden mt-8 max-w-md mx-auto">
               <div
-                className="absolute left-0 top-0 h-full bg-gradient-to-r from-primary to-secondary rounded-full"
+                className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full"
                 style={{ width: `${(result.totalScore / 27) * 100}%` }}
               />
             </div>
@@ -233,7 +237,7 @@ export default function PHQ9ResultsPage() {
         </Card>
 
         {/* Recommendations */}
-        <Card className="mb-10">
+        <Card className="glass-card shape-organic-1 mb-10">
           <CardHeader>
             <CardTitle className="text-2xl">{recommendations.title}</CardTitle>
           </CardHeader>
@@ -284,7 +288,7 @@ export default function PHQ9ResultsPage() {
         </div>
 
         {/* Info Box */}
-        <Card className="mt-10 bg-muted/30 border-border">
+        <Card className="glass-card shape-organic-1 mt-10 bg-muted/30 border-border">
           <CardContent className="pt-8 pb-6">
             <p className="text-base text-muted-foreground leading-relaxed">
               <strong className="text-foreground">Lưu ý:</strong> PHQ-9 là công cụ sàng lọc, không phải là công cụ chẩn đoán.

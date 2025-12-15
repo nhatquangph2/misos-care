@@ -61,7 +61,7 @@ export function TestSelectionCard({
   return (
     <Card
       ref={cardRef}
-      className={`relative overflow-hidden bg-card border transition-all duration-200 cursor-pointer hover:shadow-lg ${colorScheme.hoverBorder} group`}
+      className={`relative overflow-hidden glass-card shape-organic-1 transition-all duration-200 cursor-pointer group`}
     >
       {/* Recommended Badge */}
       {recommended && (

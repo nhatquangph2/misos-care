@@ -101,15 +101,16 @@ export default function MentorDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Mentor Dashboard
+          <div className="relative">
+            <div className="blob-purple absolute -top-10 -left-10" />
+            <h1 className="text-3xl font-heading font-bold">
+              Mentor <span className="gradient-text">Dashboard</span>
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
+            <p className="text-slate-600 dark:text-slate-400 mt-1">
               Quản lý mentee và theo dõi tiến trình
             </p>
           </div>
@@ -123,7 +124,7 @@ export default function MentorDashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <Card className="glass-card shape-organic-1">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
@@ -139,7 +140,7 @@ export default function MentorDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <Card className="glass-card shape-organic-2">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-yellow-100 dark:bg-yellow-900/50 flex items-center justify-center">
@@ -155,7 +156,7 @@ export default function MentorDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <Card className="glass-card shape-organic-1">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-orange-100 dark:bg-orange-900/50 flex items-center justify-center">
@@ -171,7 +172,7 @@ export default function MentorDashboardPage() {
             </CardContent>
           </Card>
 
-          <Card className="dark:bg-gray-800 dark:border-gray-700">
+          <Card className="glass-card shape-organic-2">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
@@ -200,7 +201,7 @@ export default function MentorDashboardPage() {
 
         {/* Main Content */}
         <Tabs defaultValue="mentees" className="space-y-6">
-          <TabsList className="dark:bg-gray-800">
+          <TabsList className="glass-card">
             <TabsTrigger value="mentees" className="dark:data-[state=active]:bg-gray-700">
               <Users className="w-4 h-4 mr-2" />
               Mentee ({activeMentees.length})
@@ -217,7 +218,7 @@ export default function MentorDashboardPage() {
 
           {/* Mentees Tab */}
           <TabsContent value="mentees">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-3">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Danh sách Mentee</CardTitle>
                 <CardDescription className="dark:text-gray-400">
@@ -279,7 +280,7 @@ export default function MentorDashboardPage() {
 
           {/* Requests Tab */}
           <TabsContent value="requests">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-1">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Yêu cầu Mentoring</CardTitle>
                 <CardDescription className="dark:text-gray-400">
@@ -353,7 +354,7 @@ export default function MentorDashboardPage() {
 
           {/* Follow-ups Tab */}
           <TabsContent value="followups">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-2">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Ghi chú cần Follow-up</CardTitle>
                 <CardDescription className="dark:text-gray-400">

@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from '@/components/features/tests/ScrollableQuestionFlow'
+import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
 import { PHQ9_QUESTIONS, PHQ9_SEVERITY, CRISIS_THRESHOLD } from '@/constants/tests/phq9-questions'
 
 export default function PHQ9TestPage() {
@@ -67,7 +67,7 @@ export default function PHQ9TestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanTestFlow
       questions={PHQ9_QUESTIONS}
       onComplete={handleComplete}
       testTitle="PHQ-9 - Sàng lọc Trầm cảm"

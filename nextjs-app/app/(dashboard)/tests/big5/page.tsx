@@ -8,7 +8,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from '@/components/features/tests/ScrollableQuestionFlow'
+import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
 import { BFI2_QUESTIONS_FLOW } from '@/constants/tests/bfi2-questions'
 import { calculateBFI2Score } from '@/services/bfi2-scoring.service'
 import type { BFI2Response } from '@/constants/tests/bfi2-questions'
@@ -79,7 +79,7 @@ export default function Big5TestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanTestFlow
       questions={BFI2_QUESTIONS_FLOW}
       onComplete={handleComplete}
       testTitle="Big Five Inventory-2 (BFI-2)"

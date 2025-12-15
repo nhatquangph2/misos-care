@@ -92,22 +92,24 @@ export default function MBTIResultsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-12"
+      className="min-h-screen py-12"
     >
       <div className="container max-w-5xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
+          <div className="blob-purple absolute -top-20 left-1/2 -translate-x-1/2" />
+
           <div className="inline-block mb-4">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
+            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 shape-organic-3 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-purple-500/30">
               <Brain className="w-12 h-12 text-white" />
             </div>
           </div>
 
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-heading font-bold mb-4 gradient-text">
             {result.type}
           </h1>
 
-          <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <p className="text-2xl font-semibold text-foreground/80 mb-2">
             {description.name}
           </p>
 
@@ -116,7 +118,7 @@ export default function MBTIResultsPage() {
           </p>
 
           {completedAt && (
-            <p className="text-sm text-muted-foreground mt-4">
+            <p className="text-sm font-medium text-muted-foreground mt-6 bg-muted px-4 py-2 rounded-full inline-block">
               Hoàn thành ngày {completedAt}
             </p>
           )}
@@ -165,7 +167,7 @@ export default function MBTIResultsPage() {
         )}
 
         {/* Dimension Bars */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader>
             <CardTitle>Phân tích chi tiết</CardTitle>
             <CardDescription>Tỷ lệ phần trăm cho mỗi chiều tính cách</CardDescription>
@@ -177,9 +179,9 @@ export default function MBTIResultsPage() {
                 <span className="font-medium">Extraversion (E)</span>
                 <span className="font-medium">Introversion (I)</span>
               </div>
-              <div className="relative h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="relative h-8 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-purple-500 to-purple-600"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
                   style={{ width: `${percentages.EI}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">
@@ -198,9 +200,9 @@ export default function MBTIResultsPage() {
                 <span className="font-medium">Sensing (S)</span>
                 <span className="font-medium">iNtuition (N)</span>
               </div>
-              <div className="relative h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="relative h-8 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-pink-500 to-pink-600"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
                   style={{ width: `${percentages.SN}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">
@@ -219,9 +221,9 @@ export default function MBTIResultsPage() {
                 <span className="font-medium">Thinking (T)</span>
                 <span className="font-medium">Feeling (F)</span>
               </div>
-              <div className="relative h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="relative h-8 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-blue-600"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
                   style={{ width: `${percentages.TF}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">
@@ -240,9 +242,9 @@ export default function MBTIResultsPage() {
                 <span className="font-medium">Judging (J)</span>
                 <span className="font-medium">Perceiving (P)</span>
               </div>
-              <div className="relative h-8 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div className="relative h-8 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-teal-500 to-teal-600"
+                  className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"
                   style={{ width: `${percentages.JP}%` }}
                 />
                 <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm">
@@ -260,7 +262,7 @@ export default function MBTIResultsPage() {
         {/* Strengths & Careers Grid */}
         <div ref={cardsRef} className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Strengths */}
-          <Card className="shadow-lg border-2">
+          <Card className="glass-card shape-organic-1 shadow-lg border-2">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Heart className="w-5 h-5 text-red-500" />
@@ -280,7 +282,7 @@ export default function MBTIResultsPage() {
           </Card>
 
           {/* Career Suggestions */}
-          <Card className="shadow-lg border-2">
+          <Card className="glass-card shape-organic-1 shadow-lg border-2">
             <CardHeader>
               <div className="flex items-center gap-2">
                 <Briefcase className="w-5 h-5 text-blue-500" />
@@ -334,7 +336,7 @@ export default function MBTIResultsPage() {
         </div>
 
         {/* Info Box */}
-        <Card className="mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200">
+        <Card className="glass-card shape-organic-1 mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200">
           <CardContent className="pt-6">
             <p className="text-sm text-muted-foreground">
               <strong>Lưu ý:</strong> Kết quả này chỉ mang tính tham khảo và phản ánh tính cách của bạn tại thời điểm hiện tại.

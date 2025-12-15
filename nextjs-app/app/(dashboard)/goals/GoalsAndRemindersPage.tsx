@@ -68,15 +68,18 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
 
   return (
     <div className="container mx-auto p-6 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Mục tiêu & Nhắc nhở</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className="mb-8 relative">
+        <div className="blob-purple absolute -top-10 -left-10" />
+        <h1 className="text-3xl font-heading font-bold mb-2">
+          Mục tiêu & <span className="gradient-text">Nhắc nhở</span>
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
           Theo dõi tiến độ mục tiêu và quản lý nhắc nhở làm test định kỳ
         </p>
       </div>
 
       <Tabs defaultValue="goals" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 glass-card">
           <TabsTrigger value="goals">
             <Target className="h-4 w-4 mr-2" />
             Mục tiêu
@@ -94,17 +97,17 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
         {/* Goals Tab */}
         <TabsContent value="goals" className="space-y-6">
           {isLoading ? (
-            <Card>
+            <Card className="glass-card shape-organic-1">
               <CardContent className="p-8 text-center">
                 Đang tải...
               </CardContent>
             </Card>
           ) : goals.length === 0 ? (
-            <Card>
+            <Card className="glass-card shape-organic-1">
               <CardContent className="p-8 text-center">
-                <Target className="h-12 w-12 mx-auto mb-3 opacity-50 text-gray-400" />
-                <p className="text-gray-600 dark:text-gray-400 mb-2">Chưa có mục tiêu nào</p>
-                <p className="text-sm text-gray-500 dark:text-gray-500">
+                <Target className="h-12 w-12 mx-auto mb-3 opacity-50 text-purple-400" />
+                <p className="text-slate-600 dark:text-slate-400 mb-2">Chưa có mục tiêu nào</p>
+                <p className="text-sm text-slate-500 dark:text-slate-500">
                   Tạo mục tiêu mới để theo dõi tiến độ của bạn
                 </p>
               </CardContent>
@@ -112,10 +115,10 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
           ) : (
             <>
               {/* Goal Selection */}
-              <Card>
+              <Card className="glass-card shape-organic-2">
                 <CardHeader>
-                  <CardTitle>Chọn mục tiêu</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="font-heading">Chọn mục tiêu</CardTitle>
+                  <CardDescription className="text-slate-600 dark:text-slate-400">
                     Xem tiến độ của các mục tiêu đang hoạt động
                   </CardDescription>
                 </CardHeader>
@@ -144,10 +147,10 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
               {/* Progress Chart */}
               {selectedGoal && (
                 <>
-                  <Card>
+                  <Card className="glass-card shape-organic-1">
                     <CardHeader>
-                      <CardTitle>{selectedGoal.title}</CardTitle>
-                      <CardDescription>{selectedGoal.description}</CardDescription>
+                      <CardTitle className="font-heading">{selectedGoal.title}</CardTitle>
+                      <CardDescription className="text-slate-600 dark:text-slate-400">{selectedGoal.description}</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid gap-4 md:grid-cols-3">
@@ -192,10 +195,10 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
         <TabsContent value="settings" className="space-y-6">
           <NotificationSettings />
 
-          <Card>
+          <Card className="glass-card shape-organic-3">
             <CardHeader>
-              <CardTitle>Hướng dẫn sử dụng</CardTitle>
-              <CardDescription>
+              <CardTitle className="font-heading">Hướng dẫn sử dụng</CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
                 Cách sử dụng tính năng mục tiêu và nhắc nhở
               </CardDescription>
             </CardHeader>

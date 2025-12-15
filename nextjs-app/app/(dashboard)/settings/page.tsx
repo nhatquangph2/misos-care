@@ -115,16 +115,19 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4">
+    <div className="min-h-screen py-8 px-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <Link href="/profile" className="inline-flex items-center text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 mb-4">
+        <div className="mb-8 relative">
+          <Link href="/profile" className="inline-flex items-center text-sm text-slate-600 dark:text-slate-400 hover:text-purple-600 mb-4">
             <ArrowLeft className="w-4 h-4 mr-1" />
             Quay lại hồ sơ
           </Link>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Cài đặt hồ sơ</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">Quản lý thông tin cá nhân và quyền riêng tư</p>
+          <div className="blob-purple absolute -top-10 -left-10" />
+          <h1 className="text-3xl font-heading font-bold">
+            Cài đặt <span className="gradient-text">hồ sơ</span>
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 mt-1">Quản lý thông tin cá nhân và quyền riêng tư</p>
         </div>
 
         {/* Messages */}
@@ -143,7 +146,7 @@ export default function SettingsPage() {
 
         {/* Tabs */}
         <Tabs defaultValue="personal" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 dark:bg-gray-800">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 glass-card">
             <TabsTrigger value="personal" className="dark:data-[state=active]:bg-gray-700">
               <UserIcon className="w-4 h-4 mr-2" />
               Cá nhân
@@ -164,7 +167,7 @@ export default function SettingsPage() {
 
           {/* Personal Info Tab */}
           <TabsContent value="personal">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-1">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Thông tin cá nhân</CardTitle>
                 <CardDescription className="dark:text-gray-400">
@@ -280,7 +283,7 @@ export default function SettingsPage() {
           {/* Contact Info Tab */}
           <TabsContent value="contact">
             <div className="space-y-6">
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <Card className="glass-card shape-organic-2">
                 <CardHeader>
                   <CardTitle className="dark:text-gray-100">Thông tin liên lạc</CardTitle>
                   <CardDescription className="dark:text-gray-400">
@@ -359,7 +362,7 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
 
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <Card className="glass-card shape-organic-1">
                 <CardHeader>
                   <CardTitle className="dark:text-gray-100">Liên hệ khẩn cấp</CardTitle>
                   <CardDescription className="dark:text-gray-400">
@@ -405,7 +408,7 @@ export default function SettingsPage() {
 
           {/* Privacy Tab */}
           <TabsContent value="privacy">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-3">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Cài đặt quyền riêng tư</CardTitle>
                 <CardDescription className="dark:text-gray-400">
@@ -489,7 +492,7 @@ export default function SettingsPage() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <Card className="glass-card shape-organic-4">
               <CardHeader>
                 <CardTitle className="dark:text-gray-100">Cài đặt thông báo</CardTitle>
                 <CardDescription className="dark:text-gray-400">

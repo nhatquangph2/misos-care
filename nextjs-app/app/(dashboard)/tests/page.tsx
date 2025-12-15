@@ -97,34 +97,35 @@ export default function TestsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Hero Section */}
       <div className="container mx-auto px-6 py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-foreground">
-            Khám phá bản thân
+        <div className="text-center mb-12 relative">
+          <div className="blob-purple absolute -top-10 left-1/2 -translate-x-1/2" />
+          <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
+            Khám phá <span className="gradient-text">bản thân</span>
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
             Chọn bài test phù hợp để hiểu rõ hơn về tính cách và sức khỏe tinh thần của bạn
           </p>
         </div>
 
         {/* Stats */}
         <div className="grid md:grid-cols-3 gap-4 mb-12 max-w-4xl mx-auto">
-          <div className="bg-card rounded-2xl p-6 text-center shadow-sm border border-border">
-            <Brain className="w-8 h-8 mx-auto mb-3 text-primary" />
-            <div className="text-3xl font-bold mb-1">7</div>
-            <div className="text-sm font-medium text-muted-foreground">Bài test khả dụng</div>
+          <div className="glass-card shape-organic-1 p-6 text-center group cursor-pointer">
+            <Brain className="w-8 h-8 mx-auto mb-3 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
+            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">7</div>
+            <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Bài test khả dụng</div>
           </div>
-          <div className="bg-card rounded-2xl p-6 text-center shadow-sm border border-border">
-            <Heart className="w-8 h-8 mx-auto mb-3 text-secondary" />
-            <div className="text-3xl font-bold mb-1">0</div>
-            <div className="text-sm font-medium text-muted-foreground">Bài test đã hoàn thành</div>
+          <div className="glass-card shape-organic-2 p-6 text-center group cursor-pointer">
+            <Heart className="w-8 h-8 mx-auto mb-3 text-pink-600 dark:text-pink-400 group-hover:scale-110 transition-transform" />
+            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">0</div>
+            <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Bài test đã hoàn thành</div>
           </div>
-          <div className="bg-card rounded-2xl p-6 text-center shadow-sm border border-border">
-            <Activity className="w-8 h-8 mx-auto mb-3 text-accent" />
-            <div className="text-3xl font-bold mb-1">~31</div>
-            <div className="text-sm font-medium text-muted-foreground">Phút để hoàn thành</div>
+          <div className="glass-card shape-organic-1 p-6 text-center group cursor-pointer">
+            <Activity className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
+            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">~31</div>
+            <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Phút để hoàn thành</div>
           </div>
         </div>
 
@@ -146,24 +147,24 @@ export default function TestsPage() {
         </div>
 
         {/* Info Section */}
-        <div className="mt-16 max-w-4xl mx-auto bg-muted/50 rounded-2xl p-8 border border-border">
-          <h3 className="text-2xl font-bold mb-6 text-foreground">Lưu ý quan trọng</h3>
+        <div className="mt-16 max-w-4xl mx-auto glass-card shape-organic-3 p-8">
+          <h3 className="text-2xl font-heading font-bold mb-6">Lưu ý <span className="gradient-text">quan trọng</span></h3>
           <ul className="space-y-3 text-sm">
-            <li className="flex gap-3 items-start p-4 bg-card rounded-xl">
-              <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-              <span className="leading-relaxed"><strong className="font-semibold text-foreground">Trung thực:</strong> <span className="text-muted-foreground">Trả lời theo cảm nhận thật sự của bạn, không phải theo cách bạn muốn trở thành</span></span>
+            <li className="flex gap-3 items-start p-4 bg-white/40 dark:bg-slate-800/40 rounded-xl backdrop-blur-sm">
+              <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <span className="leading-relaxed"><strong className="font-semibold text-slate-800 dark:text-slate-100">Trung thực:</strong> <span className="text-slate-600 dark:text-slate-400">Trả lời theo cảm nhận thật sự của bạn, không phải theo cách bạn muốn trở thành</span></span>
             </li>
-            <li className="flex gap-3 items-start p-4 bg-card rounded-xl">
-              <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-              <span className="leading-relaxed"><strong className="font-semibold text-foreground">Không có đúng/sai:</strong> <span className="text-muted-foreground">Mỗi câu trả lời đều phản ánh một khía cạnh của bạn</span></span>
+            <li className="flex gap-3 items-start p-4 bg-white/40 dark:bg-slate-800/40 rounded-xl backdrop-blur-sm">
+              <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <span className="leading-relaxed"><strong className="font-semibold text-slate-800 dark:text-slate-100">Không có đúng/sai:</strong> <span className="text-slate-600 dark:text-slate-400">Mỗi câu trả lời đều phản ánh một khía cạnh của bạn</span></span>
             </li>
-            <li className="flex gap-3 items-start p-4 bg-card rounded-xl">
-              <Check className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
-              <span className="leading-relaxed"><strong className="font-semibold text-foreground">Bảo mật:</strong> <span className="text-muted-foreground">Tất cả kết quả được mã hóa và chỉ bạn mới xem được</span></span>
+            <li className="flex gap-3 items-start p-4 bg-white/40 dark:bg-slate-800/40 rounded-xl backdrop-blur-sm">
+              <Check className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+              <span className="leading-relaxed"><strong className="font-semibold text-slate-800 dark:text-slate-100">Bảo mật:</strong> <span className="text-slate-600 dark:text-slate-400">Tất cả kết quả được mã hóa và chỉ bạn mới xem được</span></span>
             </li>
-            <li className="flex gap-3 items-start p-4 bg-card rounded-xl">
-              <AlertTriangle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
-              <span className="leading-relaxed"><strong className="font-semibold text-foreground">Không thay thế chẩn đoán y khoa:</strong> <span className="text-muted-foreground">Kết quả chỉ mang tính tham khảo. Nếu có vấn đề nghiêm trọng, hãy gặp chuyên gia</span></span>
+            <li className="flex gap-3 items-start p-4 bg-white/40 dark:bg-slate-800/40 rounded-xl backdrop-blur-sm">
+              <AlertTriangle className="w-5 h-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+              <span className="leading-relaxed"><strong className="font-semibold text-slate-800 dark:text-slate-100">Không thay thế chẩn đoán y khoa:</strong> <span className="text-slate-600 dark:text-slate-400">Kết quả chỉ mang tính tham khảo. Nếu có vấn đề nghiêm trọng, hãy gặp chuyên gia</span></span>
             </li>
           </ul>
         </div>

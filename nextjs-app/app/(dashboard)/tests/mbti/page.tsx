@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from '@/components/features/tests/ScrollableQuestionFlow'
+import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
 import { MBTI_QUESTIONS } from '@/constants/tests/mbti-questions'
 import { calculateMBTI } from '@/services/test.service'
 import type { MBTIAnswer } from '@/services/test.service'
@@ -56,7 +56,7 @@ export default function MBTITestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanTestFlow
       questions={MBTI_QUESTIONS}
       onComplete={handleComplete}
       testTitle="MBTI - 16 Personalities"

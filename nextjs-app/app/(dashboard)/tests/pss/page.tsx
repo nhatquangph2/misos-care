@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from "@/components/features/tests/ScrollableQuestionFlow"
+import { OceanTestFlow } from "@/components/features/tests/OceanTestFlow"
 import { PSS_QUESTIONS, calculatePSSScore, getPSSSeverity } from '@/constants/tests/pss-questions'
 
 export default function PSSTestPage() {
@@ -60,7 +60,7 @@ export default function PSSTestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanTestFlow
       questions={PSS_QUESTIONS}
       onComplete={handleComplete}
       testTitle="PSS-10 - Thang đo Căng thẳng"

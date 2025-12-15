@@ -82,22 +82,24 @@ export default function SISRI24ResultsPage() {
   return (
     <div
       ref={pageRef}
-      className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-amber-50 dark:from-gray-900 dark:to-gray-800 py-12"
+      className="min-h-screen py-12"
     >
       <div className="container max-w-5xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
+          <div className="blob-purple absolute -top-20 left-1/2 -translate-x-1/2" />
+
           <div className="inline-block mb-4">
-            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-2xl">
+            <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-500 shape-organic-3 flex items-center justify-center mx-auto mb-4 shadow-2xl shadow-purple-500/30">
               <Sparkles className="w-12 h-12 text-white" />
             </div>
           </div>
 
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-heading font-bold mb-4 gradient-text">
             Trí tuệ Tâm linh của bạn
           </h1>
 
-          <p className="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <p className="text-2xl font-semibold text-foreground/80 mb-2">
             Điểm tổng: {result.totalScore}/96 ({result.totalPercentage}%)
           </p>
 
@@ -110,14 +112,14 @@ export default function SISRI24ResultsPage() {
           </p>
 
           {completedAt && (
-            <p className="text-sm text-muted-foreground mt-2">
+            <p className="text-sm font-medium text-muted-foreground mt-6 bg-muted px-4 py-2 rounded-full inline-block">
               Hoàn thành vào {completedAt}
             </p>
           )}
         </div>
 
         {/* Overall Progress */}
-        <Card className="mb-8 border-2">
+        <Card className="glass-card shape-organic-1 mb-8 border-2">
           <CardHeader>
             <CardTitle>Tổng quan Trí tuệ Tâm linh</CardTitle>
             <CardDescription>Điểm tổng thể của bạn</CardDescription>
@@ -143,7 +145,7 @@ export default function SISRI24ResultsPage() {
             const level = result.dimensionLevels[dim]
 
             return (
-              <Card key={dimension} className="border-2 hover:shadow-lg transition-shadow">
+              <Card key={dimension} className="glass-card shape-organic-2 hover:shadow-lg transition-shadow">
                 <CardHeader>
                   <div className="flex items-center gap-3 mb-2">
                     <div className={`w-12 h-12 bg-gradient-to-br ${getDimensionColor(dim)} rounded-lg flex items-center justify-center text-white`}>
@@ -194,7 +196,7 @@ export default function SISRI24ResultsPage() {
         </div>
 
         {/* Detailed Interpretations */}
-        <Card className="mb-8">
+        <Card className="glass-card shape-organic-1 mb-8">
           <CardHeader>
             <CardTitle>Chi tiết 4 Chiều kích Trí tuệ Tâm linh</CardTitle>
             <CardDescription>Hiểu rõ hơn về từng khía cạnh</CardDescription>
@@ -258,7 +260,7 @@ export default function SISRI24ResultsPage() {
         </Card>
 
         {/* Recommendations */}
-        <Card className="mb-8 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2">
+        <Card className="glass-card shape-organic-1 mb-8 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2">
           <CardHeader>
             <CardTitle>Khuyến nghị Phát triển</CardTitle>
             <CardDescription>Cách nâng cao Trí tuệ Tâm linh</CardDescription>
@@ -330,7 +332,7 @@ export default function SISRI24ResultsPage() {
         </div>
 
         {/* Note */}
-        <Card className="mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <Card className="glass-card shape-organic-1 mt-8 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
           <CardContent className="pt-6">
             <p className="text-sm text-center text-muted-foreground">
               <strong>Lưu ý:</strong> Kết quả SISRI-24 giúp bạn hiểu rõ hơn về trí tuệ tâm linh của mình.

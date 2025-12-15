@@ -200,17 +200,19 @@ export default function BFI2ResultsPage() {
   const relationshipInsights = getRelationshipInsights(score)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 py-12">
+    <div className="min-h-screen py-12">
       <div className="container max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-12 relative">
+          <div className="blob-purple absolute -top-20 left-1/2 -translate-x-1/2" />
+
           <div className="inline-block mb-6">
-            <div className="w-28 h-28 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto shadow-2xl animate-pulse">
+            <div className="w-28 h-28 bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shape-organic-3 flex items-center justify-center mx-auto shadow-2xl shadow-purple-500/30">
               <Brain className="w-14 h-14 text-white" />
             </div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-6xl font-heading font-bold mb-4 gradient-text">
             Phân Tích Nhân Cách BFI-2
           </h1>
 
@@ -294,7 +296,7 @@ export default function BFI2ResultsPage() {
         )}
 
         {/* HƯỚNG DẪN ĐỌC KẾT QUẢ */}
-        <Card className="mb-8 shadow-xl border-2 border-primary/20">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2 border-primary/20">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-xl flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-yellow-500" />
@@ -358,7 +360,7 @@ export default function BFI2ResultsPage() {
         </Card>
 
         {/* 5 DOMAINS OVERVIEW */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-2xl flex items-center gap-2">
               <TrendingUp className="w-6 h-6" />
@@ -432,7 +434,7 @@ export default function BFI2ResultsPage() {
         </Card>
 
         {/* 15 FACETS BREAKDOWN */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-2xl flex items-center gap-2">
               <Target className="w-6 h-6" />
@@ -478,7 +480,7 @@ export default function BFI2ResultsPage() {
         </Card>
 
         {/* CAREER COUNSELING */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-2xl flex items-center gap-2">
               <Briefcase className="w-6 h-6" />
@@ -544,7 +546,7 @@ export default function BFI2ResultsPage() {
         </Card>
 
         {/* MENTAL HEALTH INSIGHTS */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader className="bg-gradient-to-r from-rose-50 to-pink-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-2xl flex items-center gap-2">
               <Heart className="w-6 h-6" />
@@ -589,7 +591,7 @@ export default function BFI2ResultsPage() {
         </Card>
 
         {/* LEARNING STYLE */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader className="bg-gradient-to-r from-amber-50 to-yellow-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-2xl flex items-center gap-2">
               <BookOpen className="w-6 h-6" />
@@ -741,7 +743,7 @@ export default function BFI2ResultsPage() {
         </Card>
 
         {/* RELATIONSHIP INSIGHTS */}
-        <Card className="mb-8 shadow-xl border-2">
+        <Card className="glass-card shape-organic-1 mb-8 shadow-xl border-2">
           <CardHeader className="bg-gradient-to-r from-violet-50 to-purple-50 dark:from-gray-800 dark:to-gray-700">
             <CardTitle className="text-2xl flex items-center gap-2">
               <Users className="w-6 h-6" />
@@ -856,7 +858,7 @@ export default function BFI2ResultsPage() {
         </div>
 
         {/* Disclaimer */}
-        <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200">
+        <Card className="glass-card shape-organic-1 bg-blue-50 dark:bg-blue-900/20 border-blue-200">
           <CardContent className="pt-6">
             <div className="space-y-3 text-sm text-muted-foreground">
               <p>
