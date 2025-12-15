@@ -77,56 +77,73 @@ export default function ProfileClientView({ profileData, timeline, userId }: Pro
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Header */}
-      <div className="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            Hồ Sơ Của Tôi
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Quản lý tính cách, theo dõi sức khỏe tinh thần và nhận đề xuất cá nhân hóa
-          </p>
+      {/* Header with Blob Effect */}
+      <div className="mb-10 relative">
+        {/* Glowing blob behind title */}
+        <div className="absolute -top-10 -left-10 w-64 h-64 bg-purple-500/20 rounded-full blur-[80px] -z-10" />
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-heading font-bold mb-2">
+              Hồ Sơ Của <span className="gradient-text">Tôi</span>
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 font-medium">
+              Quản lý tính cách, theo dõi sức khỏe tinh thần và nhận đề xuất cá nhân hóa
+            </p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="glass-card px-6 py-3 rounded-2xl font-medium hover:scale-105 transition-transform self-start sm:self-auto"
+          >
+            Đăng Xuất
+          </button>
         </div>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition self-start sm:self-auto"
-        >
-          Đăng Xuất
-        </button>
       </div>
 
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
-        <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
-          <div className="text-2xl sm:text-3xl mb-2">🧠</div>
-          <div className="text-xl sm:text-2xl font-bold mb-1">
+      {/* Stats Overview - Organic Shapes */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+        {/* Card 1 - Organic shape 1 */}
+        <div className="glass-card shape-organic-1 p-6 text-center group cursor-pointer">
+          <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">🧠</div>
+          <div className="text-3xl font-heading font-bold text-purple-700 dark:text-purple-300 mb-1">
             {profileData?.personality?.mbti_type || '---'}
           </div>
-          <div className="text-xs sm:text-sm opacity-90">Loại MBTI</div>
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            MBTI Type
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
-          <div className="text-2xl sm:text-3xl mb-2">📊</div>
-          <div className="text-xl sm:text-2xl font-bold mb-1">
+        {/* Card 2 - Organic shape 2 */}
+        <div className="glass-card shape-organic-2 p-6 text-center group cursor-pointer">
+          <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">📊</div>
+          <div className="text-3xl font-heading font-bold text-blue-700 dark:text-blue-300 mb-1">
             {profileData?.mentalHealthRecords?.length || 0}
           </div>
-          <div className="text-xs sm:text-sm opacity-90">Bài Test</div>
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            Bài Test
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
-          <div className="text-2xl sm:text-3xl mb-2">📈</div>
-          <div className="text-xl sm:text-2xl font-bold mb-1">
+        {/* Card 3 - Organic shape 1 */}
+        <div className="glass-card shape-organic-1 p-6 text-center group cursor-pointer">
+          <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">📈</div>
+          <div className="text-3xl font-heading font-bold text-pink-700 dark:text-pink-300 mb-1">
             {profileData?.trends?.length || 0}
           </div>
-          <div className="text-xs sm:text-sm opacity-90">Ngày Theo Dõi</div>
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            Theo Dõi
+          </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white p-4 sm:p-6 rounded-2xl shadow-lg">
-          <div className="text-2xl sm:text-3xl mb-2">💡</div>
-          <div className="text-xl sm:text-2xl font-bold mb-1">
+        {/* Card 4 - Organic shape 2 */}
+        <div className="glass-card shape-organic-2 p-6 text-center group cursor-pointer">
+          <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">💡</div>
+          <div className="text-3xl font-heading font-bold text-orange-700 dark:text-orange-300 mb-1">
             {profileData?.recommendations?.length || 0}
           </div>
-          <div className="text-xs sm:text-sm opacity-90">Đề Xuất</div>
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wider">
+            Đề Xuất
+          </div>
         </div>
       </div>
 

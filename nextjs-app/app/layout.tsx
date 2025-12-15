@@ -1,5 +1,5 @@
 import type { Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Quicksand } from "next/font/google";
 import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
 import { defaultMetadata } from "@/lib/metadata";
@@ -10,7 +10,15 @@ const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
-  preload: true, // Preload font for better performance
+  preload: true,
+});
+
+const quicksand = Quicksand({
+  variable: "--font-quicksand",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["300", "400", "500", "600", "700"],
+  preload: true,
 });
 
 export const viewport: Viewport = {
@@ -41,13 +49,13 @@ export default function RootLayout({
   return (
     <html lang="vi">
       <body
-        className={`${inter.variable} antialiased font-sans`}
+        className={`${inter.variable} ${quicksand.variable} antialiased font-sans text-slate-800 dark:text-slate-100`}
       >
         {/* Đại dương của Miso - Background layer */}
         <OceanBackground />
 
         {/* Nội dung chính - Positioned above ocean */}
-        <div className="relative z-0 min-h-screen">
+        <div className="relative z-0 min-h-screen pb-24">
           {children}
         </div>
 
