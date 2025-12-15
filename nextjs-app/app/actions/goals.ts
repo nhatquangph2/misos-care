@@ -8,7 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-export async function createGoal(formData: FormData) {
+export async function createGoal(formData: FormData): Promise<void> {
   const supabase = await createClient();
 
   const {
@@ -17,7 +17,7 @@ export async function createGoal(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return { error: 'Unauthorized' };
+    throw new Error('Unauthorized');
   }
 
   const title = formData.get('title') as string;
@@ -25,10 +25,11 @@ export async function createGoal(formData: FormData) {
   const targetDate = formData.get('target_date') as string;
 
   if (!title) {
-    return { error: 'Title is required' };
+    throw new Error('Title is required');
   }
 
-  const { data, error } = await supabase
+  // Type assertion for goals table (table exists but not in generated types yet)
+  const { error } = await (supabase as any)
     .from('goals')
     .insert({
       user_id: user.id,
@@ -36,22 +37,18 @@ export async function createGoal(formData: FormData) {
       description,
       target_date: targetDate || null,
       status: 'active',
-    })
-    .select()
-    .single();
+    });
 
   if (error) {
     console.error('Create goal error:', error);
-    return { error: 'Failed to create goal' };
+    throw new Error('Failed to create goal');
   }
 
   // Revalidate the profile page to show new goal
   revalidatePath('/profile');
-
-  return { success: true, data };
 }
 
-export async function updateGoalStatus(goalId: string, status: 'active' | 'completed' | 'archived') {
+export async function updateGoalStatus(goalId: string, status: 'active' | 'completed' | 'archived'): Promise<void> {
   const supabase = await createClient();
 
   const {
@@ -60,31 +57,27 @@ export async function updateGoalStatus(goalId: string, status: 'active' | 'compl
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return { error: 'Unauthorized' };
+    throw new Error('Unauthorized');
   }
 
-  const { data, error } = await supabase
+  const { error } = await (supabase as any)
     .from('goals')
     .update({
       status,
       completed_at: status === 'completed' ? new Date().toISOString() : null,
     })
     .eq('id', goalId)
-    .eq('user_id', user.id)
-    .select()
-    .single();
+    .eq('user_id', user.id);
 
   if (error) {
     console.error('Update goal status error:', error);
-    return { error: 'Failed to update goal status' };
+    throw new Error('Failed to update goal status');
   }
 
   revalidatePath('/profile');
-
-  return { success: true, data };
 }
 
-export async function deleteGoal(goalId: string) {
+export async function deleteGoal(goalId: string): Promise<void> {
   const supabase = await createClient();
 
   const {
@@ -93,10 +86,10 @@ export async function deleteGoal(goalId: string) {
   } = await supabase.auth.getUser();
 
   if (authError || !user) {
-    return { error: 'Unauthorized' };
+    throw new Error('Unauthorized');
   }
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('goals')
     .delete()
     .eq('id', goalId)
@@ -104,10 +97,8 @@ export async function deleteGoal(goalId: string) {
 
   if (error) {
     console.error('Delete goal error:', error);
-    return { error: 'Failed to delete goal' };
+    throw new Error('Failed to delete goal');
   }
 
   revalidatePath('/profile');
-
-  return { success: true };
 }
