@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from '@/components/features/tests/ScrollableQuestionFlow'
+import { OceanQuestionFlow } from '@/components/features/tests/OceanQuestionFlow'
 import { SISRI_24_QUESTIONS } from '@/constants/tests/sisri-24-questions'
 import { calculateSISRI24 } from '@/services/test.service'
 
@@ -48,7 +48,7 @@ export default function SISRI24TestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanQuestionFlow
       questions={SISRI_24_QUESTIONS}
       testTitle="SISRI-24 - Trí tuệ Tâm linh"
       onComplete={handleComplete}

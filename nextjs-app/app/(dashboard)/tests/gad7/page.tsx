@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from "@/components/features/tests/ScrollableQuestionFlow"
+import { OceanQuestionFlow } from "@/components/features/tests/OceanQuestionFlow"
 import { GAD7_QUESTIONS, getGAD7Severity } from '@/constants/tests/gad7-questions'
 
 export default function GAD7TestPage() {
@@ -60,7 +60,7 @@ export default function GAD7TestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanQuestionFlow
       questions={GAD7_QUESTIONS}
       onComplete={handleComplete}
       testTitle="GAD-7 - Sàng lọc Lo âu"

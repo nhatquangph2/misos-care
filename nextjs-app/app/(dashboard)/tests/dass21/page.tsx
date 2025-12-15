@@ -7,7 +7,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ScrollableQuestionFlow } from "@/components/features/tests/ScrollableQuestionFlow"
+import { OceanQuestionFlow } from "@/components/features/tests/OceanQuestionFlow"
 import { DASS21_QUESTIONS_FLOW, DASS21_QUESTIONS, calculateDASS21 } from '@/constants/tests/dass21-questions'
 import type { DASS21QuestionResponse } from '@/constants/tests/dass21-questions'
 
@@ -59,7 +59,7 @@ export default function DASS21TestPage() {
   }
 
   return (
-    <ScrollableQuestionFlow
+    <OceanQuestionFlow
       questions={DASS21_QUESTIONS_FLOW}
       onComplete={handleComplete}
       testTitle="DASS-21 - Trầm cảm, Lo âu, Stress"
