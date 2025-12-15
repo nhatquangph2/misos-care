@@ -13,7 +13,7 @@ interface MentalHealthChartProps {
 export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
   if (!trends || trends.length === 0) {
     return (
-      <Card className="p-8 text-center">
+      <Card className="glass-panel p-8 text-center">
         <div className="text-gray-400 dark:text-gray-500 mb-4 text-5xl">📊</div>
         <h3 className="text-xl font-semibold mb-2">Chưa Có Dữ Liệu Theo Dõi</h3>
         <p className="text-gray-600 dark:text-gray-400">
@@ -64,7 +64,7 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
     <div className="space-y-6">
       {/* Current Status Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
+        <Card className="glass-panel p-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Trầm Cảm</h4>
             <span className="text-2xl">😔</span>
@@ -77,7 +77,7 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card className="glass-panel p-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Lo Âu</h4>
             <span className="text-2xl">😰</span>
@@ -90,7 +90,7 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
           </div>
         </Card>
 
-        <Card className="p-4">
+        <Card className="glass-panel p-4">
           <div className="flex items-center justify-between mb-2">
             <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400">Stress</h4>
             <span className="text-2xl">😓</span>
@@ -105,7 +105,7 @@ export default function MentalHealthChart({ trends }: MentalHealthChartProps) {
       </div>
 
       {/* Trend Chart */}
-      <Card className="p-6">
+      <Card className="glass-panel p-6">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <span>📈</span>
           Biểu Đồ Theo Dõi Sức Khỏe Tinh Thần

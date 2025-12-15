@@ -130,11 +130,36 @@ export async function POST(request: NextRequest) {
       savedRecord = data
     }
 
+    // === GAMIFICATION: Thưởng Bubbles cho việc hoàn thành test ===
+    let bubblesAwarded = 0
+    try {
+      // Cộng 50 bubbles cho mỗi bài test hoàn thành
+      const { error: gamificationError } = await (supabase.rpc as any)('increment_bubbles', {
+        user_id_param: user.id,
+        amount_param: 50
+      })
+
+      if (!gamificationError) {
+        bubblesAwarded = 50
+        // Update streak days
+        await (supabase.rpc as any)('update_streak_days', {
+          user_id_param: user.id
+        })
+      } else {
+        console.error('Error awarding bubbles:', gamificationError)
+      }
+    } catch (gamificationError) {
+      console.error('Gamification error:', gamificationError)
+      // Don't fail the request if gamification fails
+    }
+    // === End Gamification ===
+
     return NextResponse.json({
       success: true,
       message: 'Kết quả đã được lưu thành công',
       data: savedRecord,
       crisisAlertTriggered,
+      bubblesAwarded, // Thông báo cho client biết được thưởng bao nhiêu bubbles
     })
   } catch (error) {
     console.error('API Error:', error)

@@ -340,3 +340,47 @@ body {
 .animate-scaleIn {
   animation: scaleIn 0.2s ease-out;
 }
+
+/* ============================================
+   GAMIFICATION - OCEAN GLASS EFFECTS
+   ============================================ */
+
+@layer utilities {
+  /* Hiệu ứng kính mờ cho các Card - Ocean theme */
+  .glass-panel {
+    @apply bg-white/70 dark:bg-slate-900/50 backdrop-blur-md border border-white/20 shadow-xl;
+  }
+
+  /* Hiệu ứng kính đậm hơn cho header/sidebar */
+  .glass-panel-strong {
+    @apply bg-white/80 dark:bg-slate-900/60 backdrop-blur-lg border border-white/30 shadow-2xl;
+  }
+
+  /* Hiệu ứng kính nhẹ cho hover states */
+  .glass-panel-light {
+    @apply bg-white/50 dark:bg-slate-900/40 backdrop-blur-sm border border-white/10 shadow-lg;
+  }
+
+  /* Chữ cần đậm hơn một chút trên nền kính */
+  .glass-text {
+    @apply text-slate-800 dark:text-slate-100 font-medium;
+  }
+
+  /* Hiệu ứng shimmer cho bubbles reward */
+  .bubble-shimmer {
+    @apply relative overflow-hidden;
+  }
+
+  .bubble-shimmer::after {
+    content: '';
+    @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

@@ -30,9 +30,9 @@ const SEVERITY_CONFIG: Record<string, { label: string; color: string; bgColor: s
 export default function TestHistory({ records }: TestHistoryProps) {
   if (!records || records.length === 0) {
     return (
-      <Card className="p-8 text-center">
+      <Card className="glass-panel p-8 text-center">
         <div className="text-gray-400 dark:text-gray-500 mb-4 text-5xl">📋</div>
-        <h3 className="text-xl font-semibold mb-2">Chưa Có Lịch Sử Test</h3>
+        <h3 className="text-xl font-semibold mb-2 glass-text">Chưa Có Lịch Sử Test</h3>
         <p className="text-gray-600 dark:text-gray-400">
           Các bài test bạn làm sẽ được lưu lại ở đây
         </p>
@@ -41,8 +41,8 @@ export default function TestHistory({ records }: TestHistoryProps) {
   }
 
   return (
-    <Card className="p-6">
-      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+    <Card className="glass-panel p-6">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 glass-text">
         <span>📋</span>
         Lịch Sử Bài Test
       </h3>

@@ -37,7 +37,7 @@ const BIG5_TRAITS = {
 export default function PersonalityOverview({ profile }: PersonalityOverviewProps) {
   if (!profile) {
     return (
-      <Card className="p-8 text-center">
+      <Card className="glass-panel p-8 text-center">
         <div className="text-gray-400 dark:text-gray-500 mb-4 text-5xl">🧠</div>
         <h3 className="text-xl font-semibold mb-2">Chưa Có Dữ Liệu Tính Cách</h3>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -57,7 +57,7 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
     <div className="space-y-6">
       {/* MBTI Section */}
       {mbtiType && mbtiInfo && (
-        <Card className="p-6">
+        <Card className="glass-panel p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>🧠</span>
             Loại Tính Cách MBTI
@@ -102,7 +102,7 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
 
       {/* Big Five Section */}
       {profile.big5_openness !== null && (
-        <Card className="p-6">
+        <Card className="glass-panel p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>✨</span>
             Năm Chiều Tính Cách (Big Five)

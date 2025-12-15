@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
 import { defaultMetadata } from "@/lib/metadata";
+import OceanBackground from "@/components/gamification/OceanBackground";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -42,7 +43,14 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased font-sans`}
       >
-        {children}
+        {/* Đại dương của Miso - Background layer */}
+        <OceanBackground />
+
+        {/* Nội dung chính - Positioned above ocean */}
+        <div className="relative z-0 min-h-screen">
+          {children}
+        </div>
+
         <MascotProvider />
       </body>
     </html>

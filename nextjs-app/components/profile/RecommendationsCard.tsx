@@ -17,7 +17,7 @@ const PRIORITY_CONFIG: Record<string, { color: string; bgColor: string }> = {
 export default function RecommendationsCard({ recommendations }: RecommendationsCardProps) {
   if (!recommendations || recommendations.length === 0) {
     return (
-      <Card className="p-8 text-center">
+      <Card className="glass-panel p-8 text-center">
         <div className="text-gray-400 dark:text-gray-500 mb-4 text-5xl">💡</div>
         <h3 className="text-xl font-semibold mb-2">Chưa Có Đề Xuất</h3>
         <p className="text-gray-600 dark:text-gray-400">
@@ -34,7 +34,7 @@ export default function RecommendationsCard({ recommendations }: Recommendations
   });
 
   return (
-    <Card className="p-6">
+    <Card className="glass-panel p-6">
       <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
         <span>💡</span>
         Đề Xuất Cho Bạn

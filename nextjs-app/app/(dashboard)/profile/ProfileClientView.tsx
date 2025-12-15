@@ -189,8 +189,8 @@ export default function ProfileClientView({ profileData, timeline, userId }: Pro
           </div>
 
           {/* Timeline */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
-            <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
+          <div className="glass-panel rounded-2xl p-6">
+            <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 glass-text">
               <Clock className="h-6 w-6 text-purple-500" />
               Lịch Sử Đầy Đủ
             </h3>
