@@ -57,7 +57,9 @@ export default async function AIConsultantPage() {
       <AIConsultantChat
         big5Score={profile.big5}
         mbtiType={profile.mbti?.type}
-        viaStrengths={profile.via?.topStrengths}
+        viaStrengths={profile.via?.strengths
+          ?.filter(s => s.category === 'signature')
+          .map(s => s.name)}
       />
 
       {/* Info Section */}

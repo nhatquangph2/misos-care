@@ -588,8 +588,12 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
 
   if (viaData?.ranked_strengths) {
     profile.via = {
-      topStrengths: viaData.ranked_strengths.slice(0, 5),
-      allStrengths: viaData.ranked_strengths,
+      strengths: viaData.ranked_strengths.map((name: string, index: number) => ({
+        rank: index + 1,
+        name,
+        score: 0, // Score not stored in current schema
+        category: index < 5 ? 'signature' : index < 19 ? 'middle' : 'lower',
+      })),
     }
   }
 
