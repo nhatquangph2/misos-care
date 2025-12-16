@@ -53,7 +53,7 @@ export default function RootLayout({
         className={`${inter.variable} ${quicksand.variable} antialiased font-sans text-slate-800 dark:text-slate-100`}
       >
         {/* Đại dương của Miso - Background layer */}
-        <OceanBackground />
+        <OceanBackground oceanLevel={0} />
 
         {/* Con trỏ gợn sóng - Ripple cursor effect */}
         <RippleCursor />

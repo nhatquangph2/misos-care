@@ -61,34 +61,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Ocean Background Effects */}
-      <div className="blob-blue absolute top-20 left-20 opacity-40" />
-      <div className="blob-purple absolute top-1/3 right-10 opacity-30" />
-      <div className="blob-pink absolute bottom-40 left-1/4 opacity-25" />
-
-      {/* Floating bubbles decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(8)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-16 h-16 rounded-full bg-white/5 border border-white/10 backdrop-blur-sm"
-            initial={{
-              x: Math.random() * window.innerWidth,
-              y: window.innerHeight + 100,
-            }}
-            animate={{
-              y: -100,
-              x: Math.random() * window.innerWidth,
-            }}
-            transition={{
-              duration: 10 + Math.random() * 10,
-              repeat: Infinity,
-              delay: Math.random() * 5,
-            }}
-          />
-        ))}
-      </div>
-
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 md:py-24 relative z-10">
         <motion.div

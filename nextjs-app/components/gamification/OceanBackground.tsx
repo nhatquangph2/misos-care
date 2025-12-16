@@ -20,6 +20,9 @@ export default function OceanBackground({ oceanLevel = 1 }: OceanBackgroundProps
   // Màu sắc gradient dựa theo ocean level
   const getOceanGradient = (level: number) => {
     switch (level) {
+      case 0:
+        // Landing page - Ánh sáng mặt trời trên mặt nước, gradient từ cyan -> blue -> purple
+        return 'from-[#06b6d4] via-[#3b82f6] to-[#8b5cf6]';
       case 1:
         // Bờ biển ánh sáng - Sáng và trong xanh
         return 'from-[#2563EB] via-[#1E40AF] to-[#1E3A8A]';
@@ -42,11 +45,13 @@ export default function OceanBackground({ oceanLevel = 1 }: OceanBackgroundProps
 
   // Số lượng bong bóng tăng theo level
   const getBubbleCount = (level: number) => {
+    if (level === 0) return 15; // Landing page có nhiều bong bóng
     return Math.max(10, 20 - level * 2); // Level càng sâu càng ít bong bóng
   };
 
   // Độ sáng của god rays giảm theo level
   const getGodRayOpacity = (level: number) => {
+    if (level === 0) return 0.4; // Landing page sáng nhất
     return Math.max(0.05, 0.25 - level * 0.04);
   };
 
@@ -105,6 +110,12 @@ export default function OceanBackground({ oceanLevel = 1 }: OceanBackgroundProps
         >
           <div className="absolute -top-20 left-1/4 w-40 h-[120vh] bg-white -rotate-12 blur-[100px]" />
           <div className="absolute -top-20 right-1/4 w-60 h-[120vh] bg-teal-200 rotate-12 blur-[100px]" />
+          {oceanLevel === 0 && (
+            <>
+              <div className="absolute -top-20 left-1/2 w-80 h-[120vh] bg-cyan-200 rotate-6 blur-[120px]" />
+              <div className="absolute top-0 right-1/3 w-60 h-[100vh] bg-purple-200 -rotate-6 blur-[100px]" />
+            </>
+          )}
         </div>
       )}
 
