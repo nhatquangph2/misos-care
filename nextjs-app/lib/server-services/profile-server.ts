@@ -118,6 +118,7 @@ function generateRecommendations(
     r => r.severity_level === 'severe' || r.severity_level === 'extremely-severe' || r.severity_level === 'critical'
   );
 
+  // High priority: Seek professional help
   if (hasHighSeverity) {
     recommendations.push({
       id: 'seek-professional',
@@ -127,10 +128,11 @@ function generateRecommendations(
       priority: 'high',
       icon: '🏥',
       actionText: 'Tìm chuyên gia',
-      actionUrl: '/mentors',
+      actionUrl: '/mentor',
     });
   }
 
+  // Daily journaling
   recommendations.push({
     id: 'daily-journaling',
     type: 'habit',
@@ -139,6 +141,81 @@ function generateRecommendations(
     priority: 'high',
     icon: '📝',
   });
+
+  // Mindfulness meditation
+  recommendations.push({
+    id: 'mindfulness-meditation',
+    type: 'habit',
+    title: 'Thiền Chánh Niệm',
+    description: 'Luyện tập thiền 10-20 phút mỗi ngày giúp giảm căng thẳng, cải thiện tập trung và điều hòa cảm xúc.',
+    priority: 'medium',
+    icon: '🧘',
+  });
+
+  // Physical exercise
+  recommendations.push({
+    id: 'physical-exercise',
+    type: 'habit',
+    title: 'Tập Thể Dục Đều Đặn',
+    description: 'Vận động 30 phút mỗi ngày giúp giải phóng endorphin, cải thiện tâm trạng và giảm triệu chứng trầm cảm, lo âu.',
+    priority: 'medium',
+    icon: '🏃',
+  });
+
+  // Sleep hygiene
+  const hasAnxietyOrStress = recentRecords.some(
+    r => r.test_type === 'GAD7' || r.test_type === 'PSS'
+  );
+  if (hasAnxietyOrStress) {
+    recommendations.push({
+      id: 'sleep-hygiene',
+      type: 'habit',
+      title: 'Cải Thiện Giấc Ngủ',
+      description: 'Thiết lập thói quen ngủ đều đặn 7-8 tiếng mỗi đêm, tránh màn hình trước khi ngủ để cải thiện chất lượng giấc ngủ.',
+      priority: 'medium',
+      icon: '😴',
+    });
+  }
+
+  // Social connection
+  if (personality?.mbti_type && (personality.mbti_type.includes('E'))) {
+    recommendations.push({
+      id: 'social-connection',
+      type: 'social',
+      title: 'Kết Nối Xã Hội',
+      description: 'Với tính cách hướng ngoại của bạn, hãy dành thời gian gặp gỡ bạn bè, tham gia hoạt động nhóm để nạp năng lượng.',
+      priority: 'medium',
+      icon: '👥',
+    });
+  }
+
+  // Take regular tests
+  if (records.length < 3) {
+    recommendations.push({
+      id: 'regular-testing',
+      type: 'test',
+      title: 'Theo Dõi Định Kỳ',
+      description: 'Làm bài test sức khỏe tinh thần 2-4 tuần một lần để theo dõi tiến triển và phát hiện sớm các vấn đề.',
+      priority: 'medium',
+      icon: '📊',
+      actionText: 'Làm bài test',
+      actionUrl: '/tests',
+    });
+  }
+
+  // Big5 personality test recommendation
+  if (!personality?.big5_openness) {
+    recommendations.push({
+      id: 'take-big5',
+      type: 'test',
+      title: 'Khám Phá Tính Cách Big5',
+      description: 'Hoàn thành bài test Big Five để hiểu rõ hơn về 5 chiều tính cách chính của bạn: Cởi mở, Tận tâm, Hòa đồng, Dễ chịu và Ổn định cảm xúc.',
+      priority: 'low',
+      icon: '🌟',
+      actionText: 'Làm Big5 Test',
+      actionUrl: '/tests/big5',
+    });
+  }
 
   return recommendations;
 }

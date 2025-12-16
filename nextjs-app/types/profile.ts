@@ -52,7 +52,7 @@ export interface ProfileSummary {
 
 export interface Recommendation {
   id: string;
-  type: 'activity' | 'resource' | 'habit' | 'professional';
+  type: 'activity' | 'resource' | 'habit' | 'professional' | 'social' | 'test';
   title: string;
   description: string;
   priority: 'low' | 'medium' | 'high';

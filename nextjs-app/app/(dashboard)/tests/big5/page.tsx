@@ -50,12 +50,40 @@ export default function Big5TestPage() {
         }
       }
 
-      // Store results in localStorage
+      const completedAt = new Date().toISOString()
+
+      // Store results in localStorage (for backward compatibility)
       localStorage.setItem('bfi2_result', JSON.stringify(score))
       localStorage.setItem('bfi2_responses', JSON.stringify(bfi2Responses))
       localStorage.setItem('bfi2_quality_report', JSON.stringify(qualityReport))
-      localStorage.setItem('bfi2_completed_at', new Date().toISOString())
+      localStorage.setItem('bfi2_completed_at', completedAt)
       localStorage.setItem('bfi2_completion_time', completionTime.toString())
+
+      // Save to database via API
+      try {
+        const response = await fetch('/api/tests/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            testType: 'BIG5',
+            answers: answers,
+            result: {
+              dimensions: score.domains, // Big5 domain scores
+            },
+            completedAt,
+          }),
+        })
+
+        if (!response.ok) {
+          console.error('Failed to save Big5 results to database')
+        } else {
+          const data = await response.json()
+          console.log('Big5 results saved to database:', data)
+        }
+      } catch (dbError) {
+        console.error('Error saving to database:', dbError)
+        // Don't block user from seeing results even if DB save fails
+      }
 
       // Navigate to results page
       router.push('/tests/big5/results')

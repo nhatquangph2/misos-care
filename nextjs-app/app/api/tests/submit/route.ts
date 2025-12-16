@@ -105,9 +105,14 @@ export async function POST(request: NextRequest) {
 
       if (testType === 'MBTI' && result.type) {
         profileData.mbti_type = result.type
-        profileData.mbti_percentages = result.percentages
+        profileData.mbti_scores = result.percentages
       } else if (testType === 'BIG5' && result.dimensions) {
-        profileData.big5_scores = result.dimensions
+        // Big5 dimensions are stored as separate columns
+        if (result.dimensions.openness !== undefined) profileData.big5_openness = result.dimensions.openness
+        if (result.dimensions.conscientiousness !== undefined) profileData.big5_conscientiousness = result.dimensions.conscientiousness
+        if (result.dimensions.extraversion !== undefined) profileData.big5_extraversion = result.dimensions.extraversion
+        if (result.dimensions.agreeableness !== undefined) profileData.big5_agreeableness = result.dimensions.agreeableness
+        if (result.dimensions.neuroticism !== undefined) profileData.big5_neuroticism = result.dimensions.neuroticism
       } else if (testType === 'SISRI24' && result.dimensionScores) {
         profileData.sisri24_scores = result.dimensionScores
       }
