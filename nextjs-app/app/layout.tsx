@@ -3,9 +3,7 @@ import { Inter, Quicksand } from "next/font/google";
 import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
 import { defaultMetadata } from "@/lib/metadata";
-import EnvironmentBackground from "@/components/gamification/EnvironmentBackground";
 import RippleCursor from "@/components/effects/RippleCursor";
-import type { EnvironmentType } from "@/lib/gamification-config";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -48,20 +46,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // TODO: Sau này cần fetch MBTI từ Supabase/Profile sau khi người dùng đăng nhập
-  // và sử dụng Context API hoặc Server Component để lấy MBTI động
-  // Tạm thời hardcode để demo, có thể thay đổi thành 'ocean', 'forest', 'sky', hoặc 'cosmos'
-  const initialEnvType: EnvironmentType = 'ocean'
-  const initialLevel: number = 0 // Level 0 = sáng nhất
-
   return (
     <html lang="vi">
       <body
         className={`${inter.variable} ${quicksand.variable} antialiased font-sans text-slate-800 dark:text-slate-100`}
       >
-        {/* HỆ THỐNG MÔI TRƯỜNG ĐA DẠNG - Environment system based on MBTI */}
-        <EnvironmentBackground type={initialEnvType} level={initialLevel} />
-
         {/* Con trỏ gợn sóng - Ripple cursor effect */}
         <RippleCursor />
 
@@ -70,6 +59,8 @@ export default function RootLayout({
           {children}
         </div>
 
+        {/* MascotProvider now handles both Environment Background & Mascot */}
+        {/* Background tự động thay đổi theo MBTI của user */}
         <MascotProvider />
       </body>
     </html>

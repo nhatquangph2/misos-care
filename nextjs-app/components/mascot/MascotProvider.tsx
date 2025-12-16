@@ -5,16 +5,18 @@
 
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { DolphinMascot } from './DolphinMascot'
 import { useMascotStore } from '@/stores/mascotStore'
 import { getContextualMessage, determineMood, type ConversationContext } from '@/services/mascot.service'
 import { MBTI_ENVIRONMENTS } from '@/lib/gamification-config'
+import EnvironmentBackground from '../gamification/EnvironmentBackground'
 
 export function MascotProvider() {
   const pathname = usePathname()
   const { userStats, setMood, addMessage, updateStreak, show } = useMascotStore()
+  const [mounted, setMounted] = useState(false)
 
   // Determine current page context
   const getPageContext = (): ConversationContext['page'] => {
@@ -29,6 +31,7 @@ export function MascotProvider() {
 
   // Update streak on app load
   useEffect(() => {
+    setMounted(true)
     updateStreak()
     show() // Always show mascot by default
   }, [])
@@ -59,15 +62,28 @@ export function MascotProvider() {
     userStats,
   }
 
-  // Lấy environment type dựa trên MBTI (để tham khảo cho tương lai)
+  // --- LOGIC XÁC ĐỊNH MÔI TRƯỜNG ĐỘNG ---
+  // Lấy MBTI từ store
   const userMBTI = userStats?.mbtiResult?.type || 'UNKNOWN'
+
+  // Xác định môi trường dựa trên MBTI config
+  // Nếu chưa có MBTI (UNKNOWN), mặc định là 'ocean'
   const { env: currentEnvType } = MBTI_ENVIRONMENTS[userMBTI] || MBTI_ENVIRONMENTS['UNKNOWN']
 
-  // NOTE: Để đồng bộ EnvironmentBackground với MBTI động:
-  // 1. Sử dụng Context API (React Context) để chia sẻ MBTI/Environment type
-  // 2. Hoặc fetch MBTI trong một Client Component wrapper và truyền xuống
-  // 3. Hoặc sử dụng Zustand/Redux để quản lý global state
-  // Hiện tại, DolphinMascot đã tự động chọn đúng mascot type dựa trên userStats
+  // Xác định Level dựa trên tiến độ (có thể customize logic này)
+  // Ví dụ: số bài test hoàn thành càng nhiều, level càng sâu
+  const currentLevel = Math.min(Math.floor(userStats.testsCompleted / 2), 4) // Max level 4
 
-  return <DolphinMascot context={context} />
+  // Đợi mounted để tránh hydration mismatch
+  if (!mounted) return null
+
+  return (
+    <>
+      {/* 1. Render Background động dựa trên User MBTI */}
+      <EnvironmentBackground type={currentEnvType} level={currentLevel} />
+
+      {/* 2. Render Mascot */}
+      <DolphinMascot context={context} />
+    </>
+  )
 }
