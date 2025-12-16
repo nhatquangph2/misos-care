@@ -1,29 +1,53 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 /**
- * RippleCursor - Con trỏ gợn sóng
- * Tạo hiệu ứng gợn sóng nước khi di chuyển chuột
+ * RippleCursor - Con trỏ gợn sóng (TỐI ƯU HÓA)
+ * - Chỉ hoạt động trên thiết bị có chuột
+ * - Sử dụng GPU acceleration với will-change
+ * - Giảm số lượng event listener và DOM elements
  */
 export default function RippleCursor() {
   const [isVisible, setIsVisible] = useState(false);
   const [ripples, setRipples] = useState<Array<{ id: number; x: number; y: number }>>([]);
+  const [isPointerDevice, setIsPointerDevice] = useState(false);
+  const rafRef = useRef<number | null>(null);
+  const mousePos = useRef({ x: -100, y: -100 });
 
   const cursorX = useMotionValue(-100);
   const cursorY = useMotionValue(-100);
 
-  // Smoother spring config - less damping, higher stiffness
-  const springConfig = { damping: 20, stiffness: 400, mass: 0.5 };
+  // Lighter spring config for better performance
+  const springConfig = { damping: 25, stiffness: 300, mass: 0.5 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
 
+  // Detect pointer device (mouse vs touch)
   useEffect(() => {
+    const hasPointer = window.matchMedia('(pointer: fine)').matches;
+    setIsPointerDevice(hasPointer);
+  }, []);
+
+  // Throttled mouse move using requestAnimationFrame
+  const updateCursorPosition = useCallback(() => {
+    cursorX.set(mousePos.current.x);
+    cursorY.set(mousePos.current.y);
+    rafRef.current = null;
+  }, [cursorX, cursorY]);
+
+  useEffect(() => {
+    if (!isPointerDevice) return;
+
     const moveCursor = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      mousePos.current = { x: e.clientX, y: e.clientY };
       setIsVisible(true);
+
+      // Throttle updates with RAF
+      if (rafRef.current === null) {
+        rafRef.current = requestAnimationFrame(updateCursorPosition);
+      }
     };
 
     const handleMouseLeave = () => {
@@ -31,7 +55,9 @@ export default function RippleCursor() {
     };
 
     const handleClick = (e: MouseEvent) => {
-      // Tạo gợn sóng khi click
+      // Limit ripples to 3 maximum
+      if (ripples.length >= 3) return;
+
       const newRipple = {
         id: Date.now(),
         x: e.clientX,
@@ -39,13 +65,12 @@ export default function RippleCursor() {
       };
       setRipples(prev => [...prev, newRipple]);
 
-      // Xóa ripple sau 2 giây
       setTimeout(() => {
         setRipples(prev => prev.filter(r => r.id !== newRipple.id));
       }, 2000);
     };
 
-    window.addEventListener('mousemove', moveCursor);
+    window.addEventListener('mousemove', moveCursor, { passive: true });
     window.addEventListener('mouseleave', handleMouseLeave);
     window.addEventListener('click', handleClick);
 
@@ -53,76 +78,68 @@ export default function RippleCursor() {
       window.removeEventListener('mousemove', moveCursor);
       window.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('click', handleClick);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
     };
-  }, [cursorX, cursorY]);
+  }, [isPointerDevice, ripples.length, updateCursorPosition]);
 
-  // Hide on mobile devices
-  if (typeof window !== 'undefined' && window.innerWidth < 768) {
+  // Don't render on touch devices
+  if (!isPointerDevice) {
     return null;
   }
 
   return (
     <>
-      {/* Trailing effect - slower follower */}
+      {/* Trailing effect - lighter version */}
       {isVisible && (
         <motion.div
-          className="fixed top-0 left-0 w-12 h-12 pointer-events-none z-[9998]"
+          className="fixed top-0 left-0 w-10 h-10 pointer-events-none z-[9998]"
           style={{
             x: cursorXSpring,
             y: cursorYSpring,
             translateX: '-50%',
             translateY: '-50%',
+            willChange: 'transform',
           }}
-          transition={{ type: "spring", damping: 30, stiffness: 200 }}
         >
-          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/10 to-purple-400/10 blur-xl" />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/8 to-purple-400/8 blur-lg" />
         </motion.div>
       )}
 
-      {/* Main cursor follower */}
+      {/* Main cursor follower - simplified */}
       {isVisible && (
         <motion.div
-          className="fixed top-0 left-0 w-8 h-8 pointer-events-none z-[9999] mix-blend-screen"
+          className="fixed top-0 left-0 w-6 h-6 pointer-events-none z-[9999]"
           style={{
             x: cursorXSpring,
             y: cursorYSpring,
             translateX: '-50%',
             translateY: '-50%',
+            willChange: 'transform',
           }}
         >
-          {/* Outer ring - Water ripple effect */}
+          {/* Single animated ring */}
           <motion.div
-            className="absolute inset-0 rounded-full border-2 border-white/40"
+            className="absolute inset-0 rounded-full border border-white/30"
             animate={{
-              scale: [1, 1.5, 1],
-              opacity: [0.8, 0.4, 0.8],
+              scale: [1, 1.4, 1],
+              opacity: [0.6, 0.3, 0.6],
             }}
             transition={{
               duration: 2,
               repeat: Infinity,
               ease: "easeInOut"
             }}
+            style={{ willChange: 'transform, opacity' }}
           />
 
-          {/* Inner glow */}
-          <motion.div
-            className="absolute inset-0 rounded-full bg-gradient-to-br from-blue-400/40 to-purple-400/40 blur-md"
-            animate={{
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 1.5,
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          />
-
-          {/* Center dot */}
-          <div className="absolute inset-0 m-auto w-2 h-2 bg-white/90 rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]" />
+          {/* Center dot - no animation */}
+          <div className="absolute inset-0 m-auto w-1.5 h-1.5 bg-white/80 rounded-full" />
         </motion.div>
       )}
 
-      {/* Click ripples */}
+      {/* Click ripples - limit to 3 */}
       {ripples.map(ripple => (
         <motion.div
           key={ripple.id}
@@ -130,13 +147,14 @@ export default function RippleCursor() {
           style={{
             left: ripple.x,
             top: ripple.y,
+            willChange: 'transform, opacity',
           }}
-          initial={{ opacity: 1, scale: 0 }}
-          animate={{ opacity: 0, scale: 4 }}
-          transition={{ duration: 2, ease: "easeOut" }}
+          initial={{ opacity: 0.8, scale: 0 }}
+          animate={{ opacity: 0, scale: 3 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
         >
           <div
-            className="w-20 h-20 rounded-full border-2 border-white/40"
+            className="w-16 h-16 rounded-full border border-white/30"
             style={{
               transform: 'translate(-50%, -50%)',
             }}
