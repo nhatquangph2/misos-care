@@ -528,3 +528,89 @@ export function getPersonalizedRecommendations(profile: UnifiedProfile): Persona
     return priorityOrder[b.priority] - priorityOrder[a.priority]
   })
 }
+
+// ============================================
+// DATABASE INTEGRATION
+// ============================================
+
+/**
+ * Fetch unified profile from database
+ */
+export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile> {
+  const { createClient } = await import('@/lib/supabase/server')
+  const supabase = await createClient()
+
+  const profile: UnifiedProfile = {
+    big5: null,
+    mbti: null,
+    via: null,
+    multipleIntelligences: null,
+  }
+
+  // Fetch Big5
+  const { data: big5Data } = await supabase
+    .from('bfi2_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (big5Data?.score) {
+    profile.big5 = big5Data.score
+  }
+
+  // Fetch MBTI
+  const { data: mbtiData } = await supabase
+    .from('mbti_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (mbtiData?.result) {
+    profile.mbti = {
+      type: mbtiData.result.type,
+      dimensions: mbtiData.result.dimensions,
+      scores: mbtiData.result.scores,
+    }
+  }
+
+  // Fetch VIA
+  const { data: viaData } = await supabase
+    .from('via_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (viaData?.ranked_strengths) {
+    profile.via = {
+      topStrengths: viaData.ranked_strengths.slice(0, 5),
+      allStrengths: viaData.ranked_strengths,
+    }
+  }
+
+  // Fetch Multiple Intelligences (SISRI-24)
+  const { data: miData } = await supabase
+    .from('sisri24_results')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (miData?.scores) {
+    profile.multipleIntelligences = {
+      scores: miData.scores,
+      dominant: Object.entries(miData.scores)
+        .sort(([, a], [, b]) => (b as number) - (a as number))
+        .slice(0, 3)
+        .map(([key]) => key),
+    }
+  }
+
+  return profile
+}
