@@ -27,25 +27,26 @@ export default function OceanQuestionView({
 }: QuestionProps) {
   const [popEffect, setPopEffect] = useState<{ x: number; y: number } | null>(null);
 
-  // Tạo bubble config động dựa trên số lượng options
+  // Tính toán tiến độ (0 -> 1)
+  const progress = currentIndex / (totalQuestions - 1 || 1);
+
+  // Tạo bong bóng (giữ nguyên logic cũ vì nó đã tốt)
   const getBubbleConfig = (index: number, total: number) => {
     const baseScale = 0.8;
-    const scaleIncrement = 0.4 / (total - 1); // Tăng dần từ 0.8 đến 1.2
+    const scaleIncrement = 0.4 / (total - 1);
     const scale = baseScale + (index * scaleIncrement);
 
-    // Gradient màu từ blue → purple → pink → red
+    // Màu sắc sáng hơn, tinh khiết hơn (Cyan, Sky, White)
     const colors = [
-      'bg-blue-300/20 border-blue-200/50',
-      'bg-cyan-300/25 border-cyan-200/55',
-      'bg-purple-300/30 border-purple-200/60',
-      'bg-pink-300/30 border-pink-200/60',
-      'bg-red-300/30 border-red-200/60',
+      'bg-cyan-500/20 border-cyan-300/40 hover:bg-cyan-400/30',
+      'bg-sky-500/20 border-sky-300/40 hover:bg-sky-400/30',
+      'bg-blue-400/20 border-blue-300/40 hover:bg-blue-300/30',
+      'bg-indigo-400/20 border-indigo-300/40 hover:bg-indigo-300/30',
+      'bg-violet-400/20 border-violet-300/40 hover:bg-violet-300/30',
     ];
 
     const colorIndex = Math.floor((index / (total - 1)) * (colors.length - 1));
-    const color = colors[colorIndex];
-
-    return { scale, color };
+    return { scale, color: colors[colorIndex] };
   };
 
   const bubbles = options.map((option, index) => ({
@@ -54,158 +55,182 @@ export default function OceanQuestionView({
   }));
 
   const handleBubbleClick = (value: number, event: React.MouseEvent) => {
-    // Lấy vị trí click để tạo particle effect
     const rect = event.currentTarget.getBoundingClientRect();
     setPopEffect({
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
     });
-
-    // Clear effect sau 1 giây
     setTimeout(() => setPopEffect(null), 1000);
-
-    // Delay nhỏ để user thấy hiệu ứng vỡ trước khi chuyển câu
     setTimeout(() => onAnswer(value), 300);
   };
-
-  // Tính toán độ sâu dựa trên progress (để thay đổi màu nền)
-  const depthLevel = Math.floor((currentIndex / totalQuestions) * 5) + 1;
 
   return (
     <div className="relative w-full max-w-4xl mx-auto min-h-[70vh] flex flex-col items-center justify-center px-4">
 
-      {/* 1. Vùng sáng (Spotlight) phía sau thay cho Card vuông */}
+      {/* === HIỆU ỨNG ÁNH SÁNG TĂNG DẦN (The Ascension Effect) === */}
+
+      {/* 1. Lớp nền sáng dần: Từ trong suốt -> Xanh ngọc sáng */}
       <motion.div
-        className="absolute inset-0 blur-3xl -z-10"
-        style={{
-          background: `radial-gradient(circle at center, rgba(96, 165, 250, 0.3), transparent 70%)`
-        }}
+        className="fixed inset-0 pointer-events-none z-[-10]"
         animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.3, 0.5, 0.3],
+          // Pha trộn màu sáng dần lên
+          backgroundColor: `rgba(103, 232, 249, ${progress * 0.3})`, // Cyan tint
         }}
-        transition={{
-          duration: 4,
-          repeat: Infinity,
-          ease: "easeInOut"
+        style={{
+          backdropFilter: `brightness(${1 + progress * 0.5}) blur(${progress * 2}px)` // Sáng hơn và mờ ảo hơn
         }}
+        transition={{ duration: 1 }}
       />
 
-      {/* Progress indicator - Depth bar (Thanh độ sâu) */}
-      <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2">
-        <div className="text-white/60 text-xs font-medium">Độ sâu</div>
-        <div className="relative w-2 h-48 bg-white/10 rounded-full overflow-hidden">
-          <motion.div
-            className="absolute bottom-0 w-full bg-gradient-to-t from-blue-500 via-purple-500 to-pink-500 rounded-full"
-            initial={{ height: '0%' }}
-            animate={{ height: `${(currentIndex / totalQuestions) * 100}%` }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-          />
+      {/* 2. Ánh mặt trời (Sunlight) chiếu từ trên xuống - Mạnh dần */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-[60vh] -z-10 pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at top, rgba(255,255,255,0.4), transparent 70%)',
+        }}
+        animate={{
+          opacity: 0.2 + (progress * 0.8), // Tăng độ rõ của ánh nắng
+          scale: 1 + (progress * 0.2), // Mở rộng vùng sáng
+        }}
+        transition={{ duration: 1 }}
+      />
+
+      {/* 3. Các hạt bụi sáng lấp lánh (Sparkles) - Chỉ hiện khi gần về đích */}
+      {progress > 0.6 && (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+           {[...Array(10)].map((_, i) => (
+             <motion.div
+               key={i}
+               className="absolute bg-white rounded-full blur-[1px]"
+               initial={{
+                 x: Math.random() * 1000,
+                 y: 600,
+                 opacity: 0,
+                 scale: 0
+               }}
+               animate={{
+                 y: -100,
+                 opacity: [0, 1, 0],
+                 scale: Math.random() * 2
+               }}
+               transition={{
+                 duration: 2 + Math.random() * 3,
+                 repeat: Infinity,
+                 delay: Math.random() * 2
+               }}
+               style={{ width: 2 + Math.random() * 3, height: 2 + Math.random() * 3 }}
+             />
+           ))}
         </div>
-        <div className="text-white/80 text-xs font-bold">
-          {currentIndex + 1}/{totalQuestions}
+      )}
+
+      {/* === THANH TIẾN ĐỘ: NỔI LÊN (Rising Bar) === */}
+      <div className="absolute left-4 md:left-0 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
+        {/* Nhãn thay đổi theo độ sâu */}
+        <div className="text-white/80 text-[10px] uppercase tracking-widest font-bold rotate-180" style={{ writingMode: 'vertical-rl' }}>
+          {progress < 0.3 ? 'Vực thẳm' : progress < 0.7 ? 'Đại dương' : 'Mặt nước'}
+        </div>
+
+        <div className="relative w-1.5 h-64 bg-white/10 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
+          {/* Thanh chạy từ dưới lên trên (bottom: 0) */}
+          <motion.div
+            className="absolute bottom-0 w-full rounded-full"
+            style={{
+              background: 'linear-gradient(to top, #0ea5e9, #67e8f9, #ffffff)' // Xanh -> Trắng
+            }}
+            initial={{ height: '0%' }}
+            animate={{ height: `${(currentIndex + 1) / totalQuestions * 100}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+
+          {/* Bong bóng khí nhỏ chạy theo thanh tiến độ */}
+          <motion.div
+            className="absolute left-0 w-full h-2 bg-white rounded-full blur-[2px]"
+            animate={{ bottom: `${(currentIndex + 1) / totalQuestions * 100}%` }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
         </div>
       </div>
 
+      {/* === NỘI DUNG CÂU HỎI === */}
       <AnimatePresence mode="wait">
         <motion.div
           key={question}
-          initial={{ opacity: 0, y: 50, filter: 'blur(10px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          exit={{ opacity: 0, y: -50, filter: 'blur(10px)' }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="text-center space-y-12 md:space-y-16"
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -40, scale: 1.05, filter: 'blur(10px)' }} // Bay lên trên khi xong
+          transition={{ duration: 0.6, ease: [0.2, 0.8, 0.2, 1] }}
+          className="text-center space-y-12 md:space-y-16 relative z-10"
         >
-          {/* 2. Câu hỏi: Font chữ to, mềm, phát sáng */}
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-heading font-bold text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.5)] leading-tight px-4 max-w-3xl">
+          {/* Câu hỏi: Font chữ phát sáng mạnh hơn khi lên cao */}
+          <h2
+            className="text-2xl md:text-4xl lg:text-5xl font-heading font-bold text-white leading-tight px-4 max-w-3xl"
+            style={{
+              textShadow: `0 0 ${20 + progress * 20}px rgba(255,255,255,${0.3 + progress * 0.4})`
+            }}
+          >
             {question}
           </h2>
 
-          {/* 3. Các bong bóng trả lời */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-6 lg:gap-10 items-end">
+          {/* Các bong bóng trả lời */}
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 items-end">
             {bubbles.map((bubble, index) => (
               <motion.button
                 key={index}
                 onClick={(e) => handleBubbleClick(bubble.value, e)}
-
-                // Animation bong bóng lơ lửng (Floating)
-                animate={{
-                  y: [0, -10, 0],
-                }}
+                // Animation trôi nổi nhẹ nhàng hơn (Weightless)
+                animate={{ y: [0, -8, 0] }}
                 transition={{
-                  duration: 3 + Math.random(),
+                  duration: 4 + Math.random(),
                   repeat: Infinity,
                   ease: "easeInOut",
-                  delay: index * 0.2 // Lệch pha nhau
+                  delay: index * 0.3
                 }}
-
-                // Animation khi hover và click
                 whileHover={{
                   scale: bubble.scale * 1.15,
-                  backgroundColor: "rgba(255,255,255,0.2)",
-                  boxShadow: "0 0 30px rgba(255,255,255,0.4)"
+                  backgroundColor: "rgba(255,255,255,0.25)",
+                  borderColor: "rgba(255,255,255,0.8)",
+                  boxShadow: "0 0 40px rgba(255,255,255,0.4)"
                 }}
-                whileTap={{
-                  scale: 1.3,
-                  opacity: 0,
-                  transition: { duration: 0.3 }
-                }}
-
+                whileTap={{ scale: 1.4, opacity: 0 }}
                 className={cn(
-                  "relative rounded-full backdrop-blur-md border shadow-[inset_0_0_20px_rgba(255,255,255,0.2)] flex items-center justify-center group transition-all cursor-pointer",
+                  "relative rounded-full backdrop-blur-md border flex items-center justify-center group transition-all cursor-pointer shadow-lg",
                   bubble.color
                 )}
                 style={{
-                  width: `${70 * bubble.scale}px`,
-                  height: `${70 * bubble.scale}px`,
+                  width: `${80 * bubble.scale}px`,
+                  height: `${80 * bubble.scale}px`,
                 }}
               >
-                {/* Ánh phản chiếu trên bong bóng (Highlight) */}
-                <div className="absolute top-2 left-2 w-1/3 h-1/3 rounded-full bg-gradient-to-br from-white/80 to-transparent opacity-60 blur-sm" />
+                {/* Ánh phản chiếu (Bubble reflection) */}
+                <div className="absolute top-2 right-3 w-2 h-2 rounded-full bg-white opacity-80 blur-[1px]" />
+                <div className="absolute top-3 right-2 w-1 h-1 rounded-full bg-white opacity-60" />
 
-                {/* Label hiện ra khi hover */}
-                <span className="text-white font-bold text-xs md:text-sm opacity-60 group-hover:opacity-100 transition-opacity z-10">
+                <span className="text-white font-bold text-sm opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">
                   {bubble.label}
                 </span>
               </motion.button>
             ))}
           </div>
-
-          {/* Hướng dẫn nhỏ */}
-          <motion.p
-            className="text-white/50 text-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-          >
-            Chạm vào bong bóng để trả lời
-          </motion.p>
         </motion.div>
       </AnimatePresence>
 
-      {/* Particle effect khi bubble vỡ */}
+      {/* Hiệu ứng vỡ bong bóng */}
       <AnimatePresence>
         {popEffect && (
           <>
-            {[...Array(8)].map((_, i) => (
+            {[...Array(12)].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute w-3 h-3 bg-white/60 rounded-full blur-sm"
-                initial={{
-                  x: popEffect.x,
-                  y: popEffect.y,
-                  scale: 1,
-                  opacity: 1
-                }}
+                className="absolute w-2 h-2 bg-white rounded-full blur-[1px]"
+                initial={{ x: popEffect.x, y: popEffect.y, scale: 1, opacity: 1 }}
                 animate={{
-                  x: popEffect.x + (Math.cos((i / 8) * Math.PI * 2) * 100),
-                  y: popEffect.y + (Math.sin((i / 8) * Math.PI * 2) * 100),
-                  scale: 0,
-                  opacity: 0
+                  x: popEffect.x + (Math.random() - 0.5) * 150,
+                  y: popEffect.y - Math.random() * 150, // Bay lên trên nhiều hơn
+                  opacity: 0,
+                  scale: 0
                 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-                style={{ pointerEvents: 'none' }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
               />
             ))}
           </>
