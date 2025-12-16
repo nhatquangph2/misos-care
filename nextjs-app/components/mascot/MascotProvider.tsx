@@ -10,6 +10,7 @@ import { usePathname } from 'next/navigation'
 import { DolphinMascot } from './DolphinMascot'
 import { useMascotStore } from '@/stores/mascotStore'
 import { getContextualMessage, determineMood, type ConversationContext } from '@/services/mascot.service'
+import { MBTI_ENVIRONMENTS } from '@/lib/gamification-config'
 
 export function MascotProvider() {
   const pathname = usePathname()
@@ -57,6 +58,16 @@ export function MascotProvider() {
     page: getPageContext(),
     userStats,
   }
+
+  // Lấy environment type dựa trên MBTI (để tham khảo cho tương lai)
+  const userMBTI = userStats?.mbtiResult?.type || 'UNKNOWN'
+  const { env: currentEnvType } = MBTI_ENVIRONMENTS[userMBTI] || MBTI_ENVIRONMENTS['UNKNOWN']
+
+  // NOTE: Để đồng bộ EnvironmentBackground với MBTI động:
+  // 1. Sử dụng Context API (React Context) để chia sẻ MBTI/Environment type
+  // 2. Hoặc fetch MBTI trong một Client Component wrapper và truyền xuống
+  // 3. Hoặc sử dụng Zustand/Redux để quản lý global state
+  // Hiện tại, DolphinMascot đã tự động chọn đúng mascot type dựa trên userStats
 
   return <DolphinMascot context={context} />
 }

@@ -51,6 +51,10 @@ export interface UserStats {
   lastVisit: number
   totalPoints: number
   level: number
+  mbtiResult?: {
+    type: string
+    completedAt?: number
+  }
 }
 
 // =====================================================

@@ -7,12 +7,13 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MessageCircle, X, Minimize2, Maximize2, Settings } from 'lucide-react'
+import { MessageCircle, X, Minimize2, Maximize2 } from 'lucide-react'
 import { useMascotStore } from '@/stores/mascotStore'
-import { DolphinAvatar } from './DolphinAvatar'
+import { MascotAvatar } from './MascotAvatar'
 import { MascotBubble } from './MascotBubble'
 import { MascotChat } from './MascotChat'
 import { getGreetingByTime, getRandomMessage, IDLE_MESSAGES } from '@/constants/mascot-messages'
+import { MBTI_ENVIRONMENTS, MASCOT_CONFIG } from '@/lib/gamification-config'
 import type { ConversationContext } from '@/services/mascot.service'
 
 interface DolphinMascotProps {
@@ -33,19 +34,28 @@ export function DolphinMascot({ context }: DolphinMascotProps) {
     setMood,
     addMessage,
     markIntroSeen,
+    userStats,
   } = useMascotStore()
 
   const [currentBubbleMessage, setCurrentBubbleMessage] = useState<string>('')
   const [showBubble, setShowBubble] = useState(false)
 
+  // Lấy MBTI và Mascot Type
+  const userMBTI = userStats?.mbtiResult?.type || 'UNKNOWN'
+  const { mascot: currentMascotType } = MBTI_ENVIRONMENTS[userMBTI] || MBTI_ENVIRONMENTS['UNKNOWN']
+  const mascotName = MASCOT_CONFIG[currentMascotType].name
+
   // Show intro message on first visit
   useEffect(() => {
     if (!hasSeenIntro && mascotEnabled) {
       const greeting = getGreetingByTime()
-      setCurrentBubbleMessage(greeting.text)
+      // Tùy chỉnh lời chào theo tên Mascot mới
+      const personalizedGreeting = greeting.text.replace('Misos', mascotName)
+
+      setCurrentBubbleMessage(personalizedGreeting)
       setMood(greeting.mood)
       setShowBubble(true)
-      addMessage(greeting.text, 'mascot', 'home')
+      addMessage(personalizedGreeting, 'mascot', 'home')
 
       // Auto-hide bubble after 5 seconds
       const timer = setTimeout(() => {
@@ -55,7 +65,7 @@ export function DolphinMascot({ context }: DolphinMascotProps) {
 
       return () => clearTimeout(timer)
     }
-  }, [hasSeenIntro, mascotEnabled])
+  }, [hasSeenIntro, mascotEnabled, mascotName, addMessage, markIntroSeen, setMood])
 
   // Show random idle messages periodically
   useEffect(() => {
@@ -133,8 +143,13 @@ export function DolphinMascot({ context }: DolphinMascotProps) {
             className="relative bg-gradient-to-br from-blue-50 to-cyan-50 rounded-full p-4 shadow-2xl border border-blue-100"
             whileHover={{ scale: 1.05 }}
           >
-            {/* Avatar */}
-            <DolphinAvatar mood={currentMood} size="lg" onClick={handleAvatarClick} />
+            {/* Mascot Avatar */}
+            <MascotAvatar
+              mood={currentMood}
+              size="lg"
+              onClick={handleAvatarClick}
+              type={currentMascotType}
+            />
 
             {/* Action Buttons */}
             {!isMinimized && (
@@ -211,7 +226,7 @@ export function DolphinMascot({ context }: DolphinMascotProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
           >
-            Click để chat! 💬
+            {mascotName} sẵn sàng trò chuyện! 💬
           </motion.div>
         )}
       </motion.div>
