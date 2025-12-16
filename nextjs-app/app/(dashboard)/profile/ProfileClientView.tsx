@@ -427,7 +427,7 @@ export default function ProfileClientView({ profileData, timeline, userId }: Pro
                 </li>
                 <li>
                   <span className="text-gray-600 dark:text-gray-400">
-                    🧘 Bài tập thiền hướng dẫn (Sắp ra mắt)
+                    🎯 Bài tập CBT hướng dẫn (Sắp ra mắt)
                   </span>
                 </li>
                 <li>

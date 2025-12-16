@@ -264,12 +264,12 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
       description:
         'Sự kết hợp giữa Bất Ổn Cảm Xúc cao (dễ lo âu) và Tận Tâm cao (luôn cầu toàn) tạo ra nguy cơ kiệt sức cao. Bạn có thể là người làm việc xuất sắc nhưng thường lo lắng về sự hoàn hảo.',
       recommendations: [
-        '🎯 Xác định rõ nguồn gốc stress: Liệt kê 3 điều gây áp lực nhất',
-        '🔍 Phân tích xem đâu là yêu cầu thực sự, đâu là tự áp đặt',
-        '📊 Ưu tiên công việc theo ma trận Eisenhower (quan trọng vs khẩn cấp)',
-        '🗣️ Thảo luận với quản lý về khối lượng công việc thực tế',
-        '⚖️ Đàm phán lại deadline hoặc phân phối lại nhiệm vụ',
-        '💬 Tìm kiếm hỗ trợ chuyên môn để giải quyết vấn đề gốc rễ',
+        '🎯 Xác định rõ nguồn gốc stress: Liệt kê 3 điều gây áp lực nhất (CBT: Concrete problem identification)',
+        '🔍 Phân tích xem đâu là yêu cầu thực sự, đâu là tự áp đặt (Cognitive restructuring)',
+        '📊 Ưu tiên công việc theo ma trận Eisenhower (quan trọng vs khẩn cấp) (Problem-Solving Therapy)',
+        '🗣️ Thảo luận với quản lý về khối lượng công việc thực tế (Assertive communication skills)',
+        '⚖️ Đàm phán lại deadline hoặc phân phối lại nhiệm vụ (Behavioral change: modify environment)',
+        '💬 Tìm kiếm hỗ trợ chuyên môn (CBT/ACT therapist) để giải quyết vấn đề gốc rễ',
       ],
     })
   }
@@ -285,12 +285,12 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
       description:
         'Bất Ổn Cảm Xúc cao kết hợp với Hướng Nội có thể dẫn đến cảm giác cô đơn và lo âu trong các tình huống xã hội.',
       recommendations: [
-        '🔍 Xác định tình huống xã hội nào gây lo âu cụ thể (họp nhóm, gặp người lạ, nói trước đám đông)',
-        '🎯 Phân tích nguyên nhân: Sợ bị đánh giá? Thiếu kỹ năng? Kinh nghiệm tiêu cực trước đây?',
-        '📚 Học kỹ năng giao tiếp cụ thể cho tình huống đó (khóa học, sách, video)',
-        '🎭 Luyện tập với người tin cậy trước khi thử tình huống thật',
-        '💼 Tìm môi trường làm việc phù hợp với người hướng nội (remote, làm độc lập)',
-        '🩺 Tư vấn tâm lý để xử lý trauma hoặc niềm tin tiêu cực về bản thân',
+        '🔍 Xác định tình huống xã hội nào gây lo âu cụ thể (họp nhóm, gặp người lạ, nói trước đám đông) (CBT: Trigger identification)',
+        '🎯 Phân tích nguyên nhân: Sợ bị đánh giá? Thiếu kỹ năng? Kinh nghiệm tiêu cực trước đây? (Cognitive analysis)',
+        '📚 Học kỹ năng giao tiếp cụ thể cho tình huống đó (Skills training: conversation, assertiveness)',
+        '🎭 Luyện tập với người tin cậy trước khi thử tình huống thật (Exposure therapy: graded hierarchy)',
+        '💼 Tìm môi trường làm việc phù hợp với người hướng nội (Behavioral: modify environment)',
+        '🩺 Tư vấn tâm lý CBT để xử lý trauma hoặc niềm tin tiêu cực về bản thân (Cognitive restructuring)',
       ],
     })
   }
@@ -306,10 +306,10 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
       description:
         'Bạn có khả năng phục hồi tuyệt vời sau khó khăn. Sự ổn định cảm xúc và năng lượng tích cực giúp bạn vượt qua stress hiệu quả.',
       recommendations: [
-        '🎯 Sử dụng năng lượng tích cực để hỗ trợ người khác',
-        '💼 Phát huy thế mạnh trong các vai trò lãnh đạo',
-        '⚠️ Chú ý không đánh giá thấp căng thẳng của người khác',
-        '🧠 Duy trì thói quen chăm sóc sức khỏe tinh thần để giữ vững trạng thái tốt',
+        '🎯 Sử dụng năng lượng tích cực để hỗ trợ người khác (Behavioral: leverage strengths)',
+        '💼 Phát huy thế mạnh trong các vai trò lãnh đạo (Career: match strengths to role)',
+        '⚠️ Chú ý không đánh giá thấp căng thẳng của người khác (Social skills: empathy development)',
+        '🧠 Duy trì thói quen: 7-9h ngủ, 150min exercise/tuần, dinh dưỡng cân bằng (Neuroscience: maintain brain health)',
       ],
     })
   }
@@ -359,12 +359,12 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
       title: '⚠️ Mức độ lo âu cao',
       description: 'Khía cạnh Lo Âu của bạn cao hơn mức trung bình.',
       recommendations: [
-        '📝 Ghi chép 3 điều lo lắng nhất → phân loại: Thực tế vs Tưởng tượng',
-        '🔍 Với lo âu thực tế: Lập kế hoạch hành động cụ thể để giải quyết',
-        '💭 Với lo âu tưởng tượng: Thách thức bằng câu hỏi "Bằng chứng nào hỗ trợ suy nghĩ này?"',
-        '🗣️ Nói chuyện với người có kinh nghiệm đã vượt qua tình huống tương tự',
-        '🎯 Tập trung vào những gì kiểm soát được, chấp nhận những gì không thể thay đổi',
-        '💊 Nếu lo âu ảnh hưởng nghiêm trọng đến cuộc sống: Tham khảo bác sĩ tâm thần',
+        '📝 Ghi chép 3 điều lo lắng nhất → phân loại: Thực tế vs Tưởng tượng (CBT: Worry categorization)',
+        '🔍 Với lo âu thực tế: Lập kế hoạch hành động cụ thể để giải quyết (Problem-Solving Therapy)',
+        '💭 Với lo âu tưởng tượng: Thách thức bằng câu hỏi "Bằng chứng nào hỗ trợ suy nghĩ này?" (Cognitive restructuring)',
+        '🗣️ Nói chuyện với người có kinh nghiệm đã vượt qua tình huống tương tự (Social modeling)',
+        '🎯 Tập trung vào những gì kiểm soát được, chấp nhận những gì không thể thay đổi (ACT: Control vs acceptance)',
+        '💊 Nếu lo âu ảnh hưởng nghiêm trọng đến cuộc sống: Gặp bác sĩ tâm thần để đánh giá (CBT, medication if needed)',
       ],
     })
   }
@@ -376,11 +376,11 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
       title: '⚠️ Có dấu hiệu trầm cảm',
       description: 'Khía cạnh Trầm Cảm của bạn cao hơn mức trung bình.',
       recommendations: [
-        '🩺 NÊN GẶP chuyên gia sức khỏe tâm thần',
-        '☀️ Ánh sáng mặt trời buổi sáng (Vitamin D)',
-        '💬 Kết nối với support groups',
-        '🎯 Behavioral activation: Lên lịch hoạt động thú vị',
-        '📞 Hotline: 1800-xxxx (24/7)',
+        '🩺 NÊN GẶP chuyên gia sức khỏe tâm thần (CBT/Medication evaluation)',
+        '☀️ Ánh sáng mặt trời buổi sáng 30min (Circadian rhythm regulation, increases serotonin)',
+        '💬 Kết nối với support groups (Social activation, reduces isolation)',
+        '🎯 Behavioral activation: Lên lịch hoạt động thú vị REGARDLESS of motivation (BA protocol)',
+        '🏃 Exercise 30min x3/tuần: Hiệu quả ngang antidepressant cho trầm cảm nhẹ (Neuroscience: BDNF increase)',
       ],
     })
   }
@@ -395,12 +395,12 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
         description:
           'Điểm Bất Ổn Cảm Xúc của bạn rất cao. Bạn có thể thường xuyên cảm thấy lo âu, căng thẳng hoặc buồn bã. Đây là điều hoàn toàn bình thường và có thể cải thiện được.',
         recommendations: [
-          '📊 Theo dõi cảm xúc: Ghi lại tình huống → Cảm xúc → Suy nghĩ → Hành động',
-          '🔍 Nhận diện patterns: Tình huống nào thường gây cảm xúc tiêu cực?',
-          '🎯 Giải quyết vấn đề gốc: Nếu stress từ công việc → Đàm phán workload; Nếu từ mối quan hệ → Giao tiếp rõ ràng',
-          '🗣️ Học kỹ năng giải quyết xung đột và đàm phán',
-          '💼 Thay đổi hoàn cảnh nếu cần: Đổi công việc, môi trường sống, vòng tròn bạn bè',
-          '🩺 Tư vấn tâm lý để xác định và xử lý nguyên nhân sâu xa (trauma, niềm tin hạn chế)',
+          '📊 Theo dõi cảm xúc: Ghi lại tình huống → Cảm xúc → Suy nghĩ → Hành động (CBT: Thought record)',
+          '🔍 Nhận diện patterns: Tình huống nào thường gây cảm xúc tiêu cực? (Behavioral analysis)',
+          '🎯 Giải quyết vấn đề gốc: Nếu stress từ công việc → Đàm phán workload; Nếu từ mối quan hệ → Giao tiếp rõ ràng (Problem-Solving Therapy)',
+          '🗣️ Học kỹ năng giải quyết xung đột và đàm phán (Skills training: assertiveness, communication)',
+          '💼 Thay đổi hoàn cảnh nếu cần: Đổi công việc, môi trường sống, vòng tròn bạn bè (Behavioral: modify environment)',
+          '🩺 Tư vấn CBT/DBT để xác định và xử lý nguyên nhân sâu xa (trauma, cognitive distortions)',
         ],
       })
     }
@@ -456,12 +456,12 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
         description:
           'Sự kết hợp giữa Tận Tâm rất cao (luôn cầu toàn) và Bất Ổn Cảm Xúc cao (dễ lo âu) tạo ra nguy cơ kiệt sức đáng kể.',
         recommendations: [
-          '🔍 Xác định nguồn gốc cầu toàn: Kỳ vọng của ai? (Bản thân/Sếp/Xã hội/Gia đình)',
-          '💬 Thảo luận rõ ràng về tiêu chuẩn "đủ tốt" với quản lý/khách hàng',
-          '📊 Áp dụng 80/20 rule: Tập trung vào 20% công việc tạo 80% giá trị',
-          '⚖️ Đàm phán lại deadline hoặc giảm phạm vi dự án',
-          '🗣️ Học kỹ năng giao tiếp assertive để từ chối yêu cầu không hợp lý',
-          '💼 Nếu môi trường làm việc toxic: Xem xét đổi công ty/ngành nghề',
+          '🔍 Xác định nguồn gốc cầu toàn: Kỳ vọng của ai? (Bản thân/Sếp/Xã hội/Gia đình) (CBT: Identify cognitive distortions)',
+          '💬 Thảo luận rõ ràng về tiêu chuẩn "đủ tốt" với quản lý/khách hàng (Communication skills: clarity)',
+          '📊 Áp dụng 80/20 rule: Tập trung vào 20% công việc tạo 80% giá trị (Behavioral: prioritization)',
+          '⚖️ Đàm phán lại deadline hoặc giảm phạm vi dự án (Assertiveness training)',
+          '🗣️ Học kỹ năng giao tiếp assertive để từ chối yêu cầu không hợp lý (Skills training)',
+          '💼 Nếu môi trường làm việc toxic: Xem xét đổi công ty/ngành nghề (Behavioral: change environment)',
         ],
       })
     }
@@ -475,11 +475,11 @@ export function getMentalHealthInsights(score: BFI2Score): MentalHealthInsight[]
       description:
         'Profile tính cách của bạn tương đối cân bằng, không có yếu tố nguy cơ nổi bật. Đây là một dấu hiệu tốt cho sức khỏe tinh thần.',
       recommendations: [
-        '🎯 Đặt mục tiêu rõ ràng cho các lĩnh vực cuộc sống (sự nghiệp, gia đình, sức khỏe, tài chính)',
-        '📊 Xây dựng kế hoạch hành động cụ thể để đạt mục tiêu',
-        '💬 Duy trì giao tiếp thẳng thắn và xây dựng trong các mối quan hệ',
-        '🔍 Định kỳ đánh giá lại và điều chỉnh hướng đi',
-        '📚 Học hỏi kỹ năng mới phục vụ mục tiêu dài hạn',
+        '🎯 Đặt mục tiêu SMART (Specific, Measurable, Achievable, Relevant, Time-bound) cho từng lĩnh vực',
+        '📊 Xây dựng kế hoạch hành động: Chia mục tiêu thành bước nhỏ hàng tuần (Behavioral activation)',
+        '💬 Duy trì giao tiếp thẳng thắn và xây dựng (Communication skills: assertiveness)',
+        '🔍 Định kỳ đánh giá lại và điều chỉnh hướng đi (Evidence-based review)',
+        '📚 Học kỹ năng mới phục vụ mục tiêu dài hạn (Skills development)',
       ],
     })
   }

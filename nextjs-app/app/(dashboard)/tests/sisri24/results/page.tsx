@@ -272,8 +272,8 @@ export default function SISRI24ResultsPage() {
                   <span className="text-white text-sm">1</span>
                 </div>
                 <div>
-                  <p className="font-medium">Thực hành thiền định hàng ngày</p>
-                  <p className="text-sm text-muted-foreground">Dành 10-20 phút mỗi ngày để tĩnh tâm và quan sát nội tâm</p>
+                  <p className="font-medium">Luyện tập kỹ năng tập trung sâu (Deep Work)</p>
+                  <p className="text-sm text-muted-foreground">Dành 20-30 phút mỗi ngày để tập trung cao độ vào một công việc có ý nghĩa</p>
                 </div>
               </li>
               <li className="flex gap-3 items-start">

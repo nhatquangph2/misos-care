@@ -299,8 +299,8 @@ export const VIA_STRENGTH_DETAILS: Record<string, VIAStrengthInfo> = {
     virtue: 'Điều độ',
     desc: 'Kiểm soát tốt cảm xúc, ham muốn và hành vi của bản thân.',
     color: 'text-green-600',
-    icon: '🧘',
-    advice: 'Thực hành thiền 5 phút mỗi ngày để tăng cường khả năng kiểm soát tâm trí.',
+    icon: '🎯',
+    advice: 'Luyện tập kỹ năng tự điều chỉnh qua các bài tập CBT để tăng cường khả năng kiểm soát hành vi.',
   },
 
   // Transcendence

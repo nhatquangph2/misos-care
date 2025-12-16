@@ -324,7 +324,7 @@ export class ProfileService {
         id: 'structured-activities',
         type: 'habit',
         title: 'Hoạt Động Có Cấu Trúc',
-        description: 'Bạn thích những hoạt động cụ thể, thực tế. Thực hành chánh niệm thông qua hoạt động hàng ngày như nấu ăn, làm vườn, thủ công.',
+        description: 'Bạn thích những hoạt động cụ thể, thực tế. Các hoạt động hàng ngày như nấu ăn, làm vườn, thủ công giúp tập trung và giảm stress hiệu quả.',
         priority: 'medium',
         icon: '🛠️',
       });

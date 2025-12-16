@@ -101,7 +101,7 @@ export const GAD7_RECOMMENDATIONS = {
     title: 'Tuyệt vời! Mức độ lo âu của bạn rất thấp',
     actions: [
       'Tiếp tục duy trì lối sống lành mạnh',
-      'Thực hành thư giãn và chánh niệm',
+      'Thực hành thở sâu và thư giãn cơ (PMR)',
       'Duy trì hoạt động thể chất đều đặn',
       'Ngủ đủ giấc và ăn uống cân đối',
     ],
@@ -110,10 +110,10 @@ export const GAD7_RECOMMENDATIONS = {
     title: 'Có một số dấu hiệu lo âu nhẹ',
     actions: [
       'Theo dõi triệu chứng của bạn',
-      'Thực hành kỹ thuật thư giãn (hơi thở sâu, yoga)',
+      'Thực hành kỹ thuật thư giãn cơ tiến triển (PMR)',
       'Tăng cường hoạt động thể chất',
       'Hạn chế caffeine và chất kích thích',
-      'Tìm hiểu về kỹ thuật quản lý lo âu',
+      'Tìm hiểu về kỹ thuật quản lý lo âu dựa trên CBT',
     ],
   },
   moderate: {
@@ -121,7 +121,7 @@ export const GAD7_RECOMMENDATIONS = {
     actions: [
       'Nên gặp chuyên gia sức khỏe tinh thần',
       'Xem xét liệu pháp nhận thức hành vi (CBT)',
-      'Thực hành chánh niệm hàng ngày',
+      'Luyện tập kỹ thuật giảm lo âu dựa trên bằng chứng',
       'Tìm kiếm hỗ trợ từ người thân',
       'Tránh rượu và chất kích thích',
     ],

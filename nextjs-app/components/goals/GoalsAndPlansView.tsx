@@ -184,8 +184,8 @@ export default function GoalsAndPlansView({ userId }: GoalsAndPlansViewProps) {
             <p className="text-gray-600 text-xs">Thực hiện test PSS định kỳ và theo dõi tiến độ</p>
           </div>
           <div className="bg-white p-3 rounded-lg">
-            <p className="font-medium">🧘 Thiền 10 phút mỗi ngày</p>
-            <p className="text-gray-600 text-xs">Xây dựng thói quen thiền hàng ngày</p>
+            <p className="font-medium">📝 Viết nhật ký cảm xúc mỗi ngày</p>
+            <p className="text-gray-600 text-xs">Xây dựng thói quen viết nhật ký để xử lý cảm xúc</p>
           </div>
           <div className="bg-white p-3 rounded-lg">
             <p className="font-medium">📊 Hoàn thành tất cả bài test</p>

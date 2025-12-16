@@ -300,8 +300,8 @@ export const SISRI_24_DIMENSIONS = {
       'Khả năng chủ động tiến vào và thoát ra khỏi các trạng thái ý thức cao hơn (như sự tập trung sâu, dòng chảy - flow, sự tĩnh lặng tuyệt đối, sự hợp nhất). Điểm mấu chốt là tính kiểm soát và làm chủ (mastery) tâm trí để tìm kiếm sự sáng suốt hoặc giải quyết vấn đề. Khả năng thay đổi trạng thái sóng não (từ Beta sang Alpha, Theta) theo ý muốn là biểu hiện cao nhất của sự làm chủ bản thân.',
     spiritR: 'Cai trị tấm lòng mình',
     lowScore: 'Ít thực hành các kỹ thuật nâng cao ý thức. Hiếm khi trải nghiệm trạng thái flow hoặc nhất tâm.',
-    highScore: 'Thường xuyên thực hành thiền định. Có khả năng kiểm soát và chuyển đổi trạng thái ý thức.',
-    genZNote: 'Cần diễn giải CSE một cách thận trọng để tránh hiểu lầm về việc sử dụng chất kích thích. CSE ở đây chính là năng lực Chánh niệm (Mindfulness) và Thiền định.',
+    highScore: 'Có khả năng kiểm soát và chuyển đổi trạng thái ý thức. Thường xuyên trải nghiệm trạng thái flow khi làm việc sâu.',
+    genZNote: 'Cần diễn giải CSE một cách thận trọng. CSE ở đây là năng lực tập trung sâu (Deep Work) và trạng thái Flow khi làm việc.',
   },
 }
 

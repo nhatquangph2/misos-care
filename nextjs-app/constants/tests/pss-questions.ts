@@ -151,7 +151,7 @@ export const PSS_RECOMMENDATIONS = {
     title: 'Tuyệt vời! Mức độ căng thẳng của bạn ở mức thấp',
     actions: [
       'Tiếp tục duy trì lối sống lành mạnh hiện tại',
-      'Thực hành chánh niệm và thiền định',
+      'Thực hành kỹ thuật thư giãn cơ tiến triển (PMR)',
       'Duy trì hoạt động thể chất đều đặn',
       'Giữ gìn mối quan hệ xã hội tích cực',
       'Đảm bảo ngủ đủ giấc và ăn uống cân đối',
@@ -161,7 +161,7 @@ export const PSS_RECOMMENDATIONS = {
     title: 'Mức độ căng thẳng ở mức trung bình',
     actions: [
       'Xác định nguồn gốc của căng thẳng',
-      'Thực hành kỹ thuật quản lý stress (hơi thở sâu, yoga)',
+      'Thực hành kỹ thuật quản lý stress (hơi thở sâu, PMR)',
       'Tăng cường hoạt động thể chất',
       'Dành thời gian cho sở thích và thư giãn',
       'Cân nhắc nói chuyện với bạn bè hoặc người thân',
@@ -172,8 +172,8 @@ export const PSS_RECOMMENDATIONS = {
     title: '⚠️ Mức độ căng thẳng cao - Cần chú ý',
     actions: [
       '🏥 NÊN GẶP chuyên gia sức khỏe tinh thần',
-      'Xem xét liệu pháp giảm stress (CBT, mindfulness)',
-      'Thực hành thư giãn sâu hàng ngày',
+      'Xem xét liệu pháp giảm stress dựa trên CBT',
+      'Thực hành thư giãn cơ tiến triển (PMR) hàng ngày',
       'Tìm kiếm hỗ trợ từ người thân và bạn bè',
       'Xem xét lại lịch trình và ưu tiên công việc',
       'Tránh rượu, thuốc lá và chất kích thích',

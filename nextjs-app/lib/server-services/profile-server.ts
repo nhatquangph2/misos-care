@@ -269,14 +269,14 @@ function generateRecommendations(
 
   // Only add other generic recommendations if user doesn't have Big5 data yet
   if (!hasBig5Data) {
-    // Mindfulness meditation
+    // Behavioral Activation (evidence-based for depression/anxiety)
     recommendations.push({
-      id: 'mindfulness-meditation',
+      id: 'behavioral-activation',
       type: 'habit',
-      title: 'Thiền Chánh Niệm',
-      description: 'Luyện tập thiền 10-20 phút mỗi ngày giúp giảm căng thẳng, cải thiện tập trung và điều hòa cảm xúc.',
+      title: 'Kích Hoạt Hành Vi',
+      description: 'Lập lịch và thực hiện các hoạt động có ý nghĩa mỗi ngày (gặp bạn, sở thích, công việc). Phương pháp CBT hiệu quả cao cho trầm cảm và lo âu.',
       priority: 'medium',
-      icon: '🧘',
+      icon: '🎯',
     });
 
     // Physical exercise

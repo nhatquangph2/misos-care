@@ -132,7 +132,7 @@ export const PHQ9_RECOMMENDATIONS = {
       'Tiếp tục duy trì lối sống lành mạnh',
       'Tập thể dục đều đặn',
       'Duy trì mối quan hệ xã hội tốt',
-      'Thực hành chánh niệm và thiền định',
+      'Thực hành kỹ thuật thư giãn cơ (PMR)',
     ],
   },
   mild: {
