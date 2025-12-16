@@ -109,9 +109,11 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
           </h3>
           <div className="space-y-4">
             {Object.entries(BIG5_TRAITS).map(([key, info]) => {
-              // Score is stored as 1-5, convert to percentage (1=0%, 5=100%)
-              const rawScore = profile[`big5_${key}` as keyof PersonalityProfile] as number;
-              const percentage = Math.round(((rawScore || 1) - 1) / 4 * 100);
+              // Score is already stored as percentage (0-100) in database
+              const percentage = Math.round(profile[`big5_${key}` as keyof PersonalityProfile] as number || 50);
+
+              // Convert back to 1-5 scale for display
+              const rawScore = 1 + (percentage / 100) * 4;
 
               // For neuroticism, lower is better - invert for display meaning
               const isNeuroticism = key === 'neuroticism';
@@ -127,7 +129,7 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
                       <span className={`font-medium ${info.color}`}>{info.name}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm font-semibold">{rawScore?.toFixed(1)}/5</span>
+                      <span className="text-sm font-semibold">{rawScore.toFixed(1)}/5</span>
                       <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">({percentage}%)</span>
                     </div>
                   </div>

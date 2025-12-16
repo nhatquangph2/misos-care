@@ -1,39 +1,40 @@
 /**
- * MBTI Test Page
- * Complete MBTI personality test with results
+ * VIA Character Strengths Test Page
+ * Values in Action - Discover your signature character strengths
+ * Based on VIA Institute on Character methodology
  */
 
 'use client'
 
 import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
-import { MBTI_QUESTIONS } from '@/constants/tests/mbti-questions'
-import { calculateMBTI } from '@/services/test.service'
+import { VIA_QUESTIONS_FLOW } from '@/constants/tests/via-questions'
+import { calculateVIA } from '@/services/via-scoring.service'
 import { useTestSubmit } from '@/hooks/useTestSubmit'
-import type { MBTIAnswer } from '@/services/test.service'
+import type { VIAAnswer } from '@/services/via-scoring.service'
 
-export default function MBTITestPage() {
+export default function VIATestPage() {
   const { submitTest, isSubmitting } = useTestSubmit()
 
   const handleComplete = async (answers: { questionId: number; value: number }[]) => {
     try {
-      // Convert to MBTIAnswer format
-      const mbtiAnswers: MBTIAnswer[] = answers.map((a) => ({
+      // Convert to VIAAnswer format
+      const viaAnswers: VIAAnswer[] = answers.map((a) => ({
         questionId: a.questionId,
         value: a.value,
       }))
 
       // Calculate results
-      const result = calculateMBTI(mbtiAnswers)
+      const result = calculateVIA(viaAnswers)
 
       // Submit using centralized hook (handles API, localStorage, navigation)
       await submitTest({
-        testType: 'MBTI',
+        testType: 'VIA',
         answers,
         result,
-        nextRoute: '/tests/mbti/results',
+        nextRoute: '/tests/via/results',
       })
     } catch (error) {
-      console.error('Error in MBTI test:', error)
+      console.error('Error in VIA test:', error)
       // Hook already handles error display
     }
   }
@@ -43,8 +44,8 @@ export default function MBTITestPage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-6" />
-          <p className="text-xl font-semibold text-foreground">Đang phân tích kết quả...</p>
-          <p className="text-sm text-muted-foreground mt-3">Vui lòng đợi trong giây lát</p>
+          <p className="text-xl font-semibold text-foreground">Đang phân tích điểm mạnh của bạn...</p>
+          <p className="text-sm text-muted-foreground mt-3">Miso đang khám phá những giá trị đặc biệt trong bạn 🌟</p>
         </div>
       </div>
     )
@@ -52,9 +53,9 @@ export default function MBTITestPage() {
 
   return (
     <OceanTestFlow
-      questions={MBTI_QUESTIONS}
+      questions={VIA_QUESTIONS_FLOW}
       onComplete={handleComplete}
-      testTitle="MBTI - 16 Personalities"
+      testTitle="VIA - Khám phá Điểm mạnh Tính cách"
       testType="personality"
     />
   )

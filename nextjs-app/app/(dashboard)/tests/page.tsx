@@ -14,6 +14,17 @@ export default function TestsPage() {
 
   const tests = [
     {
+      id: 'via',
+      title: 'VIA - Điểm Mạnh Tính Cách',
+      description: 'Khám phá 5 điểm mạnh đặc trưng của bạn từ 24 giá trị tính cách. Bài test khoa học giúp bạn hiểu rõ bản thân và phát huy tiềm năng',
+      questionCount: 48,
+      estimatedMinutes: 10,
+      testType: 'personality' as const,
+      difficulty: 'easy' as const,
+      recommended: true,
+      route: '/tests/via',
+    },
+    {
       id: 'mbti',
       title: 'MBTI - 16 Personalities',
       description: 'Khám phá loại tính cách của bạn qua 16 nhóm tính cách khác nhau',
@@ -25,6 +36,28 @@ export default function TestsPage() {
       route: '/tests/mbti',
     },
     {
+      id: 'big5',
+      title: 'Big Five - Hải Dương Tính Cách',
+      description: 'Đánh giá 5 đặc điểm tính cách chính: Cởi mở, Tận tâm, Hướng ngoại, Dễ chịu, Ổn định cảm xúc',
+      questionCount: 60,
+      estimatedMinutes: 10,
+      testType: 'personality' as const,
+      difficulty: 'medium' as const,
+      recommended: true,
+      route: '/tests/big5',
+    },
+    {
+      id: 'dass21',
+      title: 'Kiểm tra Sức khỏe Tinh thần Tổng quát',
+      description: 'Đánh giá 3-trong-1: Trầm cảm, Lo âu và Căng thẳng. Bài test toàn diện để hiểu rõ tình trạng tinh thần của bạn',
+      questionCount: 21,
+      estimatedMinutes: 7,
+      testType: 'mental-health' as const,
+      difficulty: 'easy' as const,
+      recommended: true,
+      route: '/tests/dass21',
+    },
+    {
       id: 'sisri24',
       title: 'SISRI-24 - Trí tuệ Tâm linh',
       description: 'Đánh giá trí tuệ tâm linh qua 4 chiều kích: Tư duy hiện sinh, Ý nghĩa cá nhân, Nhận thức siêu việt, Mở rộng ý thức',
@@ -32,63 +65,8 @@ export default function TestsPage() {
       estimatedMinutes: 6,
       testType: 'personality' as const,
       difficulty: 'medium' as const,
-      recommended: true,
+      recommended: false,
       route: '/tests/sisri24',
-    },
-    {
-      id: 'phq9',
-      title: 'PHQ-9 - Đánh giá Trầm cảm',
-      description: 'Bộ câu hỏi sàng lọc trầm cảm chuẩn quốc tế (WHO)',
-      questionCount: 9,
-      estimatedMinutes: 3,
-      testType: 'mental-health' as const,
-      difficulty: 'easy' as const,
-      recommended: true,
-      route: '/tests/phq9',
-    },
-    {
-      id: 'big5',
-      title: 'Big Five (OCEAN)',
-      description: 'Đánh giá 5 đặc điểm tính cách chính: Cởi mở, Tận tâm, Hướng ngoại, Dễ chịu, Lo âu',
-      questionCount: 20,
-      estimatedMinutes: 8,
-      testType: 'personality' as const,
-      difficulty: 'medium' as const,
-      recommended: false,
-      route: '/tests/big5',
-    },
-    {
-      id: 'gad7',
-      title: 'GAD-7 - Đánh giá Lo âu',
-      description: 'Bộ câu hỏi đánh giá mức độ rối loạn lo âu tổng quát',
-      questionCount: 7,
-      estimatedMinutes: 2,
-      testType: 'mental-health' as const,
-      difficulty: 'easy' as const,
-      recommended: false,
-      route: '/tests/gad7',
-    },
-    {
-      id: 'dass21',
-      title: 'DASS-21 - Trầm cảm, Lo âu, Stress',
-      description: 'Đánh giá toàn diện về trầm cảm, lo âu và căng thẳng',
-      questionCount: 21,
-      estimatedMinutes: 7,
-      testType: 'mental-health' as const,
-      difficulty: 'medium' as const,
-      recommended: false,
-      route: '/tests/dass21',
-    },
-    {
-      id: 'pss',
-      title: 'PSS - Đánh giá Stress',
-      description: 'Thang đo căng thẳng tâm lý được công nhận',
-      questionCount: 10,
-      estimatedMinutes: 4,
-      testType: 'mental-health' as const,
-      difficulty: 'easy' as const,
-      recommended: false,
-      route: '/tests/pss',
     },
   ]
 
@@ -114,7 +92,7 @@ export default function TestsPage() {
         <div className="grid md:grid-cols-3 gap-4 mb-12 max-w-4xl mx-auto">
           <div className="glass-card shape-organic-1 p-6 text-center group cursor-pointer">
             <Brain className="w-8 h-8 mx-auto mb-3 text-purple-600 dark:text-purple-400 group-hover:scale-110 transition-transform" />
-            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">7</div>
+            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">5</div>
             <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Bài test khả dụng</div>
           </div>
           <div className="glass-card shape-organic-2 p-6 text-center group cursor-pointer">
@@ -124,7 +102,7 @@ export default function TestsPage() {
           </div>
           <div className="glass-card shape-organic-1 p-6 text-center group cursor-pointer">
             <Activity className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform" />
-            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">~31</div>
+            <div className="text-3xl font-heading font-bold mb-1 text-slate-800 dark:text-slate-100">~45</div>
             <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Phút để hoàn thành</div>
           </div>
         </div>

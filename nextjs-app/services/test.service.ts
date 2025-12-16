@@ -7,6 +7,15 @@ import type { MBTIType, SeverityLevel } from '@/types/enums'
 import { MBTI_QUESTIONS, MBTI_DESCRIPTIONS } from '@/constants/tests/mbti-questions'
 import { PHQ9_SEVERITY, CRISIS_THRESHOLD, PHQ9_RECOMMENDATIONS, type PHQ9SeverityData } from '@/constants/tests/phq9-questions'
 import { SISRI_24_QUESTIONS, SISRI_24_SCORING, SISRI_24_DIMENSIONS, type SISRI24Dimension } from '@/constants/tests/sisri-24-questions'
+import {
+  DASS21_QUESTIONS,
+  DASS21_SUBSCALES,
+  type DASS21QuestionResponse,
+  type SeverityLevel as DASS21SeverityLevel,
+  DEPRESSION_SEVERITY,
+  ANXIETY_SEVERITY,
+  STRESS_SEVERITY,
+} from '@/constants/tests/dass21-questions'
 
 // =====================================================
 // MBTI SCORING
@@ -372,11 +381,12 @@ export function getMBTIDescription(type: MBTIType) {
  */
 export function getPHQ9Recommendations(severity: SeverityLevel) {
   // Map SeverityLevel to PHQ9_RECOMMENDATIONS keys
-  const severityMap: Record<SeverityLevel, keyof typeof PHQ9_RECOMMENDATIONS> = {
+  const severityMap: Partial<Record<SeverityLevel, keyof typeof PHQ9_RECOMMENDATIONS>> = {
     normal: 'minimal',
     mild: 'mild',
     moderate: 'moderate',
     severe: 'severe',
+    extremely_severe: 'severe', // Map extremely severe to severe recommendations
   }
 
   const key = severityMap[severity] || 'minimal'
@@ -392,6 +402,131 @@ export function shouldTriggerCrisisAlert(testType: string, result: any): boolean
     return phq9Result.crisisFlag
   }
 
+  if (testType === 'DASS21') {
+    const dass21Result = result as DASS21Result
+    return dass21Result.needsCrisisIntervention
+  }
+
   // Add other test types as needed
   return false
+}
+
+// =====================================================
+// DASS-21 SCORING (Depression, Anxiety, Stress)
+// =====================================================
+
+export interface DASS21SubscaleScore {
+  subscale: 'depression' | 'anxiety' | 'stress'
+  subscaleName: string
+  rawScore: number // 0-21 (sum of 7 questions)
+  normalizedScore: number // Multiplied by 2 to match DASS42
+  severity: DASS21SeverityLevel
+}
+
+export interface DASS21Result {
+  subscaleScores: DASS21SubscaleScore[]
+  overallAssessment: string
+  needsCrisisIntervention: boolean
+}
+
+/**
+ * Get severity level for DASS-21 subscale
+ */
+function getDASS21SeverityLevel(
+  subscale: 'depression' | 'anxiety' | 'stress',
+  normalizedScore: number
+): DASS21SeverityLevel {
+  if (subscale === 'depression') {
+    if (normalizedScore < 10) return DEPRESSION_SEVERITY.normal
+    if (normalizedScore < 14) return DEPRESSION_SEVERITY.mild
+    if (normalizedScore < 21) return DEPRESSION_SEVERITY.moderate
+    if (normalizedScore < 28) return DEPRESSION_SEVERITY.severe
+    return DEPRESSION_SEVERITY['extremely-severe']
+  }
+
+  if (subscale === 'anxiety') {
+    if (normalizedScore < 8) return ANXIETY_SEVERITY.normal
+    if (normalizedScore < 10) return ANXIETY_SEVERITY.mild
+    if (normalizedScore < 15) return ANXIETY_SEVERITY.moderate
+    if (normalizedScore < 20) return ANXIETY_SEVERITY.severe
+    return ANXIETY_SEVERITY['extremely-severe']
+  }
+
+  // stress
+  if (normalizedScore < 15) return STRESS_SEVERITY.normal
+  if (normalizedScore < 19) return STRESS_SEVERITY.mild
+  if (normalizedScore < 26) return STRESS_SEVERITY.moderate
+  if (normalizedScore < 34) return STRESS_SEVERITY.severe
+  return STRESS_SEVERITY['extremely-severe']
+}
+
+/**
+ * Calculate DASS-21 scores
+ */
+export function calculateDASS21(responses: DASS21QuestionResponse[]): DASS21Result {
+  const subscaleScores: Record<string, number> = {
+    depression: 0,
+    anxiety: 0,
+    stress: 0,
+  }
+
+  // Calculate raw scores for each subscale
+  responses.forEach((response) => {
+    const question = DASS21_QUESTIONS.find((q) => q.id === response.questionId)
+    if (!question) return
+
+    subscaleScores[question.subscale] += response.score // 0-3 per question
+  })
+
+  // Create subscale score objects with severity
+  const results: DASS21SubscaleScore[] = Object.entries(subscaleScores).map(
+    ([subscale, rawScore]) => {
+      const normalizedScore = rawScore * 2 // Multiply by 2 to match DASS42 scale
+      const severity = getDASS21SeverityLevel(
+        subscale as 'depression' | 'anxiety' | 'stress',
+        normalizedScore
+      )
+
+      return {
+        subscale: subscale as 'depression' | 'anxiety' | 'stress',
+        subscaleName: DASS21_SUBSCALES[subscale as keyof typeof DASS21_SUBSCALES],
+        rawScore,
+        normalizedScore,
+        severity,
+      }
+    }
+  )
+
+  // Determine overall assessment
+  const hasSevere = results.some(
+    (r) => r.severity.level === 'severe' || r.severity.level === 'extremely-severe'
+  )
+  const hasModerate = results.some((r) => r.severity.level === 'moderate')
+
+  let overallAssessment = ''
+  let needsCrisisIntervention = false
+
+  if (hasSevere) {
+    overallAssessment =
+      'Kết quả cho thấy bạn đang trải qua mức độ căng thẳng cao. Chúng tôi khuyến nghị bạn tìm kiếm sự hỗ trợ từ chuyên gia sức khỏe tâm thần.'
+    needsCrisisIntervention = true
+  } else if (hasModerate) {
+    overallAssessment =
+      'Kết quả cho thấy bạn đang có dấu hiệu căng thẳng ở mức trung bình. Hãy chú ý chăm sóc sức khỏe tinh thần của bạn.'
+  } else {
+    overallAssessment =
+      'Kết quả cho thấy tình trạng sức khỏe tinh thần của bạn đang ở mức bình thường. Hãy duy trì lối sống lành mạnh.'
+  }
+
+  // Check for critical depression score (suicidal risk)
+  const depressionScore = results.find((r) => r.subscale === 'depression')
+  if (depressionScore && depressionScore.normalizedScore >= 28) {
+    needsCrisisIntervention = true
+  }
+
+  return {
+    subscaleScores: results,
+    overallAssessment,
+    needsCrisisIntervention,
+  }
 }

@@ -5,19 +5,16 @@
 
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { OceanTestFlow } from "@/components/features/tests/OceanTestFlow"
-import { DASS21_QUESTIONS_FLOW, DASS21_QUESTIONS, calculateDASS21 } from '@/constants/tests/dass21-questions'
+import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
+import { DASS21_QUESTIONS_FLOW, DASS21_QUESTIONS } from '@/constants/tests/dass21-questions'
+import { calculateDASS21 } from '@/services/test.service'
+import { useTestSubmit } from '@/hooks/useTestSubmit'
 import type { DASS21QuestionResponse } from '@/constants/tests/dass21-questions'
 
 export default function DASS21TestPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const { submitTest, isSubmitting } = useTestSubmit()
 
   const handleComplete = async (answers: { questionId: number; value: number }[]) => {
-    setIsLoading(true)
-
     try {
       // Convert to DASS21QuestionResponse format
       const dass21Answers: DASS21QuestionResponse[] = answers.map((a) => {
@@ -32,21 +29,20 @@ export default function DASS21TestPage() {
       // Calculate results
       const result = calculateDASS21(dass21Answers)
 
-      // Store results in localStorage (temporary - will use Supabase later)
-      localStorage.setItem('dass21_result', JSON.stringify(result))
-      localStorage.setItem('dass21_answers', JSON.stringify(answers))
-      localStorage.setItem('dass21_completed_at', new Date().toISOString())
-
-      // Navigate to results page
-      router.push('/tests/dass21/results')
+      // Submit using centralized hook (handles API, localStorage, navigation)
+      await submitTest({
+        testType: 'DASS21',
+        answers,
+        result,
+        nextRoute: '/tests/dass21/results',
+      })
     } catch (error) {
-      console.error('Error calculating DASS-21:', error)
-      alert('Có lỗi xảy ra. Vui lòng thử lại.')
-      setIsLoading(false)
+      console.error('Error in DASS-21 test:', error)
+      // Hook already handles error display
     }
   }
 
-  if (isLoading) {
+  if (isSubmitting) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

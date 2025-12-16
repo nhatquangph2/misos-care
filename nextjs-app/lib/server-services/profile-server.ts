@@ -117,14 +117,20 @@ function calculateTrends(records: MentalHealthRecord[]): MentalHealthTrend[] {
 function generateBig5Recommendations(personality: PersonalityProfile): Recommendation[] {
   const recommendations: Recommendation[] = [];
 
+  // Convert Big5 scores from database (0-100 percentage) to BFI-2 scale (1-5)
+  const convertToScale = (percentage: number | null): number => {
+    if (percentage === null || percentage === undefined) return 3; // Default to middle
+    return 1 + (percentage / 100) * 4; // Convert 0-100 to 1-5
+  };
+
   // Construct BFI2Score from personality profile
   const bfi2Score: BFI2Score = {
     domains: {
-      E: personality.big5_extraversion || 3,
-      A: personality.big5_agreeableness || 3,
-      C: personality.big5_conscientiousness || 3,
-      N: personality.big5_neuroticism || 3,
-      O: personality.big5_openness || 3,
+      E: convertToScale(personality.big5_extraversion),
+      A: convertToScale(personality.big5_agreeableness),
+      C: convertToScale(personality.big5_conscientiousness),
+      N: convertToScale(personality.big5_neuroticism),
+      O: convertToScale(personality.big5_openness),
     },
     // Mock tScores - in production, calculate properly
     tScores: {
@@ -209,9 +215,26 @@ function generateRecommendations(
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
 
+  // Debug logging
+  console.log('🔍 Personality data:', personality);
+  console.log('🔍 Big5 openness value:', personality?.big5_openness);
+  console.log('🔍 Big5 openness type:', typeof personality?.big5_openness);
+
   // If user has Big5 profile, use detailed counseling service
-  if (personality?.big5_openness !== null && personality?.big5_openness !== undefined) {
+  // Check if at least one Big5 dimension exists (not null/undefined)
+  const hasBig5Data = personality && (
+    personality.big5_openness !== null ||
+    personality.big5_conscientiousness !== null ||
+    personality.big5_extraversion !== null ||
+    personality.big5_agreeableness !== null ||
+    personality.big5_neuroticism !== null
+  );
+
+  console.log('🔍 Has Big5 data:', hasBig5Data);
+
+  if (hasBig5Data) {
     const big5Recs = generateBig5Recommendations(personality);
+    console.log('🔍 Big5 recommendations count:', big5Recs.length);
     recommendations.push(...big5Recs);
   }
 
@@ -318,6 +341,9 @@ function generateRecommendations(
       actionUrl: '/tests/big5',
     });
   }
+
+  console.log('🔍 Total recommendations generated:', recommendations.length);
+  console.log('🔍 Recommendations:', recommendations.map(r => ({ id: r.id, title: r.title })));
 
   return recommendations;
 }

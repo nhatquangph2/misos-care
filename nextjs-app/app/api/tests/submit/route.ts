@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { CRISIS_THRESHOLD } from '@/constants/tests/phq9-questions'
 
-export type TestType = 'PHQ9' | 'GAD7' | 'DASS21' | 'PSS' | 'MBTI' | 'BIG5' | 'SISRI24'
+export type TestType = 'PHQ9' | 'GAD7' | 'DASS21' | 'PSS' | 'MBTI' | 'BIG5' | 'SISRI24' | 'VIA'
 
 interface SubmitTestRequest {
   testType: TestType
@@ -26,6 +26,9 @@ interface SubmitTestRequest {
     dimensions?: Record<string, number>
     // SISRI24 specific
     dimensionScores?: Record<string, number>
+    // VIA specific
+    signatureStrengths?: any[]
+    topVirtue?: string
   }
   completedAt?: string
 }
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     // Determine if this is a mental health test or personality test
     const mentalHealthTests = ['PHQ9', 'GAD7', 'DASS21', 'PSS']
-    const personalityTests = ['MBTI', 'BIG5', 'SISRI24']
+    const personalityTests = ['MBTI', 'BIG5', 'SISRI24', 'VIA']
 
     let savedRecord = null
     let crisisAlertTriggered = false
@@ -115,6 +118,10 @@ export async function POST(request: NextRequest) {
         if (result.dimensions.neuroticism !== undefined) profileData.big5_neuroticism = result.dimensions.neuroticism
       } else if (testType === 'SISRI24' && result.dimensionScores) {
         profileData.sisri24_scores = result.dimensionScores
+      } else if (testType === 'VIA' && result.signatureStrengths) {
+        // VIA Character Strengths
+        profileData.via_signature_strengths = result.signatureStrengths
+        profileData.via_top_virtue = result.topVirtue
       }
 
       // Upsert personality profile
