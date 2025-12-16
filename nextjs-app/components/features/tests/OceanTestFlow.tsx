@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import OceanQuestionView from './OceanQuestionView';
+import { QuestionTimeline } from './QuestionTimeline';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Check } from 'lucide-react';
 
@@ -92,40 +93,50 @@ export function OceanTestFlow({
     onComplete(answers);
   };
 
+  const handleNavigate = (index: number) => {
+    if (showCompletion) {
+      setShowCompletion(false);
+    }
+    setCurrentIndex(index);
+  };
+
   // Get previous answer for current question if exists
   const previousAnswer = answers.find(a => a.questionId === currentQuestion?.id);
+
+  // Get list of answered question indices
+  const answeredIndices = answers.map(a =>
+    questions.findIndex(q => q.id === a.questionId)
+  ).filter(i => i !== -1);
 
   return (
     <div className="relative min-h-screen w-full">
       {/* Header - Test title */}
       <div className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-gradient-to-b from-black/30 to-transparent py-6">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {(currentIndex > 0 || showCompletion) && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleBack}
-                  className="text-white hover:bg-white/10 backdrop-blur-sm"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </Button>
-              )}
-              <h1 className="text-xl md:text-2xl font-heading font-bold text-white">
-                {testTitle}
-              </h1>
-            </div>
+          <div className="text-center mb-6">
+            <h1 className="text-xl md:text-2xl font-heading font-bold text-white">
+              {testTitle}
+            </h1>
           </div>
 
-          {/* Progress bar */}
+          {/* Timeline Navigation */}
           {!showCompletion && (
-            <div className="mt-4">
+            <QuestionTimeline
+              totalQuestions={questions.length}
+              currentIndex={currentIndex}
+              answeredQuestions={answeredIndices}
+              onNavigate={handleNavigate}
+            />
+          )}
+
+          {/* Progress bar for completion screen */}
+          {showCompletion && (
+            <div className="mt-4 max-w-4xl mx-auto">
               <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
                 <motion.div
                   className="h-full bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400"
                   initial={{ width: '0%' }}
-                  animate={{ width: `${progress}%` }}
+                  animate={{ width: '100%' }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}
                 />
               </div>
@@ -145,6 +156,7 @@ export function OceanTestFlow({
               currentIndex={currentIndex}
               totalQuestions={questions.length}
               onAnswer={handleAnswer}
+              selectedValue={previousAnswer?.value}
             />
           ) : (
             <motion.div
