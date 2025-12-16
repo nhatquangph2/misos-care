@@ -11,6 +11,13 @@ import type {
   Recommendation,
   MentalHealthTrend
 } from '@/types/profile';
+import {
+  getCareerCounseling,
+  getMentalHealthInsights,
+  getLearningStyleRecommendations,
+  getRelationshipInsights
+} from '@/services/bfi2-counseling.service';
+import type { BFI2Score } from '@/constants/tests/bfi2-questions';
 
 /**
  * Get user's personality profile (server-side)
@@ -105,6 +112,95 @@ function calculateTrends(records: MentalHealthRecord[]): MentalHealthTrend[] {
 }
 
 /**
+ * Generate Big5-based detailed recommendations
+ */
+function generateBig5Recommendations(personality: PersonalityProfile): Recommendation[] {
+  const recommendations: Recommendation[] = [];
+
+  // Construct BFI2Score from personality profile
+  const bfi2Score: BFI2Score = {
+    domains: {
+      E: personality.big5_extraversion || 3,
+      A: personality.big5_agreeableness || 3,
+      C: personality.big5_conscientiousness || 3,
+      N: personality.big5_neuroticism || 3,
+      O: personality.big5_openness || 3,
+    },
+    // Mock tScores - in production, calculate properly
+    tScores: {
+      domains: {
+        E: 50,
+        A: 50,
+        C: 50,
+        N: 50,
+        O: 50,
+      },
+      facets: {} as any
+    },
+    percentiles: {
+      domains: {
+        E: 50,
+        A: 50,
+        C: 50,
+        N: 50,
+        O: 50,
+      }
+    },
+    facets: {} as any
+  };
+
+  // Career counseling
+  const careers = getCareerCounseling(bfi2Score);
+  careers.slice(0, 2).forEach((career, idx) => {
+    recommendations.push({
+      id: `career-${idx}`,
+      type: 'professional',
+      title: `💼 ${career.category}`,
+      description: `${career.reason}\n\n**Nghề nghiệp phù hợp:** ${career.careers.slice(0, 3).join(', ')}`,
+      priority: idx === 0 ? 'high' : 'medium',
+      icon: '💼',
+    });
+  });
+
+  // Mental health insights
+  const mentalHealth = getMentalHealthInsights(bfi2Score);
+  mentalHealth.slice(0, 3).forEach((insight, idx) => {
+    recommendations.push({
+      id: `mental-${idx}`,
+      type: insight.type === 'risk' ? 'professional' : 'habit',
+      title: insight.title,
+      description: `${insight.description}\n\n**Khuyến nghị:** ${insight.recommendations.slice(0, 2).join('; ')}`,
+      priority: insight.type === 'risk' ? 'high' : 'medium',
+      icon: insight.type === 'risk' ? '⚠️' : '✅',
+    });
+  });
+
+  // Learning style
+  const learning = getLearningStyleRecommendations(bfi2Score);
+  recommendations.push({
+    id: 'learning-style',
+    type: 'activity',
+    title: `📚 Phong cách học tập: ${learning.overallStyle.split('•')[0].trim()}`,
+    description: `${learning.description}\n\n**Phương pháp tốt nhất:** ${learning.bestMethods.slice(0, 2).join('; ')}`,
+    priority: 'medium',
+    icon: '📚',
+  });
+
+  // Relationship insights
+  const relationship = getRelationshipInsights(bfi2Score);
+  recommendations.push({
+    id: 'relationship',
+    type: 'social',
+    title: `💬 Giao tiếp: ${relationship.communicationStyle.split('(')[0].trim()}`,
+    description: `**Phong cách xung đột:** ${relationship.conflictStyle}\n\n**Lời khuyên:** ${relationship.tips.slice(0, 2).join('; ')}`,
+    priority: 'medium',
+    icon: '💬',
+  });
+
+  return recommendations;
+}
+
+/**
  * Generate personalized recommendations
  */
 function generateRecommendations(
@@ -112,6 +208,12 @@ function generateRecommendations(
   records: MentalHealthRecord[]
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
+
+  // If user has Big5 profile, use detailed counseling service
+  if (personality?.big5_openness !== null && personality?.big5_openness !== undefined) {
+    const big5Recs = generateBig5Recommendations(personality);
+    recommendations.push(...big5Recs);
+  }
 
   const recentRecords = records.slice(0, 3);
   const hasHighSeverity = recentRecords.some(
