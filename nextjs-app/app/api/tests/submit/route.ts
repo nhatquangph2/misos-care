@@ -283,10 +283,13 @@ export async function POST(request: NextRequest) {
       }
 
       // Upsert to old table (don't fail if it errors)
-      await supabase
-        .from('personality_profiles')
-        .upsert(profileData as any, { onConflict: 'user_id' })
-        .catch((err: any) => console.warn('Old table upsert warning:', err))
+      try {
+        await supabase
+          .from('personality_profiles')
+          .upsert(profileData as any, { onConflict: 'user_id' })
+      } catch (err) {
+        console.warn('Old table upsert warning:', err)
+      }
     }
 
     // === GAMIFICATION: Thưởng Bubbles cho việc hoàn thành test ===
