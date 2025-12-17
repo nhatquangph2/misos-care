@@ -36,7 +36,9 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
     );
   }
 
-  const { BVS, RCS } = analysis.scores;
+  // Đảm bảo scores tồn tại trước khi destructure
+  const BVS = analysis.scores?.BVS ?? 0; // Thêm ?? 0 để không lỗi crash
+  const RCS = analysis.scores?.RCS ?? 0;
   const profile = analysis.profile as any;
   const discrepancies = analysis.discrepancies || [];
 

@@ -604,42 +604,68 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
     }
   }
 
-  // 3. === INJECT MISO V3 ENGINE ===
+  // 3. === INJECT MISO V3 ENGINE (FIXED & DEBUGGED) ===
+
+  // Kiểm tra kỹ cấu trúc dữ liệu từ DB (Debug Log)
+  console.log("🔍 MISO Input Check for User:", userId);
+  console.log("- MBTI Raw:", mbtiRes.data?.result);
+  console.log("- Big5 Raw:", bfi2Res.data?.score);
+  console.log("- VIA Raw:", viaRes.data?.scores, "| VIA Score:", viaRes.data?.score);
+  console.log("- DASS Raw:", dassRes.data?.scores, "| DASS Score:", dassRes.data?.score);
+
+  // Mapping an toàn hơn (Safe Mapping)
   const userDataForMiso = {
-    mbti: mbtiRes.data?.result?.type,
-    big5_raw: bfi2Res.data?.score?.raw_scores,
-    via_raw: viaRes.data?.score?.raw_scores,
-    dass21_raw: dassRes.data?.score?.scores
-  }
+    // MBTI: Lấy type string (VD: "INFJ")
+    mbti: mbtiRes.data?.result?.type || null,
+
+    // Big5: Cần raw_scores (VD: {O: 30, C: 40...}) hoặc percentiles
+    big5_raw: bfi2Res.data?.score?.raw_scores || bfi2Res.data?.score || {},
+
+    // VIA: Đây là điểm hay lỗi nhất. Nếu không có raw scores, thử lấy từ cấu trúc khác hoặc để object rỗng
+    // (Lưu ý: Nếu VIA chỉ lưu ranked_strengths thì ta tạm thời bỏ qua điểm số VIA để engine không crash)
+    via_raw: viaRes.data?.scores || viaRes.data?.score || {},
+
+    // DASS-21: Bắt buộc phải có - thử cả 2 cấu trúc có thể
+    dass21_raw: dassRes.data?.scores || dassRes.data?.score?.scores || {}
+  };
 
   try {
-    // RUN ENGINE SYNCHRONOUSLY (<10ms)
-    const analysis = await runMisoAnalysis(userDataForMiso, userId)
-    profile.miso_analysis = analysis
+    // Chỉ chạy Engine nếu có ít nhất DASS-21 (Điều kiện tối thiểu)
+    if (userDataForMiso.dass21_raw && (userDataForMiso.dass21_raw.D !== undefined || userDataForMiso.dass21_raw.depression !== undefined)) {
 
-    // LOG SNAPSHOT ASYNC (Fire & Forget) - Don't await to keep UI fast
-    supabase.from('miso_analysis_logs').insert({
-      user_id: userId,
-      analysis_result: analysis,
-      bvs: analysis.scores?.BVS,
-      rcs: analysis.scores?.RCS,
-      profile_id: 'id' in analysis.profile ? analysis.profile.id : null,
-      risk_level: 'risk_level' in analysis.profile ? analysis.profile.risk_level : null,
-      completeness_level: analysis.completeness.level,
-      dass21_depression: dassRes.data?.score?.scores?.D,
-      dass21_anxiety: dassRes.data?.score?.scores?.A,
-      dass21_stress: dassRes.data?.score?.scores?.S,
-      big5_neuroticism: bfi2Res.data?.score?.raw_scores?.N,
-      big5_extraversion: bfi2Res.data?.score?.raw_scores?.E,
-      big5_openness: bfi2Res.data?.score?.raw_scores?.O,
-      big5_agreeableness: bfi2Res.data?.score?.raw_scores?.A,
-      big5_conscientiousness: bfi2Res.data?.score?.raw_scores?.C,
-    }).then(({ error }) => {
-      if (error) console.error('MISO Log Error:', error)
-    })
+        const analysis = await runMisoAnalysis(userDataForMiso, userId);
+        profile.miso_analysis = analysis;
+
+        console.log("✅ MISO Engine Success:", analysis ? "Generated" : "Returned Null");
+
+        // LOG SNAPSHOT ASYNC (Fire & Forget)
+        if (analysis) {
+            supabase.from('miso_analysis_logs').insert({
+                user_id: userId,
+                analysis_result: analysis,
+                bvs: analysis.scores?.BVS,
+                rcs: analysis.scores?.RCS,
+                profile_id: 'id' in analysis.profile ? analysis.profile.id : null,
+                risk_level: 'risk_level' in analysis.profile ? analysis.profile.risk_level : null,
+                completeness_level: analysis.completeness.level,
+                dass21_depression: dassRes.data?.score?.scores?.D || dassRes.data?.scores?.D,
+                dass21_anxiety: dassRes.data?.score?.scores?.A || dassRes.data?.scores?.A,
+                dass21_stress: dassRes.data?.score?.scores?.S || dassRes.data?.scores?.S,
+                big5_neuroticism: bfi2Res.data?.score?.raw_scores?.N,
+                big5_extraversion: bfi2Res.data?.score?.raw_scores?.E,
+                big5_openness: bfi2Res.data?.score?.raw_scores?.O,
+                big5_agreeableness: bfi2Res.data?.score?.raw_scores?.A,
+                big5_conscientiousness: bfi2Res.data?.score?.raw_scores?.C,
+            }).then(({ error }) => {
+              if(error) console.error("Miso Log Error", error)
+            });
+        }
+    } else {
+        console.warn("⚠️ MISO Engine Skipped: Missing DASS-21 data");
+    }
 
   } catch (error) {
-    console.error('MISO Engine Calculation Failed:', error)
+    console.error("❌ MISO Engine Crashed:", error);
     // Continue returning profile even if V3 fails (Graceful Degradation)
   }
 
