@@ -57,14 +57,18 @@ export default function DASS21ResultsPage() {
         setSaveStatus('saving')
 
         // Calculate total score and get worst severity level
+        // IMPORTANT: We store NORMALIZED scores (0-42) as per DASS-21 standard
         let totalScore = 0
         const subscaleScoresObj: Record<string, number> = {}
         let worstSeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe' = 'normal'
         const severityOrder = ['normal', 'mild', 'moderate', 'severe', 'extremely_severe']
 
         parsedResult.subscaleScores.forEach((subscale: DASS21SubscaleScore) => {
-          totalScore += subscale.rawScore
-          subscaleScoresObj[subscale.subscaleName] = subscale.rawScore
+          // Use normalized score (0-42) for database storage
+          totalScore += subscale.normalizedScore
+
+          // Use English keys for consistency: depression, anxiety, stress
+          subscaleScoresObj[subscale.subscale] = subscale.normalizedScore
 
           // Map severity level from object to string
           const severityMap: Record<string, 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe'> = {

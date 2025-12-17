@@ -87,11 +87,28 @@ function calculateTrends(records: MentalHealthRecord[]): MentalHealthTrend[] {
         dayData.stress = score;
         break;
       case 'DASS21':
+        // IMPORTANT: subscale_scores now uses English keys and normalized scores (0-42)
         const subscales = record.subscale_scores as Record<string, number> | null;
         if (subscales) {
-          if (subscales.depression !== undefined) dayData.depression = subscales.depression;
-          if (subscales.anxiety !== undefined) dayData.anxiety = subscales.anxiety;
-          if (subscales.stress !== undefined) dayData.stress = subscales.stress;
+          // Try new format (English keys, normalized 0-42)
+          if (subscales.depression !== undefined) {
+            dayData.depression = subscales.depression;
+          } else if (subscales['Trầm cảm'] !== undefined) {
+            // Legacy format: Vietnamese keys + raw scores (0-21)
+            dayData.depression = subscales['Trầm cảm'] * 2;
+          }
+
+          if (subscales.anxiety !== undefined) {
+            dayData.anxiety = subscales.anxiety;
+          } else if (subscales['Lo âu'] !== undefined) {
+            dayData.anxiety = subscales['Lo âu'] * 2;
+          }
+
+          if (subscales.stress !== undefined) {
+            dayData.stress = subscales.stress;
+          } else if (subscales['Stress'] !== undefined) {
+            dayData.stress = subscales['Stress'] * 2;
+          }
         } else {
           dayData.stress = score;
         }

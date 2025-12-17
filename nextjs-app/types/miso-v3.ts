@@ -52,9 +52,12 @@ export interface Big5RawScores {
 }
 
 export interface DASS21RawScores {
-  D: number // Depression (0-42)
-  A: number // Anxiety (0-42)
-  S: number // Stress (0-42)
+  // IMPORTANT: These are NORMALIZED scores (0-42), NOT raw (0-21)
+  // DASS-21 raw scores (7 questions × 0-3) = 0-21
+  // Normalized scores = raw × 2 = 0-42 (to match DASS-42 scale)
+  D: number // Depression (0-42 normalized)
+  A: number // Anxiety (0-42 normalized)
+  S: number // Stress (0-42 normalized)
 }
 
 export interface VIARawScores {

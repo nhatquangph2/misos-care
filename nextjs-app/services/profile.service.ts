@@ -108,11 +108,32 @@ export class ProfileService {
           break;
         case 'DASS21':
           // DASS-21 has subscale scores for all three
+          // IMPORTANT: subscale_scores now uses English keys (depression, anxiety, stress)
+          // and stores NORMALIZED scores (0-42)
           const subscales = record.subscale_scores as Record<string, number> | null;
           if (subscales) {
-            if (subscales.depression !== undefined) dayData.depression = subscales.depression;
-            if (subscales.anxiety !== undefined) dayData.anxiety = subscales.anxiety;
-            if (subscales.stress !== undefined) dayData.stress = subscales.stress;
+            // Try new format (English keys, normalized 0-42)
+            if (subscales.depression !== undefined) {
+              dayData.depression = subscales.depression;
+            } else if (subscales['Trầm cảm'] !== undefined) {
+              // Legacy format: Vietnamese keys + raw scores (0-21)
+              // Convert to normalized by multiplying by 2
+              dayData.depression = subscales['Trầm cảm'] * 2;
+            }
+
+            if (subscales.anxiety !== undefined) {
+              dayData.anxiety = subscales.anxiety;
+            } else if (subscales['Lo âu'] !== undefined) {
+              // Legacy format
+              dayData.anxiety = subscales['Lo âu'] * 2;
+            }
+
+            if (subscales.stress !== undefined) {
+              dayData.stress = subscales.stress;
+            } else if (subscales['Stress'] !== undefined) {
+              // Legacy format (Stress key was already English, but still raw)
+              dayData.stress = subscales['Stress'] * 2;
+            }
           } else {
             // If no subscales, use total score as general indicator
             dayData.stress = score;

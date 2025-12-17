@@ -76,7 +76,10 @@ CREATE TABLE mental_health_records (
 
   -- Scores
   total_score INTEGER NOT NULL,
-  subscale_scores JSONB, -- For DASS-21: {depression: 12, anxiety: 8, stress: 14}
+  -- For DASS-21: Stores NORMALIZED scores (0-42) with English keys
+  -- Format: {"depression": 24, "anxiety": 16, "stress": 28}
+  -- total_score for DASS-21 = sum of normalized scores (0-126)
+  subscale_scores JSONB,
 
   -- Severity levels
   severity_level TEXT NOT NULL CHECK (severity_level IN ('normal', 'mild', 'moderate', 'severe', 'extremely_severe')),
