@@ -6,10 +6,13 @@ import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TestHistory from '@/components/profile/TestHistory';
 import RecommendationsCard from '@/components/profile/RecommendationsCard';
+import DetailedRecommendations from '@/components/profile/DetailedRecommendations';
 import GoalsAndPlansView from '@/components/goals/GoalsAndPlansView';
+import { MisoInsightCard } from '@/components/profile/MisoInsightCard';
 import { exportTestHistoryData, type TimelineEntry } from '@/services/test-history.service';
 import { createClient } from '@/lib/supabase/client';
 import type { ProfileSummary } from '@/types/profile';
+import type { UnifiedProfile } from '@/services/unified-profile.service';
 import { Button } from '@/components/ui/button';
 import { Download, Calendar, Activity, Brain, AlertTriangle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -38,12 +41,28 @@ const MentalHealthChart = dynamic(
 interface ProfileClientViewProps {
   profileData: ProfileSummary | null;
   timeline: TimelineEntry[];
+  unifiedProfile: UnifiedProfile;
   userId: string;
 }
 
-export default function ProfileClientView({ profileData, timeline, userId }: ProfileClientViewProps) {
+export default function ProfileClientView({ profileData, timeline, unifiedProfile, userId }: ProfileClientViewProps) {
   const router = useRouter();
   const [isExporting, setIsExporting] = useState(false);
+
+  // Debug logging for profile data
+  console.log('📱 ProfileClientView - Profile Data:', {
+    hasProfile: !!profileData,
+    personality: profileData?.personality,
+    big5Values: profileData?.personality ? {
+      openness: profileData.personality.big5_openness,
+      conscientiousness: profileData.personality.big5_conscientiousness,
+      extraversion: profileData.personality.big5_extraversion,
+      agreeableness: profileData.personality.big5_agreeableness,
+      neuroticism: profileData.personality.big5_neuroticism
+    } : null,
+    recommendationsCount: profileData?.recommendations?.length || 0,
+    recommendations: profileData?.recommendations?.map(r => ({ id: r.id, title: r.title }))
+  });
 
   const handleExportHistory = async () => {
     try {
@@ -178,6 +197,9 @@ export default function ProfileClientView({ profileData, timeline, userId }: Pro
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6">
+          {/* MISO V3 Insight Card - Top Priority */}
+          <MisoInsightCard analysis={unifiedProfile.miso_analysis} />
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-6">
               <PersonalityOverview profile={profileData?.personality || null} />

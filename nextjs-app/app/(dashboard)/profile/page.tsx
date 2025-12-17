@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { getProfileSummaryServer } from '@/lib/server-services/profile-server';
 import { getTestTimelineServer } from '@/lib/server-services/test-history-server';
+import { getUnifiedProfile } from '@/services/unified-profile.service';
 import ProfileClientView from './ProfileClientView';
 import type { Metadata } from 'next';
 
@@ -20,15 +21,18 @@ export default async function ProfilePage() {
   }
 
   // Promise.all to fetch data in parallel - reduces waiting time by ~50%
-  const [profileData, timelineData] = await Promise.all([
+  // Now includes MISO V3 unified profile with integrated analysis
+  const [profileData, timelineData, unifiedProfile] = await Promise.all([
     getProfileSummaryServer(user.id),
-    getTestTimelineServer(user.id)
+    getTestTimelineServer(user.id),
+    getUnifiedProfile(user.id)
   ]);
 
   return (
     <ProfileClientView
       profileData={profileData}
       timeline={timelineData}
+      unifiedProfile={unifiedProfile}
       userId={user.id}
     />
   );

@@ -39,6 +39,7 @@
  */
 
 import { BFI2Score } from '@/constants/tests/bfi2-questions'
+import { MisoAnalysisResult } from '@/types/miso-v3'
 
 // ============================================
 // TYPE DEFINITIONS
@@ -92,6 +93,11 @@ export interface UnifiedProfile {
   big5?: BFI2Score
   via?: VIAResult
   multipleIntelligences?: MultipleIntelligencesResult
+
+  // === NEW FIELD: MISO V3 ENGINE RESULT ===
+  miso_analysis?: MisoAnalysisResult
+  // ========================================
+
   completionStatus: {
     mbti: boolean
     big5: boolean
@@ -534,87 +540,115 @@ export function getPersonalizedRecommendations(profile: UnifiedProfile): Persona
 // ============================================
 
 /**
- * Fetch unified profile from database
+ * Fetch unified profile from database with MISO V3 integration
  */
 export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile> {
   const { createClient } = await import('@/lib/supabase/server')
   const supabase = await createClient()
+  const { runMisoAnalysis } = await import('@/lib/miso/engine')
 
-  const profile: UnifiedProfile = {
-    big5: null,
-    mbti: null,
-    via: null,
-    multipleIntelligences: null,
+  // 1. PARALLEL DATA FETCHING - Fetch all raw test data
+  const [bfi2Res, viaRes, dassRes, mbtiRes, sisriRes] = await Promise.all([
+    supabase.from('bfi2_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    supabase.from('via_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    supabase.from('dass21_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    supabase.from('mbti_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    supabase.from('sisri24_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single()
+  ])
+
+  // 2. CONSTRUCT BASE PROFILE (Legacy Structure)
+  const profile: Partial<UnifiedProfile> = {
+    big5: undefined,
+    mbti: undefined,
+    via: undefined,
+    multipleIntelligences: undefined,
+    miso_analysis: undefined,
   }
 
-  // Fetch Big5
-  const { data: big5Data } = await supabase
-    .from('bfi2_results')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (big5Data?.score) {
-    profile.big5 = big5Data.score
+  // Map Big5 from bfi2_results
+  if (bfi2Res.data?.score) {
+    profile.big5 = bfi2Res.data.score as BFI2Score
   }
 
-  // Fetch MBTI
-  const { data: mbtiData } = await supabase
-    .from('mbti_results')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (mbtiData?.result) {
+  // Map MBTI from mbti_results
+  if (mbtiRes.data?.result) {
     profile.mbti = {
-      type: mbtiData.result.type,
-      dimensions: mbtiData.result.dimensions,
-      scores: mbtiData.result.scores,
+      ...mbtiRes.data.result,
+      completedAt: new Date(mbtiRes.data.created_at).getTime()
     }
   }
 
-  // Fetch VIA
-  const { data: viaData } = await supabase
-    .from('via_results')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (viaData?.ranked_strengths) {
+  // Map VIA from via_results
+  if (viaRes.data?.ranked_strengths) {
     profile.via = {
-      strengths: viaData.ranked_strengths.map((name: string, index: number) => ({
-        rank: index + 1,
-        name,
-        score: 0, // Score not stored in current schema
-        category: index < 5 ? 'signature' : index < 19 ? 'middle' : 'lower',
+      strengths: viaRes.data.ranked_strengths.map((s: string, i: number) => ({
+        rank: i + 1,
+        name: s,
+        score: 0,
+        category: i < 5 ? 'signature' : i < 19 ? 'middle' : 'lower'
       })),
+      topFive: viaRes.data.ranked_strengths.slice(0, 5),
+      completedAt: new Date(viaRes.data.created_at).getTime()
     }
   }
 
-  // Fetch Multiple Intelligences (SISRI-24)
-  const { data: miData } = await supabase
-    .from('sisri24_results')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (miData?.scores) {
+  // Map Multiple Intelligences from sisri24_results
+  if (sisriRes.data?.scores) {
     profile.multipleIntelligences = {
-      scores: miData.scores,
-      dominant: Object.entries(miData.scores)
+      scores: sisriRes.data.scores,
+      dominant: Object.entries(sisriRes.data.scores)
         .sort(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 3)
-        .map(([key]) => key),
+        .map(([k]) => k),
+      completedAt: new Date(sisriRes.data.created_at).getTime()
     }
   }
 
-  return profile
+  // 3. === INJECT MISO V3 ENGINE ===
+  const userDataForMiso = {
+    mbti: mbtiRes.data?.result?.type,
+    big5_raw: bfi2Res.data?.score?.raw_scores,
+    via_raw: viaRes.data?.score?.raw_scores,
+    dass21_raw: dassRes.data?.score?.scores
+  }
+
+  try {
+    // RUN ENGINE SYNCHRONOUSLY (<10ms)
+    const analysis = await runMisoAnalysis(userDataForMiso, userId)
+    profile.miso_analysis = analysis
+
+    // LOG SNAPSHOT ASYNC (Fire & Forget) - Don't await to keep UI fast
+    supabase.from('miso_analysis_logs').insert({
+      user_id: userId,
+      analysis_result: analysis,
+      bvs: analysis.scores?.BVS,
+      rcs: analysis.scores?.RCS,
+      profile_id: 'id' in analysis.profile ? analysis.profile.id : null,
+      risk_level: 'risk_level' in analysis.profile ? analysis.profile.risk_level : null,
+      completeness_level: analysis.completeness.level,
+      dass21_depression: dassRes.data?.score?.scores?.D,
+      dass21_anxiety: dassRes.data?.score?.scores?.A,
+      dass21_stress: dassRes.data?.score?.scores?.S,
+      big5_neuroticism: bfi2Res.data?.score?.raw_scores?.N,
+      big5_extraversion: bfi2Res.data?.score?.raw_scores?.E,
+      big5_openness: bfi2Res.data?.score?.raw_scores?.O,
+      big5_agreeableness: bfi2Res.data?.score?.raw_scores?.A,
+      big5_conscientiousness: bfi2Res.data?.score?.raw_scores?.C,
+    }).then(({ error }) => {
+      if (error) console.error('MISO Log Error:', error)
+    })
+
+  } catch (error) {
+    console.error('MISO Engine Calculation Failed:', error)
+    // Continue returning profile even if V3 fails (Graceful Degradation)
+  }
+
+  // 4. Update Status & Return
+  const completionStatus = getCompletionStatus(profile as UnifiedProfile)
+
+  return {
+    ...profile,
+    completionStatus,
+    generatedAt: Date.now()
+  } as UnifiedProfile
 }
