@@ -44,6 +44,7 @@ export type CommunicationStyle =
 // ============================================
 
 export interface Big5RawScores {
+  [key: string]: number
   N: number // Neuroticism (8-40 for BFI-44)
   E: number // Extraversion (8-40)
   O: number // Openness (10-50)
@@ -52,6 +53,7 @@ export interface Big5RawScores {
 }
 
 export interface DASS21RawScores {
+  [key: string]: number
   D: number // Depression (0-42)
   A: number // Anxiety (0-42)
   S: number // Stress (0-42)
@@ -378,7 +380,7 @@ export interface MisoAnalysisResult {
   }
 
   // Profile classification
-  profile: Big5ProfileData | { mode: 'LITE'; [key: string]: any }
+  profile: Big5ProfileData | LiteModeAnalysis
 
   // Scores
   scores?: {

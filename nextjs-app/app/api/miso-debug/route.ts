@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     const analysis = profile.miso_analysis
     const hasData = !!analysis
     const hasScores = !!analysis?.scores?.BVS && !!analysis?.scores?.RCS
-    const hasProfile = !!analysis?.profile?.id
+    const hasProfile = !!(analysis?.profile && 'id' in analysis.profile ? analysis.profile.id : analysis?.profile)
 
     // 3. ĐÁNH GIÁ KẾT QUẢ
     const testResult = {
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
         profile_classified: hasProfile,
       },
       debug_data: {
-        profile_name: analysis?.profile?.name,
+        profile_name: analysis?.profile && 'name' in analysis.profile ? analysis.profile.name : 'LITE',
         BVS: analysis?.scores?.BVS,
         RCS: analysis?.scores?.RCS,
         discrepancies_found: analysis?.discrepancies?.length || 0,

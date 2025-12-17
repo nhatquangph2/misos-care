@@ -549,11 +549,11 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
 
   // 1. PARALLEL DATA FETCHING - Fetch all raw test data
   const [bfi2Res, viaRes, dassRes, mbtiRes, sisriRes] = await Promise.all([
-    supabase.from('bfi2_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('via_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('dass21_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('mbti_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('sisri24_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single()
+    (supabase.from('bfi2_results') as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    (supabase.from('via_results') as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    (supabase.from('dass21_results') as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    (supabase.from('mbti_results') as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    (supabase.from('sisri24_results') as any).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single()
   ])
 
   // 2. CONSTRUCT BASE PROFILE (Legacy Structure)
@@ -614,18 +614,18 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
 
   try {
     // RUN ENGINE SYNCHRONOUSLY (<10ms)
-    const analysis = await runMisoAnalysis(userDataForMiso, userId)
-    profile.miso_analysis = analysis
+    const misoResult = await runMisoAnalysis(userDataForMiso, userId) as MisoAnalysisResult
+    profile.miso_analysis = misoResult as any
 
     // LOG SNAPSHOT ASYNC (Fire & Forget) - Don't await to keep UI fast
-    supabase.from('miso_analysis_logs').insert({
+    (supabase.from('miso_analysis_logs') as any).insert({
       user_id: userId,
-      analysis_result: analysis,
-      bvs: analysis.scores?.BVS,
-      rcs: analysis.scores?.RCS,
-      profile_id: 'id' in analysis.profile ? analysis.profile.id : null,
-      risk_level: 'risk_level' in analysis.profile ? analysis.profile.risk_level : null,
-      completeness_level: analysis.completeness.level,
+      analysis_result: misoResult,
+      bvs: misoResult.scores?.BVS,
+      rcs: misoResult.scores?.RCS,
+      profile_id: 'id' in misoResult.profile ? misoResult.profile.id : null,
+      risk_level: 'risk_level' in misoResult.profile ? misoResult.profile.risk_level : null,
+      completeness_level: misoResult.completeness.level,
       dass21_depression: dassRes.data?.score?.scores?.D,
       dass21_anxiety: dassRes.data?.score?.scores?.A,
       dass21_stress: dassRes.data?.score?.scores?.S,
@@ -634,7 +634,7 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
       big5_openness: bfi2Res.data?.score?.raw_scores?.O,
       big5_agreeableness: bfi2Res.data?.score?.raw_scores?.A,
       big5_conscientiousness: bfi2Res.data?.score?.raw_scores?.C,
-    }).then(({ error }) => {
+    }).then(({ error }: any) => {
       if (error) console.error('MISO Log Error:', error)
     })
 

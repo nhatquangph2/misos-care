@@ -151,7 +151,7 @@ export async function runMisoAnalysis(
       dass21: undefined,
       big5: undefined,
     },
-    profile: { mode: 'LITE' },
+    profile: { mode: 'LITE_ANALYSIS', severity: {}, priority_concern: null, risk_level: 'unknown', immediate_actions: [], first_aid: [] } as any,
     scores: undefined,
     predictions: undefined,
     discrepancies: [],
@@ -206,7 +206,7 @@ export async function runMisoAnalysis(
   if (result.completeness.level === 'MINIMAL') {
     // LITE MODE
     const liteResult = analyzeDASS21Only(userData.dass21_raw!)
-    result.profile = { mode: 'LITE', ...liteResult }
+    result.profile = liteResult
     result.interventions = {
       immediate: liteResult.immediate_actions,
       first_aid: liteResult.first_aid,

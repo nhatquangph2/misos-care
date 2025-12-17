@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
     const analysisResult = await runMisoAnalysis(userData, user.id, history)
 
     // Save to database
-    const { error: saveError } = await supabase.from('miso_analysis_logs').insert({
+    const { error: saveError } = await (supabase.from('miso_analysis_logs') as any).insert({
       user_id: user.id,
       analysis_result: analysisResult,
       bvs: analysisResult.scores?.BVS,
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
     // Save prediction feedback if we have predictions
     if (analysisResult.predictions && analysisResult.scores) {
-      const { error: feedbackError } = await supabase.from('prediction_feedback').insert({
+      const { error: feedbackError } = await (supabase.from('prediction_feedback') as any).insert({
         user_id: user.id,
         bvs: analysisResult.scores.BVS,
         rcs: analysisResult.scores.RCS,
