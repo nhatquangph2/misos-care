@@ -152,7 +152,15 @@ function generateBig5Recommendations(personality: PersonalityProfile): Recommend
         O: 50,
       }
     },
-    facets: {} as any
+    facets: {} as any,
+    // Raw scores - estimated from percentages (not accurate, users should retake test)
+    raw_scores: {
+      N: Math.round((personality.big5_neuroticism || 50) / 100 * 32 + 8), // 8-40 range
+      E: Math.round((personality.big5_extraversion || 50) / 100 * 32 + 8),
+      O: Math.round((personality.big5_openness || 50) / 100 * 40 + 10), // 10-50 range
+      A: Math.round((personality.big5_agreeableness || 50) / 100 * 36 + 9), // 9-45 range
+      C: Math.round((personality.big5_conscientiousness || 50) / 100 * 36 + 9),
+    }
   };
 
   // Career counseling
