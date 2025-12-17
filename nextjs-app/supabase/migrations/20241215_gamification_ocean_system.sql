@@ -27,14 +27,17 @@ CREATE INDEX IF NOT EXISTS idx_user_gamification_bubbles ON public.user_gamifica
 ALTER TABLE public.user_gamification ENABLE ROW LEVEL SECURITY;
 
 -- 5. Tạo Policy: Cho phép user xem và sửa dữ liệu của chính mình
+DROP POLICY IF EXISTS "Users can view own gamification" ON public.user_gamification;
 CREATE POLICY "Users can view own gamification"
 ON public.user_gamification FOR SELECT
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own gamification" ON public.user_gamification;
 CREATE POLICY "Users can update own gamification"
 ON public.user_gamification FOR UPDATE
 USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own gamification" ON public.user_gamification;
 CREATE POLICY "Users can insert own gamification"
 ON public.user_gamification FOR INSERT
 WITH CHECK (auth.uid() = user_id);
@@ -132,6 +135,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trigger_update_ocean_level ON public.user_gamification;
 CREATE TRIGGER trigger_update_ocean_level
 BEFORE INSERT OR UPDATE OF bubbles ON public.user_gamification
 FOR EACH ROW
