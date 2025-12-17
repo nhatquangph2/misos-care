@@ -79,6 +79,14 @@ export interface BFI2Score {
       O: number
     }
   }
+  // Raw scores for MISO V3 (sum of raw responses per domain)
+  raw_scores: {
+    N: number // Neuroticism (8-40 for BFI-44, or adjusted range)
+    E: number // Extraversion (8-40)
+    O: number // Openness (10-50)
+    A: number // Agreeableness (9-45)
+    C: number // Conscientiousness (9-45)
+  }
 }
 
 // ============================================
