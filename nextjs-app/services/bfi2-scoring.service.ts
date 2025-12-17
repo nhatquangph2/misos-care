@@ -299,6 +299,23 @@ export function calculateBFI2Score(
     ),
   }
 
+  // 8. Calculate raw scores (sum of all items per domain) for MISO V3
+  const rawScores = {
+    N: 0,
+    E: 0,
+    O: 0,
+    A: 0,
+    C: 0,
+  }
+
+  // Sum up all processed scores by domain
+  BFI2_ITEMS.forEach((item) => {
+    const score = processedScores.get(item.id)
+    if (score !== undefined) {
+      rawScores[item.domain as keyof typeof rawScores] += score
+    }
+  })
+
   const score: BFI2Score = {
     domains: domainScores,
     facets: facetScores,
@@ -309,6 +326,7 @@ export function calculateBFI2Score(
     percentiles: {
       domains: domainPercentiles,
     },
+    raw_scores: rawScores,
   }
 
   return {
