@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
         .select('depression, anxiety, stress, completed_at')
         .eq('user_id', user.id)
         .order('completed_at', { ascending: false })
-        .limit(10)
+        .limit(10) as { data: any }
 
       // Fetch Big5 history
       const { data: big5History } = await supabase
@@ -59,14 +59,14 @@ export async function POST(request: NextRequest) {
         .select('neuroticism, extraversion, openness, agreeableness, conscientiousness, completed_at')
         .eq('user_id', user.id)
         .order('completed_at', { ascending: false })
-        .limit(10)
+        .limit(10) as { data: any }
 
       history = {
-        dass21: dassHistory?.map((d) => ({
+        dass21: dassHistory?.map((d: any) => ({
           timestamp: new Date(d.completed_at),
           raw_scores: { D: d.depression, A: d.anxiety, S: d.stress },
         })),
-        big5: big5History?.map((b) => ({
+        big5: big5History?.map((b: any) => ({
           timestamp: new Date(b.completed_at),
           raw_scores: {
             N: b.neuroticism,
