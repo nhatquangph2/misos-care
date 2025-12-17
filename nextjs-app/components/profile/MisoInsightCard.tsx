@@ -7,7 +7,34 @@ import { MisoAnalysisResult } from "@/types/miso-v3";
 import { Brain, Shield, AlertTriangle, Activity } from "lucide-react";
 
 export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult }) {
-  if (!analysis || !analysis.scores) return null;
+  // Show "waiting for data" state if no analysis yet
+  if (!analysis || !analysis.scores) {
+    return (
+      <Card className="mb-6 border-l-4 border-l-purple-500 shadow-md overflow-hidden">
+        <CardHeader className="bg-slate-50/50 pb-2">
+          <CardTitle className="flex items-center gap-2 text-xl text-purple-900">
+            <Brain className="h-6 w-6 text-purple-600" />
+            Phân Tích Chuyên Sâu (MISO V3)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <Alert className="bg-blue-50 border-blue-200">
+            <Brain className="h-4 w-4 text-blue-600" />
+            <AlertTitle className="text-blue-800 font-bold text-sm">
+              Đang chờ dữ liệu phân tích
+            </AlertTitle>
+            <AlertDescription className="text-blue-900/80 text-xs mt-1">
+              Hoàn thành các bài test (DASS-21, Big Five, VIA, MBTI) để xem phân tích MISO V3.
+              <br />
+              <span className="font-semibold mt-2 inline-block">
+                Các bài test cần thiết: ✅ DASS-21 (bắt buộc) + Big Five + VIA + MBTI
+              </span>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const { BVS, RCS } = analysis.scores;
   const profile = analysis.profile as any;
