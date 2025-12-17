@@ -66,7 +66,67 @@ export async function POST(request: NextRequest) {
     let crisisAlertTriggered = false
 
     if (mentalHealthTests.includes(testType)) {
-      // Save to mental_health_records table
+      // ============================================
+      // SAVE TO NEW DASS-21 TABLE IF APPLICABLE (MISO V3)
+      // ============================================
+      if (testType === 'DASS21') {
+        // Extract D, A, S scores from result
+        // Handle both old format {depression, anxiety, stress} and new format {subscaleScores: [...]}
+        const dassScores = result as any
+        let depression = 0, anxiety = 0, stress = 0
+
+        if (dassScores.subscaleScores && Array.isArray(dassScores.subscaleScores)) {
+          // New format from calculateDASS21
+          dassScores.subscaleScores.forEach((sub: any) => {
+            if (sub.subscale === 'depression') depression = sub.rawScore
+            if (sub.subscale === 'anxiety') anxiety = sub.rawScore
+            if (sub.subscale === 'stress') stress = sub.rawScore
+          })
+        } else {
+          // Old format or direct scores
+          depression = dassScores.depression || dassScores.D || 0
+          anxiety = dassScores.anxiety || dassScores.A || 0
+          stress = dassScores.stress || dassScores.S || 0
+        }
+
+        // Prepare score object for MISO V3
+        const scoreForMiso = {
+          scores: { D: depression, A: anxiety, S: stress },
+          subscaleScores: dassScores.subscaleScores || [],
+          overallAssessment: dassScores.overallAssessment || '',
+          needsCrisisIntervention: dassScores.needsCrisisIntervention || false,
+        }
+
+        const { data, error } = await supabase
+          .from('dass21_results')
+          .insert({
+            user_id: user.id,
+            responses: answers,
+            score: scoreForMiso, // Complete DASS-21 score object with D/A/S for MISO
+            depression,
+            anxiety,
+            stress,
+            crisis_flag: dassScores.needsCrisisIntervention || result.crisisFlag || false,
+            crisis_indicators: dassScores.needsCrisisIntervention ? { reason: 'High severity detected' } : null,
+            test_version: '1.0',
+            completed_at: completedAt || new Date().toISOString(),
+          } as any)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error saving DASS-21 results:', error)
+          return NextResponse.json(
+            { error: 'Database Error', message: error.message },
+            { status: 500 }
+          )
+        }
+        savedRecord = data
+      }
+
+      // ============================================
+      // ALSO SAVE TO OLD TABLE FOR BACKWARD COMPATIBILITY
+      // ============================================
       const { data, error } = await supabase
         .from('mental_health_records')
         .insert({
@@ -84,14 +144,13 @@ export async function POST(request: NextRequest) {
         .single()
 
       if (error) {
-        console.error('Error saving mental health record:', error)
-        return NextResponse.json(
-          { error: 'Database Error', message: error.message },
-          { status: 500 }
-        )
+        console.warn('Warning saving to old mental_health_records table:', error)
+        // Don't fail - new table is more important
       }
 
-      savedRecord = data
+      if (!savedRecord) {
+        savedRecord = data
+      }
 
       // Check for crisis alert
       if (result.crisisFlag) {
@@ -100,7 +159,108 @@ export async function POST(request: NextRequest) {
         await triggerCrisisAlert(supabase, user.id, testType, result)
       }
     } else if (personalityTests.includes(testType)) {
-      // Save to personality_profiles table
+      // ============================================
+      // SAVE TO NEW TEST RESULTS TABLES (MISO V3)
+      // ============================================
+
+      if (testType === 'BIG5') {
+        // Save to bfi2_results table
+        const { data, error } = await supabase
+          .from('bfi2_results')
+          .insert({
+            user_id: user.id,
+            responses: answers, // Raw responses
+            score: result, // Complete BFI2Score object with raw_scores
+            test_version: '1.0',
+            completed_at: completedAt || new Date().toISOString(),
+          } as any)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error saving BFI-2 results:', error)
+          return NextResponse.json(
+            { error: 'Database Error', message: error.message },
+            { status: 500 }
+          )
+        }
+        savedRecord = data
+
+      } else if (testType === 'MBTI') {
+        // Save to mbti_results table
+        const { data, error } = await supabase
+          .from('mbti_results')
+          .insert({
+            user_id: user.id,
+            responses: answers,
+            result: result, // Complete MBTI result object
+            mbti_type: result.type,
+            test_version: '1.0',
+            completed_at: completedAt || new Date().toISOString(),
+          } as any)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error saving MBTI results:', error)
+          return NextResponse.json(
+            { error: 'Database Error', message: error.message },
+            { status: 500 }
+          )
+        }
+        savedRecord = data
+
+      } else if (testType === 'VIA') {
+        // Save to via_results table
+        const { data, error } = await supabase
+          .from('via_results')
+          .insert({
+            user_id: user.id,
+            responses: answers,
+            score: result, // Complete VIA score object with raw_scores
+            ranked_strengths: result.signatureStrengths || [],
+            test_version: '1.0',
+            completed_at: completedAt || new Date().toISOString(),
+          } as any)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error saving VIA results:', error)
+          return NextResponse.json(
+            { error: 'Database Error', message: error.message },
+            { status: 500 }
+          )
+        }
+        savedRecord = data
+
+      } else if (testType === 'SISRI24') {
+        // Save to sisri24_results table
+        const { data, error } = await supabase
+          .from('sisri24_results')
+          .insert({
+            user_id: user.id,
+            responses: answers,
+            scores: result.dimensionScores || result,
+            test_version: '1.0',
+            completed_at: completedAt || new Date().toISOString(),
+          } as any)
+          .select()
+          .single()
+
+        if (error) {
+          console.error('Error saving SISRI-24 results:', error)
+          return NextResponse.json(
+            { error: 'Database Error', message: error.message },
+            { status: 500 }
+          )
+        }
+        savedRecord = data
+      }
+
+      // ============================================
+      // ALSO SAVE TO OLD TABLE FOR BACKWARD COMPATIBILITY
+      // ============================================
       const profileData: Record<string, any> = {
         user_id: user.id,
         updated_at: new Date().toISOString(),
@@ -110,7 +270,6 @@ export async function POST(request: NextRequest) {
         profileData.mbti_type = result.type
         profileData.mbti_scores = result.percentages
       } else if (testType === 'BIG5' && result.dimensions) {
-        // Big5 dimensions are stored as separate columns
         if (result.dimensions.openness !== undefined) profileData.big5_openness = result.dimensions.openness
         if (result.dimensions.conscientiousness !== undefined) profileData.big5_conscientiousness = result.dimensions.conscientiousness
         if (result.dimensions.extraversion !== undefined) profileData.big5_extraversion = result.dimensions.extraversion
@@ -119,27 +278,15 @@ export async function POST(request: NextRequest) {
       } else if (testType === 'SISRI24' && result.dimensionScores) {
         profileData.sisri24_scores = result.dimensionScores
       } else if (testType === 'VIA' && result.signatureStrengths) {
-        // VIA Character Strengths
         profileData.via_signature_strengths = result.signatureStrengths
         profileData.via_top_virtue = result.topVirtue
       }
 
-      // Upsert personality profile
-      const { data, error } = await supabase
+      // Upsert to old table (don't fail if it errors)
+      await supabase
         .from('personality_profiles')
         .upsert(profileData as any, { onConflict: 'user_id' })
-        .select()
-        .single()
-
-      if (error) {
-        console.error('Error saving personality profile:', error)
-        return NextResponse.json(
-          { error: 'Database Error', message: error.message },
-          { status: 500 }
-        )
-      }
-
-      savedRecord = data
+        .catch((err: any) => console.warn('Old table upsert warning:', err))
     }
 
     // === GAMIFICATION: Thưởng Bubbles cho việc hoàn thành test ===

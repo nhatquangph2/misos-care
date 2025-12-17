@@ -68,7 +68,10 @@ export default function Big5TestPage() {
         testType: 'BIG5',
         answers,
         result: {
-          dimensions: dimensionsPercentage, // Big5 domain scores in 0-100 format
+          // Send FULL score object for MISO V3 (includes raw_scores, domains, facets, tScores, percentiles)
+          ...score,
+          // Also include old format for backward compatibility
+          dimensions: dimensionsPercentage,
         },
         nextRoute: '/tests/big5/results',
         completedAt,
