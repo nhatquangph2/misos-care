@@ -368,6 +368,15 @@ export interface ConsultationRequest {
     big5Score: BFI2Score
     mbtiType?: string
     viaStrengths?: string[]
+    // DASS-21 current mental health scores (normalized 0-42)
+    dass21Scores?: {
+      depression: number      // 0-42 (normalized)
+      anxiety: number         // 0-42 (normalized)
+      stress: number          // 0-42 (normalized)
+      depressionSeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely-severe'
+      anxietySeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely-severe'
+      stressSeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely-severe'
+    }
   }
   issue: 'stress' | 'anxiety' | 'depression' | 'procrastination' | 'relationships' | 'general'
   specificSituation: string // User describes their specific problem
@@ -423,23 +432,53 @@ function getSystemPrompt(issue: ConsultationRequest['issue']): string {
 }
 
 /**
- * Build personality context from Big5 + MBTI + VIA
+ * Build personality context from Big5 + MBTI + VIA + DASS-21
  */
 function buildPersonalityContext(request: ConsultationRequest): string {
-  const { big5Score, mbtiType, viaStrengths } = request.userProfile
+  const { big5Score, mbtiType, viaStrengths, dass21Scores } = request.userProfile
 
   const context = []
+
+  // DASS-21 Current Mental Health State (if available)
+  if (dass21Scores) {
+    context.push('CURRENT MENTAL HEALTH STATE (DASS-21):')
+    context.push(`- Depression: ${dass21Scores.depression}/42 (${dass21Scores.depressionSeverity})`)
+    context.push(`- Anxiety: ${dass21Scores.anxiety}/42 (${dass21Scores.anxietySeverity})`)
+    context.push(`- Stress: ${dass21Scores.stress}/42 (${dass21Scores.stressSeverity})`)
+
+    // Add clinical interpretation
+    if (dass21Scores.depressionSeverity === 'severe' || dass21Scores.depressionSeverity === 'extremely-severe') {
+      context.push('  ⚠️ SEVERE DEPRESSION - Professional referral strongly recommended')
+    }
+    if (dass21Scores.anxietySeverity === 'severe' || dass21Scores.anxietySeverity === 'extremely-severe') {
+      context.push('  ⚠️ SEVERE ANXIETY - Professional referral strongly recommended')
+    }
+    if (dass21Scores.stressSeverity === 'severe' || dass21Scores.stressSeverity === 'extremely-severe') {
+      context.push('  ⚠️ SEVERE STRESS - Risk of burnout, professional support needed')
+    }
+    context.push('')
+  }
 
   // Big5 insights
   const { domains, facets, tScores } = big5Score
 
-  context.push('PERSONALITY PROFILE:')
+  context.push('PERSONALITY PROFILE (Big Five):')
 
   // High/Low traits
   if (tScores.domains.N > 60) {
-    context.push('- High Negative Emotionality (tends toward anxiety/stress)')
-    if (facets.Anx > 3.5) context.push('  → Particularly high in Anxiety facet')
-    if (facets.Dep > 3.5) context.push('  → Particularly high in Depression facet')
+    context.push('- High Negative Emotionality (trait: tends toward anxiety/stress)')
+    if (facets.Anx > 3.5) context.push('  → Particularly high in Anxiety facet (trait)')
+    if (facets.Dep > 3.5) context.push('  → Particularly high in Depression facet (trait)')
+
+    // Compare trait vs state (if DASS-21 available)
+    if (dass21Scores) {
+      if (facets.Dep > 3.5 && dass21Scores.depressionSeverity === 'normal') {
+        context.push('  ℹ️ High depression trait but current state is normal - good coping')
+      }
+      if (facets.Dep < 2.5 && (dass21Scores.depressionSeverity === 'severe' || dass21Scores.depressionSeverity === 'extremely-severe')) {
+        context.push('  ⚠️ Low depression trait but severe current state - situational crisis')
+      }
+    }
   }
 
   if (tScores.domains.C < 40) {

@@ -48,13 +48,13 @@ export default function Big5TestPage() {
 
       const completedAt = new Date().toISOString()
 
-      // Store quality report and completion time separately (not part of standard flow)
+      // Store complete score object (includes raw_scores now!)
       localStorage.setItem('bfi2_result', JSON.stringify(score))
       localStorage.setItem('bfi2_responses', JSON.stringify(bfi2Responses))
       localStorage.setItem('bfi2_quality_report', JSON.stringify(qualityReport))
       localStorage.setItem('bfi2_completion_time', completionTime.toString())
 
-      // Convert domain scores from 1-5 scale to 0-100 percentage for database
+      // Convert domain scores from 1-5 scale to 0-100 percentage for backward compatibility
       const dimensionsPercentage = {
         openness: Math.round(((score.domains.O - 1) / 4) * 100),
         conscientiousness: Math.round(((score.domains.C - 1) / 4) * 100),
@@ -68,7 +68,12 @@ export default function Big5TestPage() {
         testType: 'BIG5',
         answers,
         result: {
-          dimensions: dimensionsPercentage, // Big5 domain scores in 0-100 format
+          dimensions: dimensionsPercentage, // Big5 domain scores in 0-100 format (for backward compatibility)
+          score: score, // NEW: Complete BFI2Score object including raw_scores
+          raw_scores: score.raw_scores, // NEW: Explicit raw scores for MISO V3
+          responses: bfi2Responses, // NEW: Raw responses for audit
+          completion_time_seconds: completionTime, // NEW: Completion time
+          quality_warnings: qualityReport.warnings, // NEW: Quality warnings
         },
         nextRoute: '/tests/big5/results',
         completedAt,

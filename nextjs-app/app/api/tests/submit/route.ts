@@ -110,12 +110,48 @@ export async function POST(request: NextRequest) {
         profileData.mbti_type = result.type
         profileData.mbti_scores = result.percentages
       } else if (testType === 'BIG5' && result.dimensions) {
-        // Big5 dimensions are stored as separate columns
+        // Big5 dimensions are stored as separate columns (percentage for backward compatibility)
         if (result.dimensions.openness !== undefined) profileData.big5_openness = result.dimensions.openness
         if (result.dimensions.conscientiousness !== undefined) profileData.big5_conscientiousness = result.dimensions.conscientiousness
         if (result.dimensions.extraversion !== undefined) profileData.big5_extraversion = result.dimensions.extraversion
         if (result.dimensions.agreeableness !== undefined) profileData.big5_agreeableness = result.dimensions.agreeableness
         if (result.dimensions.neuroticism !== undefined) profileData.big5_neuroticism = result.dimensions.neuroticism
+
+        // NEW: Store raw scores (1-5 scale) for MISO V3 integration
+        if (result.raw_scores) {
+          profileData.big5_openness_raw = result.raw_scores.O
+          profileData.big5_conscientiousness_raw = result.raw_scores.C
+          profileData.big5_extraversion_raw = result.raw_scores.E
+          profileData.big5_agreeableness_raw = result.raw_scores.A
+          profileData.big5_neuroticism_raw = result.raw_scores.N
+        }
+
+        // NEW: Store complete BFI-2 score object
+        if (result.score) {
+          profileData.bfi2_score = result.score
+        }
+
+        // NEW: Save to bfi2_test_history table for temporal analysis
+        if (result.score && result.raw_scores) {
+          const historyData = {
+            user_id: user.id,
+            score: result.score,
+            raw_scores: result.raw_scores,
+            completion_time_seconds: result.completion_time_seconds,
+            quality_warnings: result.quality_warnings || [],
+            raw_responses: result.responses || null,
+            completed_at: new Date().toISOString(),
+          }
+
+          const { error: historyError } = await supabase
+            .from('bfi2_test_history')
+            .insert(historyData)
+
+          if (historyError) {
+            console.error('Error saving BFI-2 test history:', historyError)
+            // Don't fail the request, just log
+          }
+        }
       } else if (testType === 'SISRI24' && result.dimensionScores) {
         profileData.sisri24_scores = result.dimensionScores
       } else if (testType === 'VIA' && result.signatureStrengths) {

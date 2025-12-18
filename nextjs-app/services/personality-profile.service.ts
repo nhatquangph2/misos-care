@@ -9,11 +9,17 @@ import type { BFI2Score } from '@/constants/tests/bfi2-questions'
 export interface PersonalityProfile {
   id: string
   user_id: string
-  big5_openness: number
+  big5_openness: number // Percentage (0-100) for backward compatibility
   big5_conscientiousness: number
   big5_extraversion: number
   big5_agreeableness: number
   big5_neuroticism: number
+  big5_openness_raw?: number // NEW: Raw score (1-5)
+  big5_conscientiousness_raw?: number
+  big5_extraversion_raw?: number
+  big5_agreeableness_raw?: number
+  big5_neuroticism_raw?: number
+  bfi2_score?: any // NEW: Complete BFI2Score object (JSONB)
   mbti_type?: string | null
   last_updated: string
   created_at: string
@@ -28,6 +34,8 @@ export interface SaveBFI2Result {
 /**
  * Save BFI-2 test results to user's personality profile
  * Creates new profile if doesn't exist, updates if exists
+ * NOTE: This function is DEPRECATED - use API route /api/tests/submit instead
+ * Kept for backward compatibility
  */
 export async function saveBFI2Results({ score, completedAt, completionTime }: SaveBFI2Result) {
   const supabase = createClient()
@@ -39,14 +47,26 @@ export async function saveBFI2Results({ score, completedAt, completionTime }: Sa
     throw new Error('User not authenticated')
   }
 
+  // Convert raw scores (1-5) to percentage (0-100) for backward compatibility
+  const toPercentage = (raw: number) => Math.round(((raw - 1) / 4) * 100)
+
   // Prepare profile data
   const profileData = {
     user_id: user.id,
-    big5_openness: score.domains.O,
-    big5_conscientiousness: score.domains.C,
-    big5_extraversion: score.domains.E,
-    big5_agreeableness: score.domains.A,
-    big5_neuroticism: score.domains.N,
+    // Percentage values (0-100) for backward compatibility
+    big5_openness: toPercentage(score.domains.O),
+    big5_conscientiousness: toPercentage(score.domains.C),
+    big5_extraversion: toPercentage(score.domains.E),
+    big5_agreeableness: toPercentage(score.domains.A),
+    big5_neuroticism: toPercentage(score.domains.N),
+    // NEW: Raw scores (1-5) for MISO V3 integration
+    big5_openness_raw: score.domains.O,
+    big5_conscientiousness_raw: score.domains.C,
+    big5_extraversion_raw: score.domains.E,
+    big5_agreeableness_raw: score.domains.A,
+    big5_neuroticism_raw: score.domains.N,
+    // NEW: Complete score object
+    bfi2_score: score,
     last_updated: completedAt?.toISOString() || new Date().toISOString(),
   }
 

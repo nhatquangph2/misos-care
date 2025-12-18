@@ -309,6 +309,14 @@ export function calculateBFI2Score(
     percentiles: {
       domains: domainPercentiles,
     },
+    // Add raw_scores for MISO V3 integration
+    raw_scores: {
+      N: domainScores.N,
+      E: domainScores.E,
+      O: domainScores.O,
+      A: domainScores.A,
+      C: domainScores.C,
+    },
   }
 
   return {
