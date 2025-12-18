@@ -112,7 +112,7 @@ export function analyzeDASSTrend(
     result.recommendations = ['reassess', 'consider_professional']
   } else if (worsened === 1) {
     result.intervention_effectiveness = 'PARTIAL_DETERIORATION'
-    const worsenedScale = Object.keys(result.trends).find(
+    const worsenedScale = (Object.keys(result.trends) as Array<'D' | 'A' | 'S'>).find(
       (k) => result.trends[k]?.direction === 'WORSENED'
     )
     if (worsenedScale) {
@@ -271,9 +271,9 @@ export function getTrajectory(
   const last = scores[0]
 
   if (first < last - 2) {
-    trend = 'IMPROVING'
+    trend = 'IMPROVED'
   } else if (first > last + 2) {
-    trend = 'WORSENING'
+    trend = 'WORSENED'
   } else {
     trend = 'STABLE'
   }

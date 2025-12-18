@@ -297,7 +297,7 @@ export function getPercentileCategory(percentile: number): string {
 // Z-SCORE TO PERCENTILE LOOKUP (for performance)
 // ============================================
 
-export const Z_SCORE_PERCENTILE_MAP: Record<number, number> = {
+export const Z_SCORE_PERCENTILE_MAP: Record<string, number> = {
   '-3.0': 0.1,
   '-2.5': 0.6,
   '-2.0': 2.3,

@@ -185,14 +185,14 @@ export async function runMisoAnalysis(
     if (history.dass21 && userData.dass21_raw) {
       result.temporal.dass21 = analyzeDASSTrend(history.dass21, {
         timestamp: new Date(),
-        raw_scores: userData.dass21_raw,
+        raw_scores: userData.dass21_raw as unknown as { [key: string]: number },
       })
     }
 
     if (history.big5 && userData.big5_raw) {
       const big5Temp = analyzeBig5Stability(history.big5, {
         timestamp: new Date(),
-        raw_scores: userData.big5_raw,
+        raw_scores: userData.big5_raw as unknown as { [key: string]: number },
       })
       result.temporal.big5 = big5Temp
 
@@ -206,7 +206,9 @@ export async function runMisoAnalysis(
   if (result.completeness.level === 'MINIMAL') {
     // LITE MODE
     const liteResult = analyzeDASS21Only(userData.dass21_raw!)
-    result.profile = { mode: 'LITE', ...liteResult }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { mode: _mode, ...liteResultWithoutMode } = liteResult
+    result.profile = { mode: 'LITE', ...liteResultWithoutMode } as any
     result.interventions = {
       immediate: liteResult.immediate_actions,
       first_aid: liteResult.first_aid,

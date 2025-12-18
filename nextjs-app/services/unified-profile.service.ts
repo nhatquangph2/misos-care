@@ -540,6 +540,88 @@ export function getPersonalizedRecommendations(profile: UnifiedProfile): Persona
 // ============================================
 
 /**
+ * Convert percentage (0-100) to 1-5 scale domain score
+ */
+function percentageToDomainScore(percentage: number): number {
+  return 1 + (percentage / 100) * 4
+}
+
+/**
+ * Convert percentage (0-100) to T-score (mean=50, sd=10)
+ * Using simple linear transformation
+ */
+function percentageToTScore(percentage: number): number {
+  // Map 0-100 to roughly 20-80 T-score range
+  return 20 + (percentage / 100) * 60
+}
+
+/**
+ * Reconstruct BFI2Score from personality_profiles data
+ */
+function reconstructBFI2Score(data: {
+  big5_openness: number | null
+  big5_conscientiousness: number | null
+  big5_extraversion: number | null
+  big5_agreeableness: number | null
+  big5_neuroticism: number | null
+}): BFI2Score | null {
+  // Check if we have any Big5 data
+  if (
+    data.big5_openness === null &&
+    data.big5_conscientiousness === null &&
+    data.big5_extraversion === null &&
+    data.big5_agreeableness === null &&
+    data.big5_neuroticism === null
+  ) {
+    return null
+  }
+
+  const O = data.big5_openness ?? 50
+  const C = data.big5_conscientiousness ?? 50
+  const E = data.big5_extraversion ?? 50
+  const A = data.big5_agreeableness ?? 50
+  const N = data.big5_neuroticism ?? 50
+
+  return {
+    domains: {
+      O: percentageToDomainScore(O),
+      C: percentageToDomainScore(C),
+      E: percentageToDomainScore(E),
+      A: percentageToDomainScore(A),
+      N: percentageToDomainScore(N),
+    },
+    facets: {},
+    tScores: {
+      domains: {
+        O: percentageToTScore(O),
+        C: percentageToTScore(C),
+        E: percentageToTScore(E),
+        A: percentageToTScore(A),
+        N: percentageToTScore(N),
+      },
+      facets: {},
+    },
+    percentiles: {
+      domains: {
+        O,
+        C,
+        E,
+        A,
+        N,
+      },
+    },
+    // Add raw_scores for MISO V3 compatibility
+    raw_scores: {
+      O: percentageToDomainScore(O),
+      C: percentageToDomainScore(C),
+      E: percentageToDomainScore(E),
+      A: percentageToDomainScore(A),
+      N: percentageToDomainScore(N),
+    },
+  } as BFI2Score
+}
+
+/**
  * Fetch unified profile from database with MISO V3 integration
  */
 export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile> {
@@ -547,13 +629,26 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
   const supabase = await createClient()
   const { runMisoAnalysis } = await import('@/lib/miso/engine')
 
-  // 1. PARALLEL DATA FETCHING - Fetch all raw test data
-  const [bfi2Res, viaRes, dassRes, mbtiRes, sisriRes] = await Promise.all([
-    supabase.from('bfi2_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('via_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('dass21_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('mbti_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
-    supabase.from('sisri24_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single()
+  // 1. PARALLEL DATA FETCHING - Fetch from actual tables
+  const [personalityProfileRes, dassRes, sisriRes] = await Promise.all([
+    // Get personality profile (contains MBTI, Big5, VIA, SISRI24)
+    supabase
+      .from('personality_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single(),
+    // Get latest DASS-21 from mental_health_records
+    supabase
+      .from('mental_health_records')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('test_type', 'DASS21')
+      .order('completed_at', { ascending: false })
+      .limit(1)
+      .single(),
+    // SISRI24 might be in personality_profiles as sisri24_scores
+    // Already included in personalityProfileRes
+    null
   ])
 
   // 2. CONSTRUCT BASE PROFILE (Legacy Structure)
@@ -565,51 +660,90 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
     miso_analysis: undefined,
   }
 
-  // Map Big5 from bfi2_results
-  if (bfi2Res.data?.score) {
-    profile.big5 = bfi2Res.data.score as BFI2Score
-  }
+  const ppData = personalityProfileRes.data as any
 
-  // Map MBTI from mbti_results
-  if (mbtiRes.data?.result) {
-    profile.mbti = {
-      ...mbtiRes.data.result,
-      completedAt: new Date(mbtiRes.data.created_at).getTime()
+  // Map Big5 from personality_profiles
+  if (ppData) {
+    const big5Score = reconstructBFI2Score({
+      big5_openness: ppData.big5_openness,
+      big5_conscientiousness: ppData.big5_conscientiousness,
+      big5_extraversion: ppData.big5_extraversion,
+      big5_agreeableness: ppData.big5_agreeableness,
+      big5_neuroticism: ppData.big5_neuroticism,
+    })
+    if (big5Score) {
+      profile.big5 = big5Score
     }
   }
 
-  // Map VIA from via_results
-  if (viaRes.data?.ranked_strengths) {
+  // Map MBTI from personality_profiles
+  if (ppData?.mbti_type) {
+    profile.mbti = {
+      type: ppData.mbti_type,
+      dimensions: {
+        EI: ppData.mbti_type.charAt(0) as 'E' | 'I',
+        SN: ppData.mbti_type.charAt(1) as 'S' | 'N',
+        TF: ppData.mbti_type.charAt(2) as 'T' | 'F',
+        JP: ppData.mbti_type.charAt(3) as 'J' | 'P',
+      },
+      functions: {
+        dominant: '',
+        auxiliary: '',
+        tertiary: '',
+        inferior: '',
+      },
+      completedAt: ppData.last_updated ? new Date(ppData.last_updated).getTime() : Date.now(),
+    }
+  }
+
+  // Map VIA from personality_profiles
+  if (ppData?.via_signature_strengths && Array.isArray(ppData.via_signature_strengths)) {
     profile.via = {
-      strengths: viaRes.data.ranked_strengths.map((s: string, i: number) => ({
+      strengths: ppData.via_signature_strengths.map((s: any, i: number) => ({
         rank: i + 1,
-        name: s,
-        score: 0,
+        name: typeof s === 'string' ? s : s.name || '',
+        score: typeof s === 'object' ? s.score || 0 : 0,
         category: i < 5 ? 'signature' : i < 19 ? 'middle' : 'lower'
       })),
-      topFive: viaRes.data.ranked_strengths.slice(0, 5),
-      completedAt: new Date(viaRes.data.created_at).getTime()
+      topFive: ppData.via_signature_strengths.slice(0, 5).map((s: any) =>
+        typeof s === 'string' ? s : s.name || ''
+      ),
+      completedAt: ppData.last_updated ? new Date(ppData.last_updated).getTime() : Date.now(),
     }
   }
 
-  // Map Multiple Intelligences from sisri24_results
-  if (sisriRes.data?.scores) {
+  // Map Multiple Intelligences from personality_profiles (sisri24_scores)
+  if (ppData?.sisri24_scores) {
     profile.multipleIntelligences = {
-      scores: sisriRes.data.scores,
-      dominant: Object.entries(sisriRes.data.scores)
+      scores: ppData.sisri24_scores,
+      dominant: Object.entries(ppData.sisri24_scores)
         .sort(([, a], [, b]) => (b as number) - (a as number))
         .slice(0, 3)
         .map(([k]) => k),
-      completedAt: new Date(sisriRes.data.created_at).getTime()
+      completedAt: ppData.last_updated ? new Date(ppData.last_updated).getTime() : Date.now(),
     }
   }
 
   // 3. === INJECT MISO V3 ENGINE ===
+  // Extract DASS-21 scores from subscale_scores
+  const dassData = dassRes.data as any
+  const dassScores = dassData?.subscale_scores as { depression?: number; anxiety?: number; stress?: number } | null
+
   const userDataForMiso = {
-    mbti: mbtiRes.data?.result?.type,
-    big5_raw: bfi2Res.data?.score?.raw_scores,
-    via_raw: viaRes.data?.score?.raw_scores,
-    dass21_raw: dassRes.data?.score?.scores
+    mbti: ppData?.mbti_type,
+    big5_raw: profile.big5 ? {
+      O: profile.big5.domains.O,
+      C: profile.big5.domains.C,
+      E: profile.big5.domains.E,
+      A: profile.big5.domains.A,
+      N: profile.big5.domains.N,
+    } : undefined,
+    via_raw: undefined, // VIA raw scores not available in this format
+    dass21_raw: dassScores ? {
+      D: dassScores.depression ?? 0,
+      A: dassScores.anxiety ?? 0,
+      S: dassScores.stress ?? 0,
+    } : undefined,
   }
 
   try {
@@ -626,15 +760,15 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
       profile_id: 'id' in analysis.profile ? analysis.profile.id : null,
       risk_level: 'risk_level' in analysis.profile ? analysis.profile.risk_level : null,
       completeness_level: analysis.completeness.level,
-      dass21_depression: dassRes.data?.score?.scores?.D,
-      dass21_anxiety: dassRes.data?.score?.scores?.A,
-      dass21_stress: dassRes.data?.score?.scores?.S,
-      big5_neuroticism: bfi2Res.data?.score?.raw_scores?.N,
-      big5_extraversion: bfi2Res.data?.score?.raw_scores?.E,
-      big5_openness: bfi2Res.data?.score?.raw_scores?.O,
-      big5_agreeableness: bfi2Res.data?.score?.raw_scores?.A,
-      big5_conscientiousness: bfi2Res.data?.score?.raw_scores?.C,
-    }).then(({ error }) => {
+      dass21_depression: dassScores?.depression,
+      dass21_anxiety: dassScores?.anxiety,
+      dass21_stress: dassScores?.stress,
+      big5_neuroticism: ppData?.big5_neuroticism,
+      big5_extraversion: ppData?.big5_extraversion,
+      big5_openness: ppData?.big5_openness,
+      big5_agreeableness: ppData?.big5_agreeableness,
+      big5_conscientiousness: ppData?.big5_conscientiousness,
+    } as any).then(({ error }: { error: any }) => {
       if (error) console.error('MISO Log Error:', error)
     })
 

@@ -45,37 +45,31 @@ export async function POST(request: NextRequest) {
     // Fetch history if requested
     let history: any = undefined
     if (include_history) {
-      // Fetch DASS-21 history
+      // Fetch DASS-21 history from mental_health_records
       const { data: dassHistory } = await supabase
-        .from('dass21_results')
-        .select('depression, anxiety, stress, completed_at')
+        .from('mental_health_records')
+        .select('subscale_scores, completed_at')
         .eq('user_id', user.id)
+        .eq('test_type', 'DASS21')
         .order('completed_at', { ascending: false })
         .limit(10)
 
-      // Fetch Big5 history
-      const { data: big5History } = await supabase
-        .from('bfi2_results')
-        .select('neuroticism, extraversion, openness, agreeableness, conscientiousness, completed_at')
-        .eq('user_id', user.id)
-        .order('completed_at', { ascending: false })
-        .limit(10)
+      // Big5 history is not available per-test (stored in personality_profiles which is single record per user)
+      // So we skip Big5 history for now
 
       history = {
-        dass21: dassHistory?.map((d) => ({
-          timestamp: new Date(d.completed_at),
-          raw_scores: { D: d.depression, A: d.anxiety, S: d.stress },
-        })),
-        big5: big5History?.map((b) => ({
-          timestamp: new Date(b.completed_at),
-          raw_scores: {
-            N: b.neuroticism,
-            E: b.extraversion,
-            O: b.openness,
-            A: b.agreeableness,
-            C: b.conscientiousness,
-          },
-        })),
+        dass21: dassHistory?.map((d: any) => {
+          const scores = d.subscale_scores as { depression?: number; anxiety?: number; stress?: number } | null
+          return {
+            timestamp: new Date(d.completed_at),
+            raw_scores: {
+              D: scores?.depression ?? 0,
+              A: scores?.anxiety ?? 0,
+              S: scores?.stress ?? 0,
+            },
+          }
+        }),
+        big5: [], // Big5 history not available in current schema
       }
     }
 
@@ -99,7 +93,7 @@ export async function POST(request: NextRequest) {
       big5_openness: big5_raw?.O,
       big5_agreeableness: big5_raw?.A,
       big5_conscientiousness: big5_raw?.C,
-    })
+    } as any)
 
     if (saveError) {
       console.error('Error saving analysis:', saveError)
@@ -127,7 +121,7 @@ export async function POST(request: NextRequest) {
             Math.abs(dass21_raw.S - analysisResult.predictions.predictions.S)) /
           3,
         segment: 'vn',
-      })
+      } as any)
 
       if (feedbackError) {
         console.error('Error saving prediction feedback:', feedbackError)
