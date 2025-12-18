@@ -12,15 +12,11 @@ const nextConfig: NextConfig = {
   // 2. Tắt header 'x-powered-by' để giảm kích thước header và bảo mật hơn
   poweredByHeader: false,
 
-  // 3. TypeScript và ESLint configuration for build
+  // 3. TypeScript configuration for build
   typescript: {
     // ⚠️ Allow production builds despite type errors
     // TODO: Fix database type definitions
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    // Allow production builds despite ESLint errors
-    ignoreDuringBuilds: true,
   },
 
   // 4. Tối ưu hóa việc import các thư viện nặng (Tree shaking tốt hơn)
