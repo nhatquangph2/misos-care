@@ -26,8 +26,16 @@ export interface SaveBFI2Result {
 }
 
 /**
+ * Convert domain score (1-5) to percentage (0-100)
+ */
+function domainScoreToPercentage(domainScore: number): number {
+  return Math.round(((domainScore - 1) / 4) * 100)
+}
+
+/**
  * Save BFI-2 test results to user's personality profile
  * Creates new profile if doesn't exist, updates if exists
+ * Note: Domain scores (1-5 scale) are converted to percentages (0-100) for storage
  */
 export async function saveBFI2Results({ score, completedAt, completionTime }: SaveBFI2Result) {
   const supabase = createClient()
@@ -39,14 +47,14 @@ export async function saveBFI2Results({ score, completedAt, completionTime }: Sa
     throw new Error('User not authenticated')
   }
 
-  // Prepare profile data
+  // Prepare profile data - convert domain scores (1-5) to percentages (0-100)
   const profileData = {
     user_id: user.id,
-    big5_openness: score.domains.O,
-    big5_conscientiousness: score.domains.C,
-    big5_extraversion: score.domains.E,
-    big5_agreeableness: score.domains.A,
-    big5_neuroticism: score.domains.N,
+    big5_openness: domainScoreToPercentage(score.domains.O),
+    big5_conscientiousness: domainScoreToPercentage(score.domains.C),
+    big5_extraversion: domainScoreToPercentage(score.domains.E),
+    big5_agreeableness: domainScoreToPercentage(score.domains.A),
+    big5_neuroticism: domainScoreToPercentage(score.domains.N),
     last_updated: completedAt?.toISOString() || new Date().toISOString(),
   }
 
