@@ -7,13 +7,13 @@
 
 'use client'
 
+import dynamicImport from 'next/dynamic'
+import FloatingDock from '@/components/layout/FloatingDock'
+
 // Disable static generation for all authenticated dashboard pages
 export const dynamic = 'force-dynamic'
 
-import dynamic from 'next/dynamic'
-import FloatingDock from '@/components/layout/FloatingDock'
-
-const DolphinMascot = dynamic(
+const DolphinMascot = dynamicImport(
   () => import('@/components/mascot/DolphinMascot').then(mod => ({ default: mod.DolphinMascot })),
   { ssr: false }
 )
