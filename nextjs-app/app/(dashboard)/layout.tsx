@@ -7,6 +7,9 @@
 
 'use client'
 
+// Disable static generation for all authenticated dashboard pages
+export const dynamic = 'force-dynamic'
+
 import dynamic from 'next/dynamic'
 import FloatingDock from '@/components/layout/FloatingDock'
 

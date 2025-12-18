@@ -1,5 +1,8 @@
 'use client'
 
+// Disable static generation for authenticated pages
+export const dynamic = 'force-dynamic'
+
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
