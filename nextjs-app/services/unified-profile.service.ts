@@ -549,7 +549,7 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
 
   // 1. PARALLEL DATA FETCHING - Fetch all raw test data
   const [bfi2Res, viaRes, dassRes, mbtiRes, sisriRes] = await Promise.all([
-    supabase.from('bfi2_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
+    supabase.from('bfi2_test_history').select('*').eq('user_id', userId).order('completed_at', { ascending: false }).limit(1).single(),
     supabase.from('via_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('dass21_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
     supabase.from('mbti_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).single(),
@@ -565,7 +565,7 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
     miso_analysis: undefined,
   }
 
-  // Map Big5 from bfi2_results
+  // Map Big5 from bfi2_test_history (NEW TABLE)
   if (bfi2Res.data?.score) {
     profile.big5 = bfi2Res.data.score as BFI2Score
   }
@@ -605,9 +605,38 @@ export async function getUnifiedProfile(userId: string): Promise<UnifiedProfile>
   }
 
   // 3. === INJECT MISO V3 ENGINE ===
+  // Handle backward compatibility: If no bfi2_test_history, try personality_profiles
+  let big5RawForMiso = bfi2Res.data?.raw_scores || bfi2Res.data?.score?.raw_scores
+
+  // FALLBACK: If still no raw scores, try to get from personality_profiles
+  if (!big5RawForMiso && !bfi2Res.data) {
+    const { data: profileData } = await supabase
+      .from('personality_profiles')
+      .select('big5_openness_raw, big5_conscientiousness_raw, big5_extraversion_raw, big5_agreeableness_raw, big5_neuroticism_raw, bfi2_score')
+      .eq('user_id', userId)
+      .single()
+
+    if (profileData) {
+      // Priority 1: Use raw scores from new columns
+      if (profileData.big5_openness_raw) {
+        big5RawForMiso = {
+          N: profileData.big5_neuroticism_raw,
+          E: profileData.big5_extraversion_raw,
+          O: profileData.big5_openness_raw,
+          A: profileData.big5_agreeableness_raw,
+          C: profileData.big5_conscientiousness_raw,
+        }
+      }
+      // Priority 2: Use bfi2_score JSONB
+      else if (profileData.bfi2_score?.raw_scores) {
+        big5RawForMiso = profileData.bfi2_score.raw_scores
+      }
+    }
+  }
+
   const userDataForMiso = {
     mbti: mbtiRes.data?.result?.type,
-    big5_raw: bfi2Res.data?.score?.raw_scores,
+    big5_raw: big5RawForMiso,
     via_raw: viaRes.data?.score?.raw_scores,
     dass21_raw: dassRes.data?.score?.scores
   }

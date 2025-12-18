@@ -55,8 +55,8 @@ export async function POST(request: NextRequest) {
 
       // Fetch Big5 history
       const { data: big5History } = await supabase
-        .from('bfi2_results')
-        .select('neuroticism, extraversion, openness, agreeableness, conscientiousness, completed_at')
+        .from('bfi2_test_history')
+        .select('raw_scores, completed_at')
         .eq('user_id', user.id)
         .order('completed_at', { ascending: false })
         .limit(10)
@@ -68,13 +68,7 @@ export async function POST(request: NextRequest) {
         })),
         big5: big5History?.map((b) => ({
           timestamp: new Date(b.completed_at),
-          raw_scores: {
-            N: b.neuroticism,
-            E: b.extraversion,
-            O: b.openness,
-            A: b.agreeableness,
-            C: b.conscientiousness,
-          },
+          raw_scores: b.raw_scores, // Direct access from bfi2_test_history
         })),
       }
     }

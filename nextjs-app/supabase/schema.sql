@@ -43,12 +43,24 @@ CREATE TABLE personality_profiles (
   )),
   mbti_scores JSONB, -- {E: 60, I: 40, S: 45, N: 55, T: 70, F: 30, J: 65, P: 35}
 
-  -- Big Five (OCEAN)
+  -- Big Five (BFI-2) - Percentage Scores (0-100) [LEGACY - for backward compatibility]
   big5_openness DECIMAL(5,2) CHECK (big5_openness BETWEEN 0 AND 100),
   big5_conscientiousness DECIMAL(5,2) CHECK (big5_conscientiousness BETWEEN 0 AND 100),
   big5_extraversion DECIMAL(5,2) CHECK (big5_extraversion BETWEEN 0 AND 100),
   big5_agreeableness DECIMAL(5,2) CHECK (big5_agreeableness BETWEEN 0 AND 100),
   big5_neuroticism DECIMAL(5,2) CHECK (big5_neuroticism BETWEEN 0 AND 100),
+
+  -- Big Five (BFI-2) - Raw Scores (1-5 scale) [NEW - for MISO V3 integration]
+  -- These are the actual BFI-2 domain scores after reverse scoring
+  big5_openness_raw DECIMAL(3,2) CHECK (big5_openness_raw BETWEEN 1 AND 5),
+  big5_conscientiousness_raw DECIMAL(3,2) CHECK (big5_conscientiousness_raw BETWEEN 1 AND 5),
+  big5_extraversion_raw DECIMAL(3,2) CHECK (big5_extraversion_raw BETWEEN 1 AND 5),
+  big5_agreeableness_raw DECIMAL(3,2) CHECK (big5_agreeableness_raw BETWEEN 1 AND 5),
+  big5_neuroticism_raw DECIMAL(3,2) CHECK (big5_neuroticism_raw BETWEEN 1 AND 5),
+
+  -- Complete BFI-2 Score Object (includes domains, facets, T-scores, percentiles)
+  -- Format: {domains: {E, A, C, N, O}, facets: {...}, tScores: {...}, percentiles: {...}, raw_scores: {...}}
+  bfi2_score JSONB,
 
   -- Enneagram (Optional - for future)
   enneagram_type INTEGER CHECK (enneagram_type BETWEEN 1 AND 9),
@@ -62,7 +74,48 @@ CREATE TABLE personality_profiles (
 );
 
 -- =====================================================
--- 3. MENTAL HEALTH RECORDS TABLE
+-- 3. BFI-2 TEST HISTORY TABLE
+-- Complete history of Big Five Inventory-2 test attempts
+-- =====================================================
+
+CREATE TABLE bfi2_test_history (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+  -- Complete score object from calculateBFI2Score()
+  score JSONB NOT NULL,
+
+  -- Denormalized raw scores for easy querying & MISO V3 integration
+  -- Format: {N: 2.8, E: 3.2, O: 3.4, A: 3.8, C: 3.5}
+  raw_scores JSONB NOT NULL,
+
+  -- Test metadata
+  completion_time_seconds INTEGER, -- How long it took to complete
+  quality_warnings TEXT[], -- Data quality issues detected
+
+  -- Raw responses (for audit/research)
+  raw_responses JSONB, -- [{itemId: 1, value: 3}, ...]
+
+  -- Timestamps
+  completed_at TIMESTAMPTZ DEFAULT NOW(),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create index for performance
+CREATE INDEX IF NOT EXISTS idx_bfi2_user_date
+ON bfi2_test_history(user_id, completed_at DESC);
+
+COMMENT ON TABLE bfi2_test_history IS
+'Complete history of BFI-2 (Big Five) test attempts. Each row represents one complete test session. The most recent test is used for personality_profiles. Enables MISO V3 temporal analysis, data recovery, and research.';
+
+COMMENT ON COLUMN bfi2_test_history.score IS
+'Complete BFI2Score object: {domains, facets, tScores, percentiles, raw_scores}';
+
+COMMENT ON COLUMN bfi2_test_history.raw_scores IS
+'Raw domain scores (1-5 scale): {N, E, O, A, C}. Denormalized for MISO V3 integration.';
+
+-- =====================================================
+-- 4. MENTAL HEALTH RECORDS TABLE
 -- Stores test results (DASS-21, PHQ-9, GAD-7, etc.)
 -- =====================================================
 

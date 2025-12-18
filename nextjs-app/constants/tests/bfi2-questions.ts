@@ -44,7 +44,7 @@ export interface BFI2Response {
 }
 
 export interface BFI2Score {
-  // Domain scores (1-5)
+  // Domain scores (1-5 scale - RAW SCORES after reverse scoring)
   domains: {
     E: number // Extraversion
     A: number // Agreeableness
@@ -52,7 +52,7 @@ export interface BFI2Score {
     N: number // Negative Emotionality
     O: number // Open-Mindedness
   }
-  // Facet scores (1-5)
+  // Facet scores (1-5 scale)
   facets: {
     [key: string]: number
   }
@@ -69,7 +69,7 @@ export interface BFI2Score {
       [key: string]: number
     }
   }
-  // Percentiles
+  // Percentiles (0-100)
   percentiles: {
     domains: {
       E: number
@@ -78,6 +78,14 @@ export interface BFI2Score {
       N: number
       O: number
     }
+  }
+  // Raw scores for MISO V3 integration (denormalized for convenience)
+  raw_scores: {
+    N: number // Negative Emotionality (1-5)
+    E: number // Extraversion (1-5)
+    O: number // Openness (1-5)
+    A: number // Agreeableness (1-5)
+    C: number // Conscientiousness (1-5)
   }
 }
 
