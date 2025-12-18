@@ -6,7 +6,6 @@ import dynamic from 'next/dynamic';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TestHistory from '@/components/profile/TestHistory';
 import RecommendationsCard from '@/components/profile/RecommendationsCard';
-import DetailedRecommendations from '@/components/profile/DetailedRecommendations';
 import GoalsAndPlansView from '@/components/goals/GoalsAndPlansView';
 import { MisoInsightCard } from '@/components/profile/MisoInsightCard';
 import { exportTestHistoryData, type TimelineEntry } from '@/services/test-history.service';
