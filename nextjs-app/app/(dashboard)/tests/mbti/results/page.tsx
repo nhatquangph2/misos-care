@@ -15,9 +15,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useFadeIn, useStagger } from '@/hooks/useGSAP'
 import { MBTI_DESCRIPTIONS } from '@/constants/tests/mbti-questions'
 import type { MBTIResult } from '@/services/test.service'
-import { saveMBTIResult } from '@/services/personality-profile.service'
 import { createClient } from '@/lib/supabase/client'
-import { Home, Share2, Download, RefreshCw, Brain, Briefcase, Heart, AlertTriangle } from 'lucide-react'
+import { Home, Share2, RefreshCw, Brain, Briefcase, Heart, AlertTriangle } from 'lucide-react'
 
 export default function MBTIResultsPage() {
   const router = useRouter()
@@ -47,35 +46,24 @@ export default function MBTIResultsPage() {
       setCompletedAt(date.toLocaleDateString('vi-VN'))
     }
 
-    // Check authentication and auto-save results
-    const checkAuthAndSave = async () => {
+    // Check authentication status (data already saved via useTestSubmit hook)
+    const checkAuth = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        // User not authenticated
+        // User not authenticated - data was saved to localStorage only
         setIsAuthenticated(false)
         setSaveStatus('unauthenticated')
         return
       }
 
-      // User is authenticated, save results
+      // User is authenticated - data was already saved via API in useTestSubmit
       setIsAuthenticated(true)
-      try {
-        setSaveStatus('saving')
-        await saveMBTIResult(
-          parsedResult.type,
-          storedDate ? new Date(storedDate) : new Date()
-        )
-        setSaveStatus('saved')
-      } catch (error) {
-        console.error('Failed to save MBTI results:', error)
-        setSaveStatus('error')
-        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
-      }
+      setSaveStatus('saved')
     }
 
-    checkAuthAndSave()
+    checkAuth()
   }, [router])
 
   if (!result) {

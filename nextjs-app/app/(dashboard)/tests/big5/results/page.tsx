@@ -44,7 +44,6 @@ import {
   getLearningStyleRecommendations,
   getRelationshipInsights,
 } from '@/services/bfi2-counseling.service'
-import { saveBFI2Results } from '@/services/personality-profile.service'
 import { exportBFI2ToPDF, generateShareableLink, copyToClipboard } from '@/services/pdf-export.service'
 import { createClient } from '@/lib/supabase/client'
 import { Download, Link as LinkIcon } from 'lucide-react'
@@ -101,36 +100,24 @@ export default function BFI2ResultsPage() {
     const completionTimeNum = storedTime ? parseInt(storedTime) : 0
     if (storedTime) setCompletionTime(completionTimeNum)
 
-    // Check authentication and auto-save results
-    const checkAuthAndSave = async () => {
+    // Check authentication status (data already saved via useTestSubmit hook or API)
+    const checkAuth = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        // User not authenticated
+        // User not authenticated - data was saved to localStorage only
         setIsAuthenticated(false)
         setSaveStatus('unauthenticated')
         return
       }
 
-      // User is authenticated, save results
+      // User is authenticated - data was already saved via API in useTestSubmit
       setIsAuthenticated(true)
-      try {
-        setSaveStatus('saving')
-        await saveBFI2Results({
-          score: parsedScore,
-          completedAt: completedDate,
-          completionTime: completionTimeNum,
-        })
-        setSaveStatus('saved')
-      } catch (error) {
-        console.error('Failed to save results:', error)
-        setSaveStatus('error')
-        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
-      }
+      setSaveStatus('saved')
     }
 
-    checkAuthAndSave()
+    checkAuth()
 
     // Get user name for PDF
     const getUserName = async () => {

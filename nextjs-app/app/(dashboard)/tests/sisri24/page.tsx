@@ -5,43 +5,39 @@
 
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
 import { SISRI_24_QUESTIONS } from '@/constants/tests/sisri-24-questions'
 import { calculateSISRI24 } from '@/services/test.service'
+import { useTestSubmit } from '@/hooks/useTestSubmit'
 
 export default function SISRI24TestPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const { submitTest, isSubmitting } = useTestSubmit()
 
   const handleComplete = async (answers: { questionId: number; value: number }[]) => {
-    setIsLoading(true)
-
     try {
       // Calculate results
       const result = calculateSISRI24(answers)
 
-      // Store results in localStorage (temporary - will use Supabase later)
-      localStorage.setItem('sisri24_result', JSON.stringify(result))
-      localStorage.setItem('sisri24_answers', JSON.stringify(answers))
-      localStorage.setItem('sisri24_completed_at', new Date().toISOString())
-
-      // Navigate to results page
-      router.push('/tests/sisri24/results')
+      // Submit using centralized hook (handles API, localStorage, navigation)
+      await submitTest({
+        testType: 'SISRI24',
+        answers,
+        result,
+        nextRoute: '/tests/sisri24/results',
+      })
     } catch (error) {
-      console.error('Error calculating SISRI-24:', error)
-      alert('Có lỗi xảy ra. Vui lòng thử lại.')
-      setIsLoading(false)
+      console.error('Error in SISRI-24 test:', error)
+      // Hook already handles error display
     }
   }
 
-  if (isLoading) {
+  if (isSubmitting) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
           <div className="w-20 h-20 border-4 border-secondary border-t-transparent rounded-full animate-spin mx-auto mb-6" />
-          <p className="text-lg text-muted-foreground">Đang tính toán kết quả của bạn...</p>
+          <p className="text-xl font-semibold text-foreground">Đang phân tích trí tuệ tâm linh...</p>
+          <p className="text-sm text-muted-foreground mt-3">Miso đang khám phá chiều sâu tâm linh của bạn</p>
         </div>
       </div>
     )
