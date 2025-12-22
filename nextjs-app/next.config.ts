@@ -19,7 +19,13 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // 4. Tối ưu hóa việc import các thư viện nặng (Tree shaking tốt hơn)
+  // 4. Environment variables - Provide defaults for build
+  env: {
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key',
+  },
+
+  // 5. Tối ưu hóa việc import các thư viện nặng (Tree shaking tốt hơn)
   experimental: {
     optimizePackageImports: [
       'lucide-react',
@@ -29,9 +35,11 @@ const nextConfig: NextConfig = {
       'framer-motion',
       'gsap'
     ],
+    // Use system TLS certificates for Google Fonts during build
+    turbopackUseSystemTlsCerts: true,
   },
 
-  // 5. Cấu hình hình ảnh (nếu dùng Supabase Storage hoặc nguồn ngoài)
+  // 6. Cấu hình hình ảnh (nếu dùng Supabase Storage hoặc nguồn ngoài)
   images: {
     remotePatterns: [
       {

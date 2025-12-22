@@ -7,10 +7,14 @@
 
 'use client'
 
-import dynamic from 'next/dynamic'
+import dynamicImport from 'next/dynamic'
 import FloatingDock from '@/components/layout/FloatingDock'
 
-const DolphinMascot = dynamic(
+// Force dynamic rendering for all dashboard routes
+export const dynamic = 'force-dynamic'
+export const dynamicParams = true
+
+const DolphinMascot = dynamicImport(
   () => import('@/components/mascot/DolphinMascot').then(mod => ({ default: mod.DolphinMascot })),
   { ssr: false }
 )
