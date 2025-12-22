@@ -11,6 +11,7 @@ const inter = Inter({
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
   preload: true,
+  fallback: ['system-ui', 'arial'],
 });
 
 const quicksand = Quicksand({
@@ -19,6 +20,7 @@ const quicksand = Quicksand({
   display: "swap",
   weight: ["300", "400", "500", "600", "700"],
   preload: true,
+  fallback: ['system-ui', 'arial'],
 });
 
 export const viewport: Viewport = {

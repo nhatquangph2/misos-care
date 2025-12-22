@@ -29,6 +29,8 @@ const nextConfig: NextConfig = {
       'framer-motion',
       'gsap'
     ],
+    // Use system TLS certificates for Google Fonts during build
+    turbopackUseSystemTlsCerts: true,
   },
 
   // 5. Cấu hình hình ảnh (nếu dùng Supabase Storage hoặc nguồn ngoài)
