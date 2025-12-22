@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
     "analyze": "cross-env ANALYZE=true npm run build",
     "setup:db": "bash setup-database.sh",
     "setup:db:copy": "pbcopy < supabase/migrations/00001_initial_schema.sql && echo '✅ SQL copied to clipboard! Now paste it in Supabase SQL Editor'",
@@ -49,14 +52,19 @@
   "devDependencies": {
     "@next/bundle-analyzer": "^16.0.10",
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/ui": "^4.0.16",
     "cross-env": "^10.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.6",
+    "jsdom": "^27.3.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vercel": "^49.1.1"
+    "vercel": "^49.1.1",
+    "vitest": "^4.0.16"
   }
 }

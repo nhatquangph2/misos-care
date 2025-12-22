@@ -603,15 +603,53 @@ Format response as JSON:
     const result = await model.generateContent(userPrompt)
     const responseText = result.response.text()
 
-    // Parse JSON response
-    const jsonMatch = responseText.match(/\{[\s\S]*\}/)
-    if (jsonMatch) {
-      const parsed = JSON.parse(jsonMatch[0])
-      return parsed as ConsultationResponse
-    }
+    // Improved JSON parsing with multiple fallback strategies
+    try {
+      // Strategy 1: Try to extract JSON using multiple regex patterns
+      const jsonPatterns = [
+        // Match JSON object with optional backticks
+        /```json\s*(\{[\s\S]*?\})\s*```/,
+        // Match JSON object with optional text before/after
+        /\{[\s\S]*"situationAnalysis"[\s\S]*\}/,
+        // Match any JSON object
+        /(\{[\s\S]*\})/,
+      ]
 
-    // Fallback: try to parse entire response
-    return JSON.parse(responseText) as ConsultationResponse
+      for (const pattern of jsonPatterns) {
+        const match = responseText.match(pattern)
+        if (match) {
+          const jsonString = match[1] || match[0]
+          try {
+            const cleaned = jsonString.trim()
+            const parsed = JSON.parse(cleaned)
+
+            // Validate that it has required fields
+            if (parsed.situationAnalysis && parsed.rootCauses && parsed.evidenceBasedSolution) {
+              return parsed as ConsultationResponse
+            }
+          } catch (parseError) {
+            // Continue to next pattern
+            continue
+          }
+        }
+      }
+
+      // Strategy 2: Try to parse entire response (might be clean JSON)
+      const parsed = JSON.parse(responseText)
+      if (parsed.situationAnalysis && parsed.rootCauses && parsed.evidenceBasedSolution) {
+        return parsed as ConsultationResponse
+      }
+
+      // Strategy 3: If we got here, parsing failed - throw error to trigger fallback
+      throw new Error('Failed to parse AI response - missing required fields')
+
+    } catch (parseError) {
+      console.error('JSON Parsing Error:', parseError)
+      console.error('Raw response:', responseText.substring(0, 500))
+
+      // Return structured fallback with parse error info
+      throw new Error(`Failed to parse AI response: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`)
+    }
   } catch (error) {
     console.error('AI Consultation Error:', error)
 

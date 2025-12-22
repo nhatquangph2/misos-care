@@ -1,15 +1,12 @@
-'use client'
-
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { useFadeIn, useStagger } from '@/hooks/useGSAP'
-import { createClient } from '@/lib/supabase/client'
-import { useMascotStore } from '@/stores/mascotStore'
+import { createClient } from '@/lib/supabase/server'
 import { ArrowRight, TrendingUp, Target, Brain, Heart, Sparkles } from 'lucide-react'
+import DashboardClient from './dashboard-client'
 
 interface DashboardStats {
   testsCompleted: number
@@ -23,110 +20,91 @@ interface DashboardStats {
   activeGoals: number
 }
 
-export default function DashboardPage() {
-  const fadeRef = useFadeIn()
-  const staggerRef = useStagger(0.1)
-  const supabase = createClient()
+interface UserData {
+  id: string
+  name?: string
+  email: string
+}
 
-  const [user, setUser] = useState<any>(null)
-  const [stats, setStats] = useState<DashboardStats>({
-    testsCompleted: 0,
-    currentStreak: 0,
-    activeGoals: 0,
-  })
-  const [loading, setLoading] = useState(true)
+async function loadDashboardData() {
+  const supabase = await createClient()
 
-  const { userStats, currentMood, setMood, addMessage } = useMascotStore()
+  // Get authenticated user
+  const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
-
-  async function loadDashboardData() {
-    try {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
-
-      // Get user profile
-      const { data: userData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .single()
-
-      setUser(userData)
-
-      // Get personality profile
-      const { data: personality } = await supabase
-        .from('personality_profiles')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .single()
-
-      // Get mental health records count
-      const { data: mentalHealthRecords, count } = await supabase
-        .from('mental_health_records')
-        .select('*', { count: 'exact' })
-        .eq('user_id', authUser.id)
-        .order('completed_at', { ascending: false })
-
-      // Get latest mental health record
-      const latestRecord = mentalHealthRecords?.[0]
-
-      // Get active goals count
-      const { count: goalsCount } = await supabase
-        .from('user_goals')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', authUser.id)
-        .eq('status', 'active')
-
-      setStats({
-        testsCompleted: count || 0,
-        personalityType: (personality as any)?.mbti_type,
-        latestMentalHealthScore: latestRecord ? {
-          type: (latestRecord as any).test_type,
-          severity: (latestRecord as any).severity_level,
-          date: new Date((latestRecord as any).completed_at).toLocaleDateString('vi-VN'),
-        } : undefined,
-        currentStreak: userStats.currentStreak,
-        activeGoals: goalsCount || 0,
-      })
-
-      // Set mascot mood based on latest score
-      if (latestRecord) {
-        const severity = (latestRecord as any).severity_level
-        if (severity === 'normal' || severity === 'mild') {
-          setMood('happy')
-        } else if (severity === 'severe' || severity === 'extremely_severe') {
-          setMood('concerned')
-        } else {
-          setMood('encouraging')
-        }
-      } else {
-        setMood('waving')
-        addMessage('Chào mừng bạn đến với Miso\'s Care! Hãy bắt đầu với một bài test nhé 🌊', 'mascot', 'dashboard')
-      }
-
-    } catch (error) {
-      console.error('Error loading dashboard:', error)
-    } finally {
-      setLoading(false)
-    }
+  if (authError || !authUser) {
+    redirect('/auth/login')
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
-        </div>
-      </div>
-    )
+  // Fetch all data in parallel using Promise.all
+  const [
+    userResult,
+    personalityResult,
+    mentalHealthResult,
+    goalsResult
+  ] = await Promise.all([
+    // Get user profile
+    supabase
+      .from('users')
+      .select('*')
+      .eq('id', authUser.id)
+      .single(),
+
+    // Get personality profile
+    supabase
+      .from('personality_profiles')
+      .select('*')
+      .eq('user_id', authUser.id)
+      .single(),
+
+    // Get mental health records
+    supabase
+      .from('mental_health_records')
+      .select('*', { count: 'exact' })
+      .eq('user_id', authUser.id)
+      .order('completed_at', { ascending: false }),
+
+    // Get active goals count
+    supabase
+      .from('user_goals')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', authUser.id)
+      .eq('status', 'active')
+  ])
+
+  const userData = userResult.data as UserData | null
+  const personality = personalityResult.data
+  const mentalHealthRecords = mentalHealthResult.data
+  const mentalHealthCount = mentalHealthResult.count || 0
+  const goalsCount = goalsResult.count || 0
+
+  // Get latest mental health record
+  const latestRecord = mentalHealthRecords?.[0]
+
+  const stats: DashboardStats = {
+    testsCompleted: mentalHealthCount,
+    personalityType: (personality as any)?.mbti_type,
+    latestMentalHealthScore: latestRecord ? {
+      type: (latestRecord as any).test_type,
+      severity: (latestRecord as any).severity_level,
+      date: new Date((latestRecord as any).completed_at).toLocaleDateString('vi-VN'),
+    } : undefined,
+    currentStreak: 0, // This would come from userStats in the client store
+    activeGoals: goalsCount,
   }
+
+  return {
+    user: userData,
+    stats,
+    latestRecord
+  }
+}
+
+export default async function DashboardPage() {
+  const { user, stats, latestRecord } = await loadDashboardData()
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl" ref={fadeRef}>
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Welcome Section */}
       <div className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
@@ -138,7 +116,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8" ref={staggerRef}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -340,6 +318,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Client-side components for animations and mascot */}
+      <DashboardClient latestRecord={latestRecord} stats={stats} />
     </div>
   )
 }
