@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -28,12 +28,7 @@ import {
   Heart,
   FileText,
   Plus,
-  Calendar,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   AlertTriangle,
-  CheckCircle,
   Clock,
 } from 'lucide-react';
 
@@ -63,11 +58,7 @@ export default function MenteeDetailPage({ params }: PageProps) {
   });
   const [savingNote, setSavingNote] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, [menteeId]);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -100,7 +91,11 @@ export default function MenteeDetailPage({ params }: PageProps) {
     setPersonalityProfile(personality);
     setNotes(mentorNotes);
     setLoading(false);
-  }
+  }, [menteeId, router, supabase]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSaveNote = async () => {
     if (!newNote.content.trim()) return;

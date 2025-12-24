@@ -106,9 +106,6 @@ export default function MentorProfilePage() {
         }
     }
 
-    // Helper to safely access extended properties
-    const extMentor = mentor as any;
-
     return (
         <div className="max-w-6xl mx-auto pb-20">
             <Button
@@ -169,11 +166,11 @@ export default function MentorProfilePage() {
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
                                 <div className="flex items-center gap-2">
                                     <Clock className="h-4 w-4" />
-                                    <span>{extMentor.experience_years || 0} năm kinh nghiệm</span>
+                                    <span>{mentor.experience_years || 0} năm kinh nghiệm</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Globe className="h-4 w-4" />
-                                    <span>{(extMentor.languages || ['Tiếng Việt']).join(', ')}</span>
+                                    <span>{(mentor.languages || ['Tiếng Việt']).join(', ')}</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <MapPin className="h-4 w-4" />
@@ -201,7 +198,7 @@ export default function MentorProfilePage() {
 
                                 <h3 className="font-bold text-lg mb-4">Học vấn & Chứng chỉ</h3>
                                 <ul className="space-y-3">
-                                    {(extMentor.education || []).map((edu: string, i: number) => (
+                                    {(mentor.education || []).map((edu: string, i: number) => (
                                         <li key={i} className="flex items-start gap-3">
                                             <div className="mt-1 h-2 w-2 rounded-full bg-blue-500" />
                                             <span className="text-muted-foreground">{edu}</span>

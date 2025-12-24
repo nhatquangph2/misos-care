@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 import { getUnifiedProfile } from '@/services/unified-profile.service'
 import { AIConsultantChat } from '@/components/ai/AIConsultantChat'
 import type { Metadata } from 'next'
@@ -30,12 +31,12 @@ export default async function AIConsultantPage() {
           <p className="mb-4">
             Bạn cần hoàn thành bài test Big5 trước khi sử dụng tính năng tư vấn AI.
           </p>
-          <a
+          <Link
             href="/tests/big5"
             className="inline-block bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition"
           >
             Làm bài test Big5
-          </a>
+          </Link>
         </div>
       </div>
     )

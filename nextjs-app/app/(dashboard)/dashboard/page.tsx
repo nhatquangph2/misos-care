@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -26,12 +26,30 @@ interface DashboardStats {
   activeGoals: number
 }
 
+// Define specific interfaces for DB responses to avoid 'any'
+interface UserData {
+  name: string
+  [key: string]: unknown
+}
+
+interface PersonalityProfile {
+  mbti_type: string | null
+  [key: string]: unknown
+}
+
+interface MentalHealthRecord {
+  test_type: string
+  severity_level: string
+  completed_at: string
+  [key: string]: unknown
+}
+
 export default function DashboardPage() {
   const fadeRef = useFadeIn()
   const staggerRef = useStagger(0.1)
   const supabase = createClient()
 
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<UserData | null>(null)
   const [stats, setStats] = useState<DashboardStats>({
     testsCompleted: 0,
     currentStreak: 0,
@@ -41,21 +59,9 @@ export default function DashboardPage() {
   const [dashboardTourCompleted, setDashboardTourCompleted] = useLocalStorage('dashboard-tour-completed', false)
   const [startTour, setStartTour] = useState(false)
 
-  const { userStats, currentMood, setMood, addMessage } = useMascotStore()
+  const { userStats, setMood, addMessage } = useMascotStore()
 
-  useEffect(() => {
-    loadDashboardData()
-  }, [])
-
-  useEffect(() => {
-    // Trigger tour for first-time visitors after data loads
-    if (!loading && !dashboardTourCompleted && stats.testsCompleted >= 0) {
-      const timer = setTimeout(() => setStartTour(true), 1000)
-      return () => clearTimeout(timer)
-    }
-  }, [loading, dashboardTourCompleted, stats.testsCompleted])
-
-  async function loadDashboardData() {
+  const loadDashboardData = useCallback(async () => {
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser()
       if (!authUser) return
@@ -67,7 +73,9 @@ export default function DashboardPage() {
         .eq('id', authUser.id)
         .single()
 
-      setUser(userData)
+      if (userData) {
+        setUser(userData as UserData)
+      }
 
       // Get personality profile
       const { data: personality } = await supabase
@@ -77,14 +85,20 @@ export default function DashboardPage() {
         .single()
 
       // Get mental health records count
-      const { data: mentalHealthRecords, count } = await supabase
+      const { count } = await supabase
         .from('mental_health_records')
-        .select('*', { count: 'exact' })
+        .select('*', { count: 'exact', head: true })
         .eq('user_id', authUser.id)
-        .order('completed_at', { ascending: false })
 
       // Get latest mental health record
-      const latestRecord = mentalHealthRecords?.[0]
+      const { data: latestRecords } = await supabase
+        .from('mental_health_records')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+
+      const latestRecord = latestRecords?.[0] as MentalHealthRecord | undefined
 
       // Get active goals count
       const { count: goalsCount } = await supabase
@@ -95,11 +109,11 @@ export default function DashboardPage() {
 
       setStats({
         testsCompleted: count || 0,
-        personalityType: (personality as any)?.mbti_type,
+        personalityType: (personality as PersonalityProfile)?.mbti_type || undefined,
         latestMentalHealthScore: latestRecord ? {
-          type: (latestRecord as any).test_type,
-          severity: (latestRecord as any).severity_level,
-          date: new Date((latestRecord as any).completed_at).toLocaleDateString('vi-VN'),
+          type: latestRecord.test_type,
+          severity: latestRecord.severity_level,
+          date: new Date(latestRecord.completed_at).toLocaleDateString('vi-VN'),
         } : undefined,
         currentStreak: userStats.currentStreak,
         activeGoals: goalsCount || 0,
@@ -107,7 +121,7 @@ export default function DashboardPage() {
 
       // Set mascot mood based on latest score
       if (latestRecord) {
-        const severity = (latestRecord as any).severity_level
+        const severity = latestRecord.severity_level
         if (severity === 'normal' || severity === 'mild') {
           setMood('happy')
         } else if (severity === 'severe' || severity === 'extremely_severe') {
@@ -125,7 +139,19 @@ export default function DashboardPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase, userStats.currentStreak, setMood, addMessage])
+
+  useEffect(() => {
+    loadDashboardData()
+  }, [loadDashboardData])
+
+  useEffect(() => {
+    // Trigger tour for first-time visitors after data loads
+    if (!loading && !dashboardTourCompleted && stats.testsCompleted >= 0) {
+      const timer = setTimeout(() => setStartTour(true), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [loading, dashboardTourCompleted, stats.testsCompleted])
 
   if (loading) {
     return (
@@ -155,7 +181,7 @@ export default function DashboardPage() {
           Xin chào, {user?.name || 'bạn'}! 👋
         </h1>
         <p className="text-gray-600 dark:text-gray-400 text-lg">
-          Chào mừng trở lại với Miso's Care. Hãy cùng chăm sóc sức khỏe tinh thần của bạn!
+          Chào mừng trở lại với Miso&apos;s Care. Hãy cùng chăm sóc sức khỏe tinh thần của bạn!
         </p>
       </div>
 

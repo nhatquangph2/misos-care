@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,28 +21,6 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
   const [completions, setCompletions] = useState<ActionCompletion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load goals
-  useEffect(() => {
-    loadGoals();
-  }, [userId]);
-
-  const loadGoals = async () => {
-    try {
-      setIsLoading(true);
-      const data = await goalsService.getUserGoals(userId, 'active');
-      setGoals(data);
-
-      if (data.length > 0 && !selectedGoal) {
-        setSelectedGoal(data[0]);
-        loadCompletions(data[0].id);
-      }
-    } catch (error) {
-      console.error('Error loading goals:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const loadCompletions = async (goalId: string) => {
     try {
       // Get action plans for this goal
@@ -60,6 +38,28 @@ export function GoalsAndRemindersPage({ userId }: GoalsAndRemindersPageProps) {
       console.error('Error loading completions:', error);
     }
   };
+
+  const loadGoals = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await goalsService.getUserGoals(userId, 'active');
+      setGoals(data);
+
+      if (data.length > 0 && !selectedGoal) {
+        setSelectedGoal(data[0]);
+        loadCompletions(data[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading goals:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [userId, selectedGoal]);
+
+  // Load goals
+  useEffect(() => {
+    loadGoals();
+  }, [loadGoals]);
 
   const handleGoalSelect = (goal: UserGoal) => {
     setSelectedGoal(goal);

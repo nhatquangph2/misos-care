@@ -206,6 +206,17 @@ export interface PersonalityProfile {
   enneagram_wing: string | null
   last_updated: string
   created_at: string
+
+  // NEW FIELDS for MISO V3
+  bfi2_score?: Json
+  big5_openness_raw?: number // 1-5
+  big5_conscientiousness_raw?: number // 1-5
+  big5_extraversion_raw?: number // 1-5
+  big5_agreeableness_raw?: number // 1-5
+  big5_neuroticism_raw?: number // 1-5
+  sisri24_scores?: Json
+  via_signature_strengths?: Json
+  via_top_virtue?: string
 }
 
 export interface MentalHealthRecord {
@@ -253,13 +264,17 @@ export interface ChatMessage {
 export interface Mentor {
   id: string
   name: string
+  title: string | null
   email: string
   phone: string | null
   avatar_url: string | null
   bio: string | null
   credentials: string | null
+  education: string[] | null
+  languages: string[] | null
   specialties: string[] // Array of specialty strings
   personality_match: string[] | null // Array of MBTI types
+  experience_years: number
   hourly_rate: number
   currency: Currency
   availability: Json | null // {monday: ['09:00', '10:00'], ...}
