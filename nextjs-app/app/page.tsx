@@ -63,6 +63,12 @@ export default function LandingPage() {
     }
   }
 
+  const startProductTour = () => {
+    setStartTour(true);
+    // Reset localStorage to force tour to show again if it was dismissed
+    localStorage.removeItem('tour_landing_completed');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
@@ -93,6 +99,7 @@ export default function LandingPage() {
             </div>
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               <ScrollLink to="how-it-works" smooth={true} duration={500} className="hover:text-primary transition-colors cursor-pointer">Cách hoạt động</ScrollLink>
+              <button onClick={startProductTour} className="hover:text-primary transition-colors cursor-pointer text-left font-medium">Hướng dẫn</button>
               <Link href="/about" className="hover:text-primary transition-colors">Về chúng tôi</Link>
               <Link href="/help" className="hover:text-primary transition-colors">Trợ giúp</Link>
             </nav>
@@ -247,6 +254,7 @@ export default function LandingPage() {
               <div>
                 <h4 className="font-bold mb-4">Sản phẩm</h4>
                 <ul className="space-y-2 text-muted-foreground text-sm">
+                  <li><button onClick={startProductTour} className="hover:text-primary transition-colors text-left w-full text-muted-foreground font-normal">Xem Hướng Dẫn (Tour)</button></li>
                   <li><Link href="/tests" className="hover:text-primary">Bài trắc nghiệm</Link></li>
                   <li><Link href="/ai-consultant" className="hover:text-primary">Tư vấn AI</Link></li>
                   <li><Link href="/dashboard" className="hover:text-primary">Hồ sơ cá nhân</Link></li>
