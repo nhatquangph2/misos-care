@@ -35,75 +35,80 @@ export default function DASS21ResultsPage() {
   const cardsRef = useStagger(0.15)
 
   useEffect(() => {
-    // Load results from localStorage
-    const storedResult = localStorage.getItem('dass21_result')
-    const storedDate = localStorage.getItem('dass21_completed_at')
+    // Load results from localStorage with a small delay to avoid sync setState warning
+    const timer = setTimeout(() => {
+      const storedResult = localStorage.getItem('dass21_result')
+      const storedDate = localStorage.getItem('dass21_completed_at')
 
-    if (!storedResult) {
-      router.push('/tests')
-      return
-    }
-
-    const parsedResult = JSON.parse(storedResult)
-    setResult(parsedResult)
-    if (storedDate) {
-      const date = new Date(storedDate)
-      setCompletedAt(date.toLocaleDateString('vi-VN'))
-    }
-
-    // Auto-save results to database
-    const saveResults = async () => {
-      try {
-        setSaveStatus('saving')
-
-        // Calculate total score and get worst severity level
-        // IMPORTANT: We store NORMALIZED scores (0-42) as per DASS-21 standard
-        let totalScore = 0
-        const subscaleScoresObj: Record<string, number> = {}
-        let worstSeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe' = 'normal'
-        const severityOrder = ['normal', 'mild', 'moderate', 'severe', 'extremely_severe']
-
-        parsedResult.subscaleScores.forEach((subscale: DASS21SubscaleScore) => {
-          // Use normalized score (0-42) for database storage
-          totalScore += subscale.normalizedScore
-
-          // Use English keys for consistency: depression, anxiety, stress
-          subscaleScoresObj[subscale.subscale] = subscale.normalizedScore
-
-          // Map severity level from object to string
-          const severityMap: Record<string, 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe'> = {
-            'normal': 'normal',
-            'mild': 'mild',
-            'moderate': 'moderate',
-            'severe': 'severe',
-            'extremely-severe': 'extremely_severe'
-          }
-
-          const severityValue = severityMap[subscale.severity.level] || 'normal'
-          if (severityOrder.indexOf(severityValue) > severityOrder.indexOf(worstSeverity)) {
-            worstSeverity = severityValue
-          }
-        })
-
-        await saveMentalHealthRecord({
-          testType: 'DASS21',
-          totalScore: totalScore,
-          severityLevel: worstSeverity,
-          subscaleScores: subscaleScoresObj,
-          crisisFlag: parsedResult.needsCrisisIntervention,
-          crisisReason: parsedResult.needsCrisisIntervention ? 'Severe mental health symptoms' : undefined,
-          completedAt: storedDate ? new Date(storedDate) : new Date(),
-        })
-
-        setSaveStatus('saved')
-      } catch (error) {
-        console.error('Failed to save DASS-21 results:', error)
-        setSaveStatus('error')
-        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+      if (!storedResult) {
+        router.push('/tests')
+        return
       }
-    }
 
-    saveResults()
+      const parsedResult = JSON.parse(storedResult)
+      setResult(parsedResult)
+
+      if (storedDate) {
+        const date = new Date(storedDate)
+        setCompletedAt(date.toLocaleDateString('vi-VN'))
+      }
+
+      // Auto-save results to database
+      const saveResults = async () => {
+        try {
+          setSaveStatus('saving')
+
+          // Calculate total score and get worst severity level
+          // IMPORTANT: We store NORMALIZED scores (0-42) as per DASS-21 standard
+          let totalScore = 0
+          const subscaleScoresObj: Record<string, number> = {}
+          let worstSeverity: 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe' = 'normal'
+          const severityOrder = ['normal', 'mild', 'moderate', 'severe', 'extremely_severe']
+
+          parsedResult.subscaleScores.forEach((subscale: DASS21SubscaleScore) => {
+            // Use normalized score (0-42) for database storage
+            totalScore += subscale.normalizedScore
+
+            // Use English keys for consistency: depression, anxiety, stress
+            subscaleScoresObj[subscale.subscale] = subscale.normalizedScore
+
+            // Map severity level from object to string
+            const severityMap: Record<string, 'normal' | 'mild' | 'moderate' | 'severe' | 'extremely_severe'> = {
+              'normal': 'normal',
+              'mild': 'mild',
+              'moderate': 'moderate',
+              'severe': 'severe',
+              'extremely-severe': 'extremely_severe'
+            }
+
+            const severityValue = severityMap[subscale.severity.level] || 'normal'
+            if (severityOrder.indexOf(severityValue) > severityOrder.indexOf(worstSeverity)) {
+              worstSeverity = severityValue
+            }
+          })
+
+          await saveMentalHealthRecord({
+            testType: 'DASS21',
+            totalScore: totalScore,
+            severityLevel: worstSeverity,
+            subscaleScores: subscaleScoresObj,
+            crisisFlag: parsedResult.needsCrisisIntervention,
+            crisisReason: parsedResult.needsCrisisIntervention ? 'Severe mental health symptoms' : undefined,
+            completedAt: storedDate ? new Date(storedDate) : new Date(),
+          })
+
+          setSaveStatus('saved')
+        } catch (error) {
+          console.error('Failed to save DASS-21 results:', error)
+          setSaveStatus('error')
+          setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+        }
+      }
+
+      saveResults()
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [router])
 
   if (!result) {

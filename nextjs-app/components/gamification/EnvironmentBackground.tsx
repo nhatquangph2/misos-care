@@ -1,12 +1,6 @@
-/**
- * EnvironmentBackground Component
- * Dynamic background that changes based on MBTI personality type
- * Supports: Ocean (Explorers), Forest (Sentinels), Sky (Diplomats), Cosmos (Analysts)
- */
-
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { EnvironmentType, ENV_CONFIG } from '@/lib/gamification-config'
@@ -140,12 +134,18 @@ export default function EnvironmentBackground({
 
   // Mobile: Giảm số lượng hạt
   const particleCount = isLowPowerMode ? 8 : (type === 'cosmos' ? 40 : 20)
-  const particleStyle = {
-    width: type === 'sky' ? `${Math.random() * 60 + 40}px` : (type === 'cosmos' ? `${Math.random() * 3 + 1}px` : `${Math.random() * 10 + 5}px`),
-    height: type === 'sky' ? `${Math.random() * 20 + 10}px` : (type === 'cosmos' ? `${Math.random() * 3 + 1}px` : `${Math.random() * 10 + 5}px`),
-    filter: (type === 'forest' || type === 'sky') ? 'blur(2px)' : 'none',
-    boxShadow: type === 'cosmos' ? '0 0 2px rgba(255,255,255,0.8)' : 'none'
-  }
+
+  // Generate stable particle configs
+  const particles = useMemo(() => {
+    return Array.from({ length: particleCount }).map(() => ({
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      width: type === 'sky' ? `${Math.random() * 60 + 40}px` : (type === 'cosmos' ? `${Math.random() * 3 + 1}px` : `${Math.random() * 10 + 5}px`),
+      height: type === 'sky' ? `${Math.random() * 20 + 10}px` : (type === 'cosmos' ? `${Math.random() * 3 + 1}px` : `${Math.random() * 10 + 5}px`),
+      filter: (type === 'forest' || type === 'sky') ? 'blur(2px)' : 'none',
+      boxShadow: type === 'cosmos' ? '0 0 2px rgba(255,255,255,0.8)' : 'none'
+    }))
+  }, [particleCount, type]);
 
   return (
     <div
@@ -179,18 +179,18 @@ export default function EnvironmentBackground({
       )}
 
       {/* PARTICLES */}
-      {mounted && Array.from({ length: particleCount }).map((_, i) => (
+      {mounted && particles.map((style, i) => (
         <div
           key={i}
           className={`env-particle absolute pointer-events-none will-change-transform ${config.particleColor} ${config.particleShape}`}
           // Dùng inline style để force re-render với kích thước mới
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            width: particleStyle.width,
-            height: particleStyle.height,
-            filter: particleStyle.filter,
-            boxShadow: particleStyle.boxShadow,
+            left: style.left,
+            top: style.top,
+            width: style.width,
+            height: style.height,
+            filter: style.filter,
+            boxShadow: style.boxShadow,
           }}
         />
       ))}

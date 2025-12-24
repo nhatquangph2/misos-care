@@ -27,19 +27,23 @@ export default function SISRI24ResultsPage() {
 
   useEffect(() => {
     // Load results from localStorage
-    const storedResult = localStorage.getItem('sisri24_result')
-    const storedDate = localStorage.getItem('sisri24_completed_at')
+    const timer = setTimeout(() => {
+      const storedResult = localStorage.getItem('sisri24_result')
+      const storedDate = localStorage.getItem('sisri24_completed_at')
 
-    if (!storedResult) {
-      router.push('/tests')
-      return
-    }
+      if (!storedResult) {
+        router.push('/tests')
+        return
+      }
 
-    setResult(JSON.parse(storedResult))
-    if (storedDate) {
-      const date = new Date(storedDate)
-      setCompletedAt(date.toLocaleDateString('vi-VN'))
-    }
+      setResult(JSON.parse(storedResult))
+      if (storedDate) {
+        const date = new Date(storedDate)
+        setCompletedAt(date.toLocaleDateString('vi-VN'))
+      }
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [router])
 
   if (!result) {

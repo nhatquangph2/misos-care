@@ -17,7 +17,25 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 
-const testData: Record<string, any> = {
+interface TestDimension {
+    code: string
+    name: string
+    desc: string
+}
+
+interface TestInfo {
+    title: string
+    subtitle: string
+    time: string
+    questions: number
+    difficulty: string
+    description: string
+    dimensions: TestDimension[]
+    sampleQuestion: string
+    benefits: string[]
+}
+
+const testData: Record<string, TestInfo> = {
     mbti: {
         title: "Trắc nghiệm Tính cách MBTI",
         subtitle: "Khám phá 16 nhóm tính cách và thấu hiểu xu hướng hành xử của bản thân.",
@@ -137,7 +155,7 @@ export default function TestAboutPage() {
                             </p>
 
                             <div className="grid md:grid-cols-2 gap-6">
-                                {currentTest.dimensions.map((dim: any, i: number) => (
+                                {currentTest.dimensions.map((dim: TestDimension, i: number) => (
                                     <div key={i} className="p-6 rounded-2xl border bg-card hover:border-blue-200 transition-colors">
                                         <div className="text-xl font-bold text-blue-600 mb-2">{dim.code}</div>
                                         <div className="font-semibold mb-2">{dim.name}</div>
@@ -154,7 +172,7 @@ export default function TestAboutPage() {
                             </h2>
                             <div className="p-8 rounded-3xl bg-muted/40 border-2 border-dashed flex flex-col items-center text-center">
                                 <div className="text-lg italic text-slate-700 dark:text-slate-300 max-w-lg mb-8">
-                                    "{currentTest.sampleQuestion}"
+                                    &quot;{currentTest.sampleQuestion}&quot;
                                 </div>
                                 <div className="flex gap-2 w-full max-w-md">
                                     <div className="flex-1 h-3 rounded-full bg-slate-200" title="Không đồng ý" />

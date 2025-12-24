@@ -31,51 +31,55 @@ export default function MBTIResultsPage() {
   const cardsRef = useStagger(0.15)
 
   useEffect(() => {
-    // Load results from localStorage
-    const storedResult = localStorage.getItem('mbti_result')
-    const storedDate = localStorage.getItem('mbti_completed_at')
+    const timer = setTimeout(() => {
+      // Load results from localStorage
+      const storedResult = localStorage.getItem('mbti_result')
+      const storedDate = localStorage.getItem('mbti_completed_at')
 
-    if (!storedResult) {
-      router.push('/tests')
-      return
-    }
-
-    const parsedResult = JSON.parse(storedResult)
-    setResult(parsedResult)
-    if (storedDate) {
-      const date = new Date(storedDate)
-      setCompletedAt(date.toLocaleDateString('vi-VN'))
-    }
-
-    // Check authentication and auto-save results
-    const checkAuthAndSave = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        // User not authenticated
-        setIsAuthenticated(false)
-        setSaveStatus('unauthenticated')
+      if (!storedResult) {
+        router.push('/tests')
         return
       }
 
-      // User is authenticated, save results
-      setIsAuthenticated(true)
-      try {
-        setSaveStatus('saving')
-        await saveMBTIResult(
-          parsedResult.type,
-          storedDate ? new Date(storedDate) : new Date()
-        )
-        setSaveStatus('saved')
-      } catch (error) {
-        console.error('Failed to save MBTI results:', error)
-        setSaveStatus('error')
-        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+      const parsedResult = JSON.parse(storedResult)
+      setResult(parsedResult)
+      if (storedDate) {
+        const date = new Date(storedDate)
+        setCompletedAt(date.toLocaleDateString('vi-VN'))
       }
-    }
 
-    checkAuthAndSave()
+      // Check authentication and auto-save results
+      const checkAuthAndSave = async () => {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+          // User not authenticated
+          setIsAuthenticated(false)
+          setSaveStatus('unauthenticated')
+          return
+        }
+
+        // User is authenticated, save results
+        setIsAuthenticated(true)
+        try {
+          setSaveStatus('saving')
+          await saveMBTIResult(
+            parsedResult.type,
+            storedDate ? new Date(storedDate) : new Date()
+          )
+          setSaveStatus('saved')
+        } catch (error) {
+          console.error('Failed to save MBTI results:', error)
+          setSaveStatus('error')
+          setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+        }
+      }
+
+      checkAuthAndSave()
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [router])
 
   if (!result) {

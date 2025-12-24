@@ -27,7 +27,8 @@ export default function RippleCursor() {
   // Detect pointer device (mouse vs touch)
   useEffect(() => {
     const hasPointer = window.matchMedia('(pointer: fine)').matches;
-    setIsPointerDevice(hasPointer);
+    const t = setTimeout(() => setIsPointerDevice(hasPointer), 0);
+    return () => clearTimeout(t);
   }, []);
 
   // Throttled mouse move using requestAnimationFrame

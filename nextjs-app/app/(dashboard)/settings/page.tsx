@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -37,11 +37,7 @@ export default function SettingsPage() {
   // Form data
   const [formData, setFormData] = useState<UserProfileData>({});
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
-
-  async function loadProfile() {
+  const loadProfile = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -77,7 +73,11 @@ export default function SettingsPage() {
     }
 
     setLoading(false);
-  }
+  }, [router, supabase]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const handleInputChange = (field: keyof UserProfileData, value: string | boolean | Gender | ProfileVisibility) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -220,11 +220,10 @@ export default function SettingsPage() {
                           key={option.value}
                           type="button"
                           onClick={() => handleInputChange('gender', option.value as Gender)}
-                          className={`px-3 py-2 rounded-lg border text-sm transition-all ${
-                            formData.gender === option.value
+                          className={`px-3 py-2 rounded-lg border text-sm transition-all ${formData.gender === option.value
                               ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
                               : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:text-gray-300'
-                          }`}
+                            }`}
                         >
                           {option.label}
                         </button>
@@ -426,11 +425,10 @@ export default function SettingsPage() {
                     ].map((option) => (
                       <label
                         key={option.value}
-                        className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                          formData.profile_visibility === option.value
+                        className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${formData.profile_visibility === option.value
                             ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30'
                             : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                        }`}
+                          }`}
                       >
                         <input
                           type="radio"

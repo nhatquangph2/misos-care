@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -40,11 +40,7 @@ export default function MentorDashboardPage() {
   const [followUpNotes, setFollowUpNotes] = useState<MentorNote[]>([]);
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
@@ -70,7 +66,11 @@ export default function MentorDashboardPage() {
     setMentees(menteeList);
     setFollowUpNotes(followUps);
     setLoading(false);
-  }
+  }, [router, supabase]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleRespondToRequest = async (relationshipId: string, accept: boolean) => {
     setProcessingRequest(relationshipId);
@@ -384,11 +384,10 @@ export default function MentorDashboardPage() {
                             </p>
                           </div>
                           {note.follow_up_date && (
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              new Date(note.follow_up_date) < new Date()
-                                ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
-                                : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
-                            }`}>
+                            <span className={`px-2 py-1 text-xs rounded-full ${new Date(note.follow_up_date) < new Date()
+                              ? 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300'
+                              : 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300'
+                              }`}>
                               {new Date(note.follow_up_date).toLocaleDateString('vi-VN')}
                             </span>
                           )}

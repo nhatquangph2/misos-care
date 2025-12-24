@@ -23,7 +23,7 @@ export interface MentalHealthRecord {
   subscale_scores: Record<string, number> | null;
   crisis_flag: boolean;
   crisis_reason: string | null;
-  raw_responses: any;
+  raw_responses: unknown;
   responses?: Record<string, number>; // Alias for backwards compatibility
   completed_at: string;
   created_at: string;

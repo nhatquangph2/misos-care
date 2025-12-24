@@ -262,7 +262,6 @@ export const useMascotStore = create<MascotStore>()(
 
         // Check achievements
         const stats = get().userStats
-        const achievements = get().achievements
 
         // First test achievement
         if (stats.testsCompleted === 1) {
@@ -337,10 +336,10 @@ export const useMascotStore = create<MascotStore>()(
           achievements: state.achievements.map((achievement) =>
             achievement.id === achievementId
               ? {
-                  ...achievement,
-                  unlockedAt: Date.now(),
-                  progress: 100,
-                }
+                ...achievement,
+                unlockedAt: Date.now(),
+                progress: 100,
+              }
               : achievement
           ),
         }))

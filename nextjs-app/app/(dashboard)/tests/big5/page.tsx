@@ -6,7 +6,7 @@
 
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
 import { BFI2_QUESTIONS_FLOW } from '@/constants/tests/bfi2-questions'
 import { calculateBFI2Score } from '@/services/bfi2-scoring.service'
@@ -15,17 +15,17 @@ import type { BFI2Response } from '@/constants/tests/bfi2-questions'
 
 export default function Big5TestPage() {
   const { submitTest, isSubmitting } = useTestSubmit()
-  const [startTime, setStartTime] = useState<number>(0)
+  const startTimeRef = useRef<number>(0)
 
   // Track start time để tính completion time
   useEffect(() => {
-    setStartTime(Date.now())
+    startTimeRef.current = Date.now()
   }, [])
 
   const handleComplete = async (answers: { questionId: number; value: number }[]) => {
     try {
       // Tính thời gian hoàn thành (giây)
-      const completionTime = Math.floor((Date.now() - startTime) / 1000)
+      const completionTime = Math.floor((Date.now() - startTimeRef.current) / 1000)
 
       // Convert to BFI2Response format
       const bfi2Responses: BFI2Response[] = answers.map((a) => ({

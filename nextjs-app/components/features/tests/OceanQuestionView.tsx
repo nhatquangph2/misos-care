@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -31,6 +31,32 @@ export default function OceanQuestionView({
 
   // Tính toán tiến độ (0 -> 1)
   const progress = currentIndex / (totalQuestions - 1 || 1);
+
+  // Generate stable random values for sparkles
+  const sparkles = useMemo(() => {
+    return [...Array(10)].map(() => ({
+      x: Math.random() * 1000,
+      scale: Math.random() * 2,
+      duration: 2 + Math.random() * 3,
+      delay: Math.random() * 2,
+      size: 2 + Math.random() * 3
+    }));
+  }, []);
+
+  // Generate stable random values for bubble animations
+  const bubbleAnimations = useMemo(() => {
+    return options.map(() => ({
+      duration: 4 + Math.random(),
+    }));
+  }, [options.length]);
+
+  // Generate stable random offsets for pop particles
+  const popParticles = useMemo(() => {
+    return [...Array(12)].map(() => ({
+      xOff: (Math.random() - 0.5) * 150,
+      yOff: Math.random() * 150
+    }));
+  }, []);
 
   // U-SHAPE: Hai đầu to nhất, giữa nhỏ nhất
   const getBubbleConfig = (index: number, total: number) => {
@@ -103,29 +129,29 @@ export default function OceanQuestionView({
       {/* 3. Các hạt bụi sáng lấp lánh (Sparkles) - Chỉ hiện khi gần về đích */}
       {progress > 0.6 && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-           {[...Array(10)].map((_, i) => (
-             <motion.div
-               key={i}
-               className="absolute bg-white rounded-full blur-[1px]"
-               initial={{
-                 x: Math.random() * 1000,
-                 y: 600,
-                 opacity: 0,
-                 scale: 0
-               }}
-               animate={{
-                 y: -100,
-                 opacity: [0, 1, 0],
-                 scale: Math.random() * 2
-               }}
-               transition={{
-                 duration: 2 + Math.random() * 3,
-                 repeat: Infinity,
-                 delay: Math.random() * 2
-               }}
-               style={{ width: 2 + Math.random() * 3, height: 2 + Math.random() * 3 }}
-             />
-           ))}
+          {sparkles.map((config, i) => (
+            <motion.div
+              key={i}
+              className="absolute bg-white rounded-full blur-[1px]"
+              initial={{
+                x: config.x,
+                y: 600,
+                opacity: 0,
+                scale: 0
+              }}
+              animate={{
+                y: -100,
+                opacity: [0, 1, 0],
+                scale: config.scale
+              }}
+              transition={{
+                duration: config.duration,
+                repeat: Infinity,
+                delay: config.delay
+              }}
+              style={{ width: config.size, height: config.size }}
+            />
+          ))}
         </div>
       )}
 
@@ -181,6 +207,7 @@ export default function OceanQuestionView({
           <div className="flex flex-wrap justify-center gap-4 md:gap-8 items-end">
             {bubbles.map((bubble, index) => {
               const isSelected = selectedValue !== undefined && bubble.value === selectedValue;
+              const animConfig = bubbleAnimations[index] || { duration: 4 };
 
               return (
                 <motion.button
@@ -189,7 +216,7 @@ export default function OceanQuestionView({
                   // Animation trôi nổi nhẹ nhàng hơn (Weightless)
                   animate={{ y: [0, -8, 0] }}
                   transition={{
-                    duration: 4 + Math.random(),
+                    duration: animConfig.duration,
                     repeat: Infinity,
                     ease: "easeInOut",
                     delay: index * 0.3
@@ -245,14 +272,14 @@ export default function OceanQuestionView({
       <AnimatePresence>
         {popEffect && (
           <>
-            {[...Array(12)].map((_, i) => (
+            {popParticles.map((particle, i) => (
               <motion.div
                 key={i}
                 className="absolute w-2 h-2 bg-white rounded-full blur-[1px]"
                 initial={{ x: popEffect.x, y: popEffect.y, scale: 1, opacity: 1 }}
                 animate={{
-                  x: popEffect.x + (Math.random() - 0.5) * 150,
-                  y: popEffect.y - Math.random() * 150,
+                  x: popEffect.x + particle.xOff,
+                  y: popEffect.y - particle.yOff,
                   opacity: 0,
                   scale: 0
                 }}

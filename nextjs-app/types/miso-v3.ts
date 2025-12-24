@@ -381,7 +381,7 @@ export interface MisoAnalysisResult {
   }
 
   // Profile classification
-  profile: Big5ProfileData | { mode: 'LITE';[key: string]: any }
+  profile: Big5ProfileData | { mode: 'LITE';[key: string]: unknown }
 
   // Scores
   scores?: {
@@ -400,8 +400,8 @@ export interface MisoAnalysisResult {
 
   // Interventions
   interventions: InterventionPlan | {
-    immediate: any[]
-    first_aid: any[]
+    immediate: unknown[]
+    first_aid: unknown[]
   }
 
   // Summary

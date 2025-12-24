@@ -22,7 +22,6 @@ import {
   Brain,
   Home,
   RefreshCw,
-  Share2,
   AlertTriangle,
   CheckCircle2,
   Briefcase,
@@ -56,6 +55,10 @@ interface QualityReport {
   straightlining?: number
 }
 
+interface UserData {
+  name: string | null
+}
+
 export default function BFI2ResultsPage() {
   const router = useRouter()
   const [score, setScore] = useState<BFI2Score | null>(null)
@@ -70,85 +73,91 @@ export default function BFI2ResultsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   useEffect(() => {
-    // Load results from localStorage
-    const storedScore = localStorage.getItem('bfi2_result')
-    const storedQuality = localStorage.getItem('bfi2_quality_report')
-    const storedDate = localStorage.getItem('bfi2_completed_at')
-    const storedTime = localStorage.getItem('bfi2_completion_time')
+    const timer = setTimeout(() => {
+      // Load results from localStorage
+      const storedScore = localStorage.getItem('bfi2_result')
+      const storedQuality = localStorage.getItem('bfi2_quality_report')
+      const storedDate = localStorage.getItem('bfi2_completed_at')
+      const storedTime = localStorage.getItem('bfi2_completion_time')
 
-    if (!storedScore) {
-      router.push('/tests/big5')
-      return
-    }
-
-    const parsedScore = JSON.parse(storedScore)
-    setScore(parsedScore)
-
-    if (storedQuality) setQualityReport(JSON.parse(storedQuality))
-
-    const completedDate = storedDate ? new Date(storedDate) : new Date()
-    setCompletedAtRaw(completedDate)
-    if (storedDate) {
-      setCompletedAt(completedDate.toLocaleDateString('vi-VN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      }))
-    }
-
-    const completionTimeNum = storedTime ? parseInt(storedTime) : 0
-    if (storedTime) setCompletionTime(completionTimeNum)
-
-    // Check authentication and auto-save results
-    const checkAuthAndSave = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-
-      if (!user) {
-        // User not authenticated
-        setIsAuthenticated(false)
-        setSaveStatus('unauthenticated')
+      if (!storedScore) {
+        router.push('/tests/big5')
         return
       }
 
-      // User is authenticated, save results
-      setIsAuthenticated(true)
-      try {
-        setSaveStatus('saving')
-        await saveBFI2Results({
-          score: parsedScore,
-          completedAt: completedDate,
-          completionTime: completionTimeNum,
-        })
-        setSaveStatus('saved')
-      } catch (error) {
-        console.error('Failed to save results:', error)
-        setSaveStatus('error')
-        setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
+      const parsedScore = JSON.parse(storedScore)
+      setScore(parsedScore)
+
+      if (storedQuality) setQualityReport(JSON.parse(storedQuality))
+
+      const completedDate = storedDate ? new Date(storedDate) : new Date()
+      setCompletedAtRaw(completedDate)
+      if (storedDate) {
+        setCompletedAt(completedDate.toLocaleDateString('vi-VN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        }))
       }
-    }
 
-    checkAuthAndSave()
+      const completionTimeNum = storedTime ? parseInt(storedTime) : 0
+      if (storedTime) setCompletionTime(completionTimeNum)
 
-    // Get user name for PDF
-    const getUserName = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('name')
-          .eq('id', user.id)
-          .single()
-        if (userData && 'name' in userData) {
-          setUserName((userData as any).name)
+      // Check authentication and auto-save results
+      const checkAuthAndSave = async () => {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (!user) {
+          // User not authenticated
+          setIsAuthenticated(false)
+          setSaveStatus('unauthenticated')
+          return
+        }
+
+        // User is authenticated, save results
+        setIsAuthenticated(true)
+        try {
+          setSaveStatus('saving')
+          await saveBFI2Results({
+            score: parsedScore,
+            completedAt: completedDate,
+            completionTime: completionTimeNum,
+          })
+          setSaveStatus('saved')
+        } catch (error) {
+          console.error('Failed to save results:', error)
+          setSaveStatus('error')
+          setSaveError(error instanceof Error ? error.message : 'Không thể lưu kết quả')
         }
       }
-    }
 
-    getUserName()
+      checkAuthAndSave()
+
+      // Get user name for PDF
+      const getUserName = async () => {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: userData } = await supabase
+            .from('users')
+            .select('name')
+            .eq('id', user.id)
+            .single()
+
+          if (userData) {
+            const typedUserData = userData as unknown as UserData
+            setUserName(typedUserData.name || '')
+          }
+        }
+      }
+
+      getUserName()
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [router])
 
   const handleExportPDF = async () => {
@@ -338,7 +347,7 @@ export default function BFI2ResultsPage() {
                   <p className="text-muted-foreground text-orange-700 dark:text-orange-400">
                     ⚠️ <strong>Khác với 4 đặc điểm kia:</strong> Điểm N <strong>CÀNG CAO CÀNG KHÓ KHĂN</strong>.
                     Nếu bạn có N cao, đừng lo lắng - điều này rất phổ biến và có nhiều cách để cải thiện
-                    (xem phần "Sức Khỏe Tinh Thần" bên dưới).
+                    (xem phần &quot;Sức Khỏe Tinh Thần&quot; bên dưới).
                   </p>
                 </div>
               </div>
@@ -409,11 +418,10 @@ export default function BFI2ResultsPage() {
                     {/* Progress Bar */}
                     <div className="relative h-10 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden border">
                       <div
-                        className={`absolute left-0 top-0 h-full transition-all duration-500 ${
-                          domain.code === 'N'
-                            ? 'bg-gradient-to-r from-red-400 to-orange-400' // N: đỏ = cao = xấu
-                            : 'bg-gradient-to-r from-indigo-500 to-purple-500' // Các domain khác: tím = cao = tốt
-                        }`}
+                        className={`absolute left-0 top-0 h-full transition-all duration-500 ${domain.code === 'N'
+                          ? 'bg-gradient-to-r from-red-400 to-orange-400' // N: đỏ = cao = xấu
+                          : 'bg-gradient-to-r from-indigo-500 to-purple-500' // Các domain khác: tím = cao = tốt
+                          }`}
                         style={{ width: `${(rawScore / 5) * 100}%` }}
                       />
                       <div className="absolute inset-0 flex items-center px-4">
@@ -561,8 +569,8 @@ export default function BFI2ResultsPage() {
               const bgColor = insight.type === 'risk'
                 ? 'bg-red-50 dark:bg-red-900/20 border-red-200'
                 : insight.type === 'strength'
-                ? 'bg-green-50 dark:bg-green-900/20 border-green-200'
-                : 'bg-gray-50 dark:bg-gray-800 border-gray-200'
+                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200'
+                  : 'bg-gray-50 dark:bg-gray-800 border-gray-200'
 
               return (
                 <Alert key={idx} className={bgColor}>
@@ -869,7 +877,7 @@ export default function BFI2ResultsPage() {
                   Kết quả này dựa trên BFI-2 (Big Five Inventory-2), một công cụ đánh giá tính cách được nghiên cứu và validate rộng rãi.
                 </li>
                 <li>
-                  Tính cách là phổ liên tục (spectrum), không phải nhị phân. Không có "tốt" hay "xấu", chỉ có "khác biệt".
+                  Tính cách là phổ liên tục (spectrum), không phải nhị phân. Không có &quot;tốt&quot; hay &quot;xấu&quot;, chỉ có &quot;khác biệt&quot;.
                 </li>
                 <li>
                   Kết quả phản ánh bạn tại thời điểm hiện tại và có thể thay đổi theo thời gian.

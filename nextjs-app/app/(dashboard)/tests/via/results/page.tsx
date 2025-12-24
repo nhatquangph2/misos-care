@@ -16,14 +16,18 @@ export default function VIAResultsPage() {
 
   useEffect(() => {
     // Load result from localStorage
-    const storedResult = localStorage.getItem('via_result')
-    if (storedResult) {
-      setResult(JSON.parse(storedResult))
-    } else {
-      // No result found, redirect back to test
-      router.push('/tests/via')
-    }
-    setIsLoading(false)
+    const timer = setTimeout(() => {
+      const storedResult = localStorage.getItem('via_result')
+      if (storedResult) {
+        setResult(JSON.parse(storedResult))
+      } else {
+        // No result found, redirect back to test
+        router.push('/tests/via')
+      }
+      setIsLoading(false)
+    }, 0)
+
+    return () => clearTimeout(timer)
   }, [router])
 
   if (isLoading) {
@@ -137,11 +141,10 @@ export default function VIAResultsPage() {
               {result.strengthScores.map((strength) => (
                 <div
                   key={strength.strength}
-                  className={`flex items-center justify-between p-3 rounded-lg ${
-                    strength.isSignature
+                  className={`flex items-center justify-between p-3 rounded-lg ${strength.isSignature
                       ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800'
                       : 'bg-gray-50 dark:bg-gray-800/50'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{strength.icon}</span>

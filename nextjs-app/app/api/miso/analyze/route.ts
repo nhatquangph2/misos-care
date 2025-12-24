@@ -134,10 +134,11 @@ export async function POST(request: NextRequest) {
       success: true,
       analysis: analysisResult,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('MISO Analysis Error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: message },
       { status: 500 }
     )
   }
@@ -175,10 +176,11 @@ export async function GET(request: NextRequest) {
       success: true,
       analyses: data,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Get Analysis History Error:', error)
+    const message = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: 'Internal server error', details: message },
       { status: 500 }
     )
   }
