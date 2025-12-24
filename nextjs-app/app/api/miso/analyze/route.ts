@@ -62,11 +62,11 @@ export async function POST(request: NextRequest) {
         .limit(10)
 
       history = {
-        dass21: dassHistory?.map((d) => ({
+        dass21: dassHistory?.map((d: any) => ({
           timestamp: new Date(d.completed_at),
           raw_scores: { D: d.depression, A: d.anxiety, S: d.stress },
         })),
-        big5: big5History?.map((b) => ({
+        big5: big5History?.map((b: any) => ({
           timestamp: new Date(b.completed_at),
           raw_scores: b.raw_scores, // Direct access from bfi2_test_history
         })),
@@ -77,6 +77,7 @@ export async function POST(request: NextRequest) {
     const analysisResult = await runMisoAnalysis(userData, user.id, history)
 
     // Save to database
+    // @ts-ignore
     const { error: saveError } = await supabase.from('miso_analysis_logs').insert({
       user_id: user.id,
       analysis_result: analysisResult,
@@ -102,6 +103,7 @@ export async function POST(request: NextRequest) {
 
     // Save prediction feedback if we have predictions
     if (analysisResult.predictions && analysisResult.scores) {
+      // @ts-ignore
       const { error: feedbackError } = await supabase.from('prediction_feedback').insert({
         user_id: user.id,
         bvs: analysisResult.scores.BVS,

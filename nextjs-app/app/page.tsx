@@ -1,8 +1,3 @@
-/**
- * Landing Page - Ocean Immersive Design
- * Main entry point for Miso's Care application
- */
-
 'use client'
 
 import { useEffect, useState } from 'react'
@@ -10,23 +5,43 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { motion } from 'framer-motion'
+import { Link as ScrollLink } from 'react-scroll'
 import {
   Brain,
-  Heart,
-  TrendingUp,
   Shield,
   Sparkles,
   ArrowRight,
-  CheckCircle2,
+  PlayCircle,
+  Users,
+  MessageSquare,
+  HelpCircle,
+  ChevronRight
 } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+// New Components
+import { HowItWorks } from '@/components/landing/HowItWorks'
+import { Testimonials } from '@/components/landing/Testimonials'
+import { FAQ } from '@/components/landing/FAQ'
+import { ComparisonTable } from '@/components/landing/ComparisonTable'
+import { VideoDemo } from '@/components/landing/VideoDemo'
+import { WelcomeModal } from '@/components/onboarding/WelcomeModal'
+import { ProductTour } from '@/components/onboarding/ProductTour'
+import { landingPageTour } from '@/lib/tours/landing-tour'
+import { FloatingMiso } from '@/components/MisoCharacter'
 
 export default function LandingPage() {
   const router = useRouter()
   const supabase = createClient()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [startTour, setStartTour] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -50,250 +65,223 @@ export default function LandingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-white/60">Đang tải...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="text-center space-y-4">
+          <FloatingMiso emotion="happy" size="lg" />
+          <p className="text-muted-foreground animate-pulse">Đang tải dữ liệu...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center max-w-4xl mx-auto"
-        >
-          {/* Logo & Mascot */}
-          <div className="mb-8 flex flex-col items-center gap-4">
-            <motion.div
-              className="text-8xl"
-              animate={{
-                y: [0, -20, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut"
-              }}
-            >
-              🐬
-            </motion.div>
-            <h1 className="text-5xl md:text-6xl font-heading font-bold gradient-text">
-              Đại dương của Miso
-            </h1>
-          </div>
-
-          {/* Tagline */}
-          <p className="text-xl md:text-2xl text-white/90 mb-4 font-medium drop-shadow-lg">
-            Khám phá bản thân, chăm sóc sức khỏe tinh thần
-          </p>
-          <p className="text-lg text-white/70 mb-10 max-w-2xl mx-auto drop-shadow-md">
-            Ứng dụng trắc nghiệm tính cách và sàng lọc sức khỏe tinh thần được thiết kế bởi các chuyên gia tâm lý,
-            giúp bạn hiểu rõ hơn về bản thân và tìm ra hướng phát triển phù hợp.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link href="/tests">
-              <Button size="lg" className="w-full sm:w-auto text-lg px-8 py-6 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 shadow-lg shadow-purple-500/30 border-0">
-                <Brain className="mr-2 h-5 w-5" />
-                Bắt đầu hành trình
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-            </Link>
-            <Link href="/auth/login">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 py-6 glass-card border-white/20 text-white hover:bg-white/10">
-                Đăng nhập / Đăng ký
-              </Button>
-            </Link>
-          </div>
-
-          {/* Trust Badge */}
-          <div className="inline-flex items-center gap-2 glass-card px-6 py-3 rounded-full shadow-lg border border-white/20">
-            <Shield className="h-5 w-5 text-green-400" />
-            <span className="text-sm font-medium text-white/90">
-              Hoàn toàn miễn phí • Bảo mật tuyệt đối • Không cần đăng nhập
-            </span>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-16 relative z-10">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4 drop-shadow-lg">
-            Tại sao chọn Đại dương của Miso?
-          </h2>
-          <p className="text-lg text-white/70 max-w-2xl mx-auto">
-            Chúng tôi cung cấp các bài test chuẩn quốc tế với kết quả chính xác và chi tiết
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {[
-            {
-              icon: Brain,
-              color: 'from-blue-500 to-cyan-500',
-              title: 'Trắc nghiệm tính cách',
-              description: 'MBTI, Big Five, SISRI-24 và nhiều bài test khác giúp bạn hiểu rõ bản thân',
-              features: [
-                '16 loại tính cách MBTI',
-                'Big Five OCEAN model',
-                'Trí tuệ tâm linh SISRI-24'
-              ]
-            },
-            {
-              icon: Heart,
-              color: 'from-pink-500 to-purple-500',
-              title: 'Sàng lọc sức khỏe tinh thần',
-              description: 'Đánh giá mức độ trầm cảm, lo âu, stress một cách khoa học',
-              features: [
-                'PHQ-9 cho trầm cảm',
-                'GAD-7 cho lo âu',
-                'DASS-21 và PSS cho stress'
-              ]
-            },
-            {
-              icon: TrendingUp,
-              color: 'from-purple-500 to-indigo-500',
-              title: 'Theo dõi tiến trình',
-              description: 'Lưu kết quả, xem xu hướng và nhận đề xuất cá nhân hóa',
-              features: [
-                'Lịch sử kết quả test',
-                'Biểu đồ phân tích xu hướng',
-                'Đề xuất và mục tiêu cá nhân'
-              ]
-            }
-          ].map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              viewport={{ once: true }}
-            >
-              <Card className="glass-card shape-organic-1 border border-white/10 hover:shadow-xl hover:shadow-purple-500/20 transition-all h-full">
-                <CardHeader>
-                  <div className={`w-12 h-12 bg-gradient-to-br ${feature.color} shape-organic-2 flex items-center justify-center mb-4 shadow-lg`}>
-                    <feature.icon className="h-6 w-6 text-white" />
-                  </div>
-                  <CardTitle className="text-white">{feature.title}</CardTitle>
-                  <CardDescription className="text-white/70">
-                    {feature.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 text-sm text-white/80">
-                    {feature.features.map((item, i) => (
-                      <li key={i} className="flex items-start gap-2">
-                        <CheckCircle2 className="h-4 w-4 text-cyan-400 mt-0.5 flex-shrink-0" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Stats Section */}
-      <section className="container mx-auto px-4 py-16 relative z-10">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto text-center"
-        >
-          {[
-            { value: '7+', label: 'Bài test khoa học', color: 'text-blue-400' },
-            { value: '100%', label: 'Miễn phí', color: 'text-purple-400' },
-            { value: '5-15', label: 'Phút mỗi test', color: 'text-pink-400' },
-            { value: '🔒', label: 'Bảo mật tuyệt đối', color: '' }
-          ].map((stat, index) => (
-            <div key={index}>
-              <div className={`text-4xl font-bold ${stat.color || 'text-cyan-400'} mb-2 drop-shadow-lg`}>
-                {stat.value}
-              </div>
-              <div className="text-white/70">{stat.label}</div>
+    <TooltipProvider>
+      <div className="min-h-screen relative overflow-hidden bg-background">
+        <WelcomeModal onStartTour={() => setStartTour(true)} />
+        <ProductTour
+          steps={landingPageTour.getConfig().steps as any}
+          tourKey="landing"
+          startTrigger={startTour}
+          onComplete={() => setStartTour(false)}
+        />
+        {/* Navigation Header (Simple) */}
+        <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-md">
+          <div className="container flex h-16 items-center justify-between px-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🐬</span>
+              <span className="font-bold text-xl bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">MisosCare</span>
             </div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <Card className="max-w-3xl mx-auto glass-card shape-organic-2 border border-white/20 relative overflow-hidden">
-            <div className="blob-pink absolute -top-10 -right-10 opacity-40" />
-
-            <CardHeader className="text-center relative z-10">
-              <div className="flex justify-center mb-4">
-                <motion.div
-                  animate={{
-                    rotate: [0, 10, -10, 0],
-                    scale: [1, 1.1, 1]
-                  }}
-                  transition={{
-                    duration: 3,
-                    repeat: Infinity,
-                  }}
-                >
-                  <Sparkles className="h-12 w-12 text-yellow-400" />
-                </motion.div>
-              </div>
-              <CardTitle className="text-3xl md:text-4xl font-heading text-white mb-4 drop-shadow-lg">
-                Sẵn sàng khám phá bản thân?
-              </CardTitle>
-              <CardDescription className="text-lg text-white/80">
-                Bắt đầu hành trình tự khám phá ngay hôm nay. Không cần đăng ký, hoàn toàn miễn phí!
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
-              <Link href="/tests">
-                <Button size="lg" className="w-full sm:w-auto text-lg px-8 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 shadow-lg">
-                  <Brain className="mr-2 h-5 w-5" />
-                  Làm test ngay
-                </Button>
-              </Link>
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+              <ScrollLink to="how-it-works" smooth={true} duration={500} className="hover:text-primary transition-colors cursor-pointer">Cách hoạt động</ScrollLink>
+              <Link href="/about" className="hover:text-primary transition-colors">Về chúng tôi</Link>
+              <Link href="/help" className="hover:text-primary transition-colors">Trợ giúp</Link>
+            </nav>
+            <div className="flex items-center gap-3">
               <Link href="/auth/login">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg px-8 bg-white/10 hover:bg-white/20 text-white border-white/30">
-                  Đăng nhập để lưu kết quả
-                </Button>
+                <Button variant="ghost" size="sm">Đăng nhập</Button>
               </Link>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </section>
+              <Link href="/tests">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">Làm test ngay</Button>
+              </Link>
+            </div>
+          </div>
+        </header>
 
-      {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 text-center text-white/60 border-t border-white/10 relative z-10">
-        <p className="mb-2">
-          <span className="font-semibold text-white/90">Đại dương của Miso</span> - Chăm sóc sức khỏe tinh thần của bạn
-        </p>
-        <p className="text-sm">
-          Các bài test chỉ mang tính tham khảo. Nếu có vấn đề nghiêm trọng, hãy tham khảo ý kiến chuyên gia.
-        </p>
-      </footer>
-    </div>
+        {/* Hero Section */}
+        <section className="relative pt-20 pb-16 md:pt-32 md:pb-24">
+          {/* Background blobs */}
+          <div className="absolute top-0 right-0 -z-10 h-[500px] w-[500px] rounded-full bg-blue-100/50 blur-3xl opacity-50 dark:bg-blue-900/20" />
+          <div className="absolute bottom-0 left-0 -z-10 h-[500px] w-[500px] rounded-full bg-indigo-100/50 blur-3xl opacity-50 dark:bg-indigo-900/20" />
+
+          <div className="container px-4 mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center max-w-4xl mx-auto"
+            >
+              <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 px-4 py-1.5 rounded-full text-blue-600 dark:text-blue-400 text-sm font-medium mb-8">
+                <Sparkles className="h-4 w-4" />
+                <span>Nền tảng AI phân tích tâm lý MISO V3 đã sẵn sàng</span>
+              </div>
+
+              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-blue-800 to-indigo-900 dark:from-white dark:via-blue-100 dark:to-indigo-200">
+                Thấu hiểu chính mình <br className="hidden md:block" />
+                Cải thiện <span className="text-blue-600">tinh thần</span>
+              </h1>
+
+              <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+                Sử dụng AI và các bài trắc nghiệm khoa học chuẩn quốc tế để khám phá bản thân,
+                theo dõi sức khỏe tinh thần và nhận lộ trình phát triển cá nhân hóa.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <Link href="/tests">
+                  <Button size="lg" className="h-14 px-8 text-lg rounded-full bg-blue-600 hover:bg-blue-700 shadow-xl shadow-blue-500/20 group">
+                    <Brain className="mr-2 h-5 w-5" />
+                    Bắt đầu hành trình
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <ScrollLink to="video-demo" smooth={true} duration={500}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button size="lg" variant="outline" className="h-14 px-8 text-lg rounded-full glass-card hover:bg-muted/50">
+                        <PlayCircle className="mr-2 h-5 w-5" />
+                        Xem demo
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Xem video giới thiệu 2 phút</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </ScrollLink>
+              </div>
+
+              <div className="mt-12 flex flex-wrap justify-center gap-8 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" />
+                  <span className="font-semibold">Bảo mật tuyệt đối</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  <span className="font-semibold">Cộng đồng 10k+</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="font-semibold">Mentor hỗ trợ 1:1</span>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <div id="how-it-works">
+          <HowItWorks />
+        </div>
+
+        {/* Comparison Table */}
+        <ComparisonTable />
+
+        {/* Video Demo */}
+        <div id="video-demo">
+          <VideoDemo />
+        </div>
+
+        {/* Testimonials */}
+        <Testimonials />
+
+        {/* FAQ Section */}
+        <FAQ />
+
+        {/* Final CTA */}
+        <section className="py-24 relative overflow-hidden">
+          <div className="container px-4 mx-auto text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl p-12 md:p-20 text-white shadow-2xl relative overflow-hidden"
+            >
+              {/* Decorative circle */}
+              <div className="absolute -top-24 -right-24 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+              <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-400/20 rounded-full blur-3xl" />
+
+              <h2 className="text-4xl md:text-5xl font-bold mb-6">Sẵn sàng để thay đổi bản thân?</h2>
+              <p className="text-xl text-blue-100 mb-10 max-w-2xl mx-auto">
+                Bắt đầu làm bài test MBTI hoặc DASS-21 ngay hôm nay để có cái nhìn sâu sắc về tâm trí mình.
+                Hoàn toàn miễn phí và bảo mật.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/tests">
+                  <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 h-14 rounded-full font-bold text-lg">
+                    Làm bài test đầu tiên
+                  </Button>
+                </Link>
+                <Link href="/auth/login">
+                  <Button size="lg" variant="outline" className="border-white text-white hover:bg-white/10 px-8 h-14 rounded-full font-bold text-lg">
+                    Tạo tài khoản miễn phí
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="bg-slate-50 dark:bg-slate-900 border-t py-12 md:py-20">
+          <div className="container px-4 mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 mb-12">
+              <div className="col-span-2 lg:col-span-2">
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-3xl">🐬</span>
+                  <span className="font-bold text-2xl">MisosCare</span>
+                </div>
+                <p className="text-muted-foreground mb-6 max-w-xs">
+                  Nền tảng chăm sóc tinh thần toàn diện, thấu hiểu con người Việt thông qua khoa học dữ liệu và tâm lý học.
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold mb-4">Sản phẩm</h4>
+                <ul className="space-y-2 text-muted-foreground text-sm">
+                  <li><Link href="/tests" className="hover:text-primary">Bài trắc nghiệm</Link></li>
+                  <li><Link href="/ai-consultant" className="hover:text-primary">Tư vấn AI</Link></li>
+                  <li><Link href="/dashboard" className="hover:text-primary">Hồ sơ cá nhân</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-bold mb-4">Công ty</h4>
+                <ul className="space-y-2 text-muted-foreground text-sm">
+                  <li><Link href="/about" className="hover:text-primary">Về chúng tôi</Link></li>
+                  <li><Link href="/help" className="hover:text-primary">Trợ giúp</Link></li>
+                  <li><Link href="/privacy" className="hover:text-primary">Bảo mật</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-bold mb-4">Kết nối</h4>
+                <ul className="space-y-2 text-muted-foreground text-sm">
+                  <li><Link href="#" className="hover:text-primary">Facebook</Link></li>
+                  <li><Link href="#" className="hover:text-primary">TikTok</Link></li>
+                  <li><Link href="#" className="hover:text-primary">Email</Link></li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="pt-8 border-t flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground gap-4">
+              <p>© 2025 MisosCare. All rights reserved.</p>
+              <div className="flex gap-6">
+                <Link href="/privacy" className="hover:text-primary">Điều khoản</Link>
+                <Link href="/privacy" className="hover:text-primary">Quyền riêng tư</Link>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </TooltipProvider>
   )
 }

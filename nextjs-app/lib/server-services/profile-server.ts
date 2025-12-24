@@ -15,7 +15,10 @@ import {
   getCareerCounseling,
   getMentalHealthInsights,
   getLearningStyleRecommendations,
-  getRelationshipInsights
+  getRelationshipInsights,
+  getSportsRecommendations,
+  getHobbyRecommendations,
+  getMusicInstrumentRecommendations
 } from '@/services/bfi2-counseling.service';
 import type { BFI2Score } from '@/constants/tests/bfi2-questions';
 
@@ -134,10 +137,26 @@ function calculateTrends(records: MentalHealthRecord[]): MentalHealthTrend[] {
 function generateBig5Recommendations(personality: PersonalityProfile): Recommendation[] {
   const recommendations: Recommendation[] = [];
 
-  // Convert Big5 scores from database (0-100 percentage) to BFI-2 scale (1-5)
-  const convertToScale = (percentage: number | null): number => {
-    if (percentage === null || percentage === undefined) return 3; // Default to middle
-    return 1 + (percentage / 100) * 4; // Convert 0-100 to 1-5
+  // Auto-detect format and convert to 1-5 scale
+  const convertToScale = (value: number | null | undefined): number => {
+    if (value === null || value === undefined) return 3; // Default to middle
+    // If value > 5, it's percentage (0-100), otherwise it's already 1-5 scale
+    if (value > 5) {
+      return 1 + (value / 100) * 4; // Convert 0-100 to 1-5
+    }
+    return value; // Already 1-5 scale
+  };
+
+  // Auto-detect format and convert to T-Score
+  const convertToTScore = (value: number | null | undefined): number => {
+    if (value === null || value === undefined) return 50; // Default to mean
+    // If value > 5, it's percentage (0-100), otherwise convert from 1-5
+    if (value > 5) {
+      return 30 + (value / 100) * 40; // Convert 0-100 to T-score
+    }
+    // Convert 1-5 scale to percentage first, then to T-score
+    const percentage = ((value - 1) / 4) * 100;
+    return 30 + (percentage / 100) * 40;
   };
 
   // Construct BFI2Score from personality profile
@@ -149,28 +168,34 @@ function generateBig5Recommendations(personality: PersonalityProfile): Recommend
       N: convertToScale(personality.big5_neuroticism),
       O: convertToScale(personality.big5_openness),
     },
-    // Mock tScores - in production, calculate properly
+    // Calculate T-Scores from percentages
     tScores: {
       domains: {
-        E: 50,
-        A: 50,
-        C: 50,
-        N: 50,
-        O: 50,
+        E: convertToTScore(personality.big5_extraversion),
+        A: convertToTScore(personality.big5_agreeableness),
+        C: convertToTScore(personality.big5_conscientiousness),
+        N: convertToTScore(personality.big5_neuroticism),
+        O: convertToTScore(personality.big5_openness),
       },
       facets: {} as any
     },
     percentiles: {
       domains: {
-        E: 50,
-        A: 50,
-        C: 50,
-        N: 50,
-        O: 50,
+        E: personality.big5_extraversion != null && personality.big5_extraversion > 5 ? personality.big5_extraversion : ((personality.big5_extraversion ?? 3) - 1) / 4 * 100,
+        A: personality.big5_agreeableness != null && personality.big5_agreeableness > 5 ? personality.big5_agreeableness : ((personality.big5_agreeableness ?? 3) - 1) / 4 * 100,
+        C: personality.big5_conscientiousness != null && personality.big5_conscientiousness > 5 ? personality.big5_conscientiousness : ((personality.big5_conscientiousness ?? 3) - 1) / 4 * 100,
+        N: personality.big5_neuroticism != null && personality.big5_neuroticism > 5 ? personality.big5_neuroticism : ((personality.big5_neuroticism ?? 3) - 1) / 4 * 100,
+        O: personality.big5_openness != null && personality.big5_openness > 5 ? personality.big5_openness : ((personality.big5_openness ?? 3) - 1) / 4 * 100,
       }
     },
     facets: {} as any
   };
+
+  console.log('🔍 Generated BFI2Score for recommendations:', {
+    domains: bfi2Score.domains,
+    tScores: bfi2Score.tScores.domains,
+    percentiles: bfi2Score.percentiles.domains
+  });
 
   // Career counseling
   const careers = getCareerCounseling(bfi2Score);
@@ -220,6 +245,45 @@ function generateBig5Recommendations(personality: PersonalityProfile): Recommend
     icon: '💬',
   });
 
+  // Sports & Physical Activities
+  const sports = getSportsRecommendations(bfi2Score, personality.mbti_type || undefined);
+  sports.slice(0, 2).forEach((sport, idx) => {
+    recommendations.push({
+      id: `sport-${idx}`,
+      type: 'activity',
+      title: `🏃 ${sport.category}`,
+      description: `${sport.reason}\n\n**Hoạt động phù hợp:** ${sport.activities.slice(0, 3).join(', ')}\n\n**Lợi ích:** ${sport.benefits.slice(0, 2).join('; ')}`,
+      priority: 'medium',
+      icon: '🏃',
+    });
+  });
+
+  // Hobbies & Lifestyle
+  const hobbies = getHobbyRecommendations(bfi2Score, personality.mbti_type || undefined);
+  hobbies.slice(0, 2).forEach((hobby, idx) => {
+    recommendations.push({
+      id: `hobby-${idx}`,
+      type: 'habit',
+      title: `🎨 ${hobby.category}`,
+      description: `${hobby.reason}\n\n**Sở thích phù hợp:** ${hobby.hobbies.slice(0, 3).join(', ')}\n\n**Lợi ích:** ${hobby.benefits.slice(0, 2).join('; ')}`,
+      priority: 'medium',
+      icon: '🎨',
+    });
+  });
+
+  // Musical Instruments
+  const instruments = getMusicInstrumentRecommendations(bfi2Score, personality.mbti_type || undefined);
+  instruments.slice(0, 2).forEach((instrument, idx) => {
+    recommendations.push({
+      id: `music-${idx}`,
+      type: 'activity',
+      title: `🎵 ${instrument.category}`,
+      description: `${instrument.reason}\n\n**Nhạc cụ phù hợp:** ${instrument.instruments.slice(0, 3).join(', ')}\n\n**Nghiên cứu:** ${instrument.researchBacking}`,
+      priority: 'medium',
+      icon: '🎵',
+    });
+  });
+
   return recommendations;
 }
 
@@ -239,15 +303,23 @@ function generateRecommendations(
 
   // If user has Big5 profile, use detailed counseling service
   // Check if at least one Big5 dimension exists (not null/undefined)
+  // NOTE: 0 is a valid value (means 0% on that dimension), so check !== null && !== undefined
   const hasBig5Data = personality && (
-    personality.big5_openness !== null ||
-    personality.big5_conscientiousness !== null ||
-    personality.big5_extraversion !== null ||
-    personality.big5_agreeableness !== null ||
-    personality.big5_neuroticism !== null
+    (personality.big5_openness !== null && personality.big5_openness !== undefined) ||
+    (personality.big5_conscientiousness !== null && personality.big5_conscientiousness !== undefined) ||
+    (personality.big5_extraversion !== null && personality.big5_extraversion !== undefined) ||
+    (personality.big5_agreeableness !== null && personality.big5_agreeableness !== undefined) ||
+    (personality.big5_neuroticism !== null && personality.big5_neuroticism !== undefined)
   );
 
   console.log('🔍 Has Big5 data:', hasBig5Data);
+  console.log('�� Big5 values:', {
+    O: personality?.big5_openness,
+    C: personality?.big5_conscientiousness,
+    E: personality?.big5_extraversion,
+    A: personality?.big5_agreeableness,
+    N: personality?.big5_neuroticism
+  });
 
   if (hasBig5Data) {
     const big5Recs = generateBig5Recommendations(personality);

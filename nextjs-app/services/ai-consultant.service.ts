@@ -596,7 +596,7 @@ Format response as JSON:
 
     const genAI = new GoogleGenerativeAI(apiKey)
     const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash-exp',
+      model: 'models/gemini-1.5-flash',
       systemInstruction: systemPrompt,
     })
 

@@ -4,6 +4,7 @@ import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
 import { defaultMetadata } from "@/lib/metadata";
 import RippleCursor from "@/components/effects/RippleCursor";
+import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -58,6 +59,7 @@ export default function RootLayout({
         <div className="relative z-0 min-h-screen pb-24">
           {children}
         </div>
+        <Toaster />
 
         {/* MascotProvider now handles both Environment Background & Mascot */}
         {/* Background tự động thay đổi theo MBTI của user */}

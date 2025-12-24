@@ -237,7 +237,7 @@ export interface InterventionPlan {
 // ============================================
 
 export interface LiteModeAnalysis {
-  mode: 'LITE_ANALYSIS'
+  mode: 'LITE'
   severity: {
     D: {
       score: number
@@ -381,7 +381,7 @@ export interface MisoAnalysisResult {
   }
 
   // Profile classification
-  profile: Big5ProfileData | { mode: 'LITE'; [key: string]: any }
+  profile: Big5ProfileData | { mode: 'LITE';[key: string]: any }
 
   // Scores
   scores?: {

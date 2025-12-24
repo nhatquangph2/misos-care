@@ -47,15 +47,16 @@ export async function POST(request: NextRequest) {
     const result = await getAIConsultation(body)
 
     // Log consultation for analytics (optional)
-    await supabase.from('ai_consultations').insert({
-      user_id: user.id,
-      issue_type: body.issue,
-      situation: body.specificSituation,
-      created_at: new Date().toISOString(),
-    }).catch(err => {
-      // Don't fail if logging fails
-      console.warn('Failed to log consultation:', err)
-    })
+    // TODO: Create ai_consultations table in database schema first
+    // await supabase.from('ai_consultations').insert({
+    //   user_id: user.id,
+    //   issue_type: body.issue,
+    //   situation: body.specificSituation,
+    //   created_at: new Date().toISOString(),
+    // }).catch(err => {
+    //   // Don't fail if logging fails
+    //   console.warn('Failed to log consultation:', err)
+    // })
 
     return NextResponse.json({
       success: true,

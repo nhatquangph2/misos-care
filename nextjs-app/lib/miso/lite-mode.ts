@@ -38,7 +38,7 @@ function getSeverityRange(level: SeverityLevel, scale: 'D' | 'A' | 'S'): string 
  */
 export function analyzeDASS21Only(dass: DASS21RawScores): LiteModeAnalysis {
   const result: LiteModeAnalysis = {
-    mode: 'LITE_ANALYSIS',
+    mode: 'LITE',
     severity: {
       D: {
         score: dass.D,
@@ -266,9 +266,9 @@ function getNextSteps(severity: LiteModeAnalysis['severity']): LiteModeAnalysis[
   // Retest schedule
   const retestDays =
     maxLevel === 5 ? RETEST_SCHEDULE.CRISIS
-    : maxLevel === 4 ? RETEST_SCHEDULE.SEVERE
-    : maxLevel === 3 ? RETEST_SCHEDULE.MODERATE
-    : RETEST_SCHEDULE.NORMAL
+      : maxLevel === 4 ? RETEST_SCHEDULE.SEVERE
+        : maxLevel === 3 ? RETEST_SCHEDULE.MODERATE
+          : RETEST_SCHEDULE.NORMAL
 
   steps.push({
     priority: 'LOW',

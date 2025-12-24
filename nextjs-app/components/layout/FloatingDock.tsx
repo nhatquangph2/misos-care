@@ -13,7 +13,7 @@ export default function FloatingDock() {
     { name: 'Bài Test', href: '/tests', icon: Activity },
     { name: 'Tư vấn AI', href: '/ai-consultant', icon: Brain },
     { name: 'Mục tiêu', href: '/goals', icon: Target },
-    { name: 'Mentor', href: '/mentor', icon: BookOpen },
+    { name: 'Tìm Mentor', href: '/mentors', icon: BookOpen },
     { name: 'Hồ sơ', href: '/profile', icon: User },
     { name: 'Cài đặt', href: '/settings', icon: Settings },
   ];

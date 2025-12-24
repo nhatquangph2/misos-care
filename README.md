@@ -117,6 +117,7 @@ Mở [http://localhost:3001](http://localhost:3001)
 
 ## 📚 Documentation
 
+- 🗺️ **[Implementation Roadmap](../IMPLEMENTATION_ROADMAP.md)** (Start Here!)
 - 📖 [Performance Optimization Guide](../PERFORMANCE_OPTIMIZATION.md)
 - 🚀 [Next.js Advanced Features](../NEXTJS_ADVANCED_FEATURES.md)
 - 💡 [Example Usage](../EXAMPLE_USAGE.md)

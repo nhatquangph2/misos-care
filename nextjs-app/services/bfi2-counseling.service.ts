@@ -837,3 +837,629 @@ export function getRelationshipInsights(score: BFI2Score): RelationshipInsight {
     tips,
   }
 }
+
+// ============================================
+// SPORTS & PHYSICAL ACTIVITIES
+// ============================================
+
+export interface SportsRecommendation {
+  category: string
+  activities: string[]
+  reason: string
+  benefits: string[]
+  tips: string[]
+}
+
+/**
+ * Đề xuất môn thể thao/hoạt động phù hợp dựa trên Big Five
+ * Based on: Allen & Laborde (2014), Rhodes & Smith (2006)
+ */
+export function getSportsRecommendations(score: BFI2Score, mbtiType?: string): SportsRecommendation[] {
+  const recommendations: SportsRecommendation[] = []
+
+  const { tScores } = score
+  const domainLevels = {
+    E: interpretTScore(tScores.domains.E).level,
+    A: interpretTScore(tScores.domains.A).level,
+    C: interpretTScore(tScores.domains.C).level,
+    N: interpretTScore(tScores.domains.N).level,
+    O: interpretTScore(tScores.domains.O).level,
+  }
+
+  // High E (Extraversion) = Team sports, social activities
+  if (domainLevels.E === 'high' || domainLevels.E === 'very-high') {
+    recommendations.push({
+      category: 'Thể thao đồng đội',
+      activities: [
+        'Bóng đá',
+        'Bóng rổ',
+        'Bóng chuyền',
+        'Cầu lông đôi',
+        'Tenis đôi',
+        'Nhảy nhóm (Zumba, Aerobics)',
+      ],
+      reason: 'Bạn có năng lượng cao và thích tương tác xã hội, thể thao đồng đội giúp bạn vui vẻ và gắn kết với người khác.',
+      benefits: [
+        'Tăng cường kỹ năng giao tiếp và hợp tác',
+        'Giải phóng năng lượng dư thừa',
+        'Xây dựng mạng lưới bạn bè',
+      ],
+      tips: [
+        'Tham gia các câu lạc bộ thể thao tại công ty hoặc khu vực',
+        'Tổ chức các trận đấu giao hữu cuối tuần',
+      ],
+    })
+  }
+
+  // Low E (Introversion) = Individual sports, solo activities
+  if (domainLevels.E === 'low' || domainLevels.E === 'very-low') {
+    recommendations.push({
+      category: 'Thể thao cá nhân',
+      activities: [
+        'Chạy bộ',
+        'Bơi lội',
+        'Yoga',
+        'Leo núi',
+        'Đạp xe',
+        'Gym cá nhân',
+      ],
+      reason: 'Bạn thích không gian riêng tư và tập trung vào bản thân, các hoạt động cá nhân giúp bạn thư giãn và suy ngẫm.',
+      benefits: [
+        'Thời gian tĩnh lặng để suy nghĩ và phục hồi năng lượng',
+        'Kiểm soát hoàn toàn nhịp độ và cường độ',
+        'Cải thiện sức bền và sức khỏe cá nhân',
+      ],
+      tips: [
+        'Tập vào giờ ít người (sáng sớm hoặc tối muộn)',
+        'Nghe podcast/nhạc khi tập để tăng động lực',
+      ],
+    })
+  }
+
+  // High O (Openness) = Adventure sports, new experiences
+  if (domainLevels.O === 'high' || domainLevels.O === 'very-high') {
+    recommendations.push({
+      category: 'Thể thao mạo hiểm & sáng tạo',
+      activities: [
+        'Leo núi đá (Rock climbing)',
+        'Lướt ván',
+        'Nhảy dù',
+        'Võ thuật (MMA, Muay Thai)',
+        'Khiêu vũ (Salsa, Hip-hop)',
+        'Parkour',
+      ],
+      reason: 'Bạn thích trải nghiệm mới và thử thách, các môn thể thao mạo hiểm giúp bạn khám phá giới hạn của bản thân.',
+      benefits: [
+        'Phát triển tư duy sáng tạo và khả năng giải quyết vấn đề',
+        'Tăng adrenaline và cảm giác phấn khích',
+        'Học hỏi kỹ năng mới liên tục',
+      ],
+      tips: [
+        'Tham gia các khóa học mới mỗi 3-6 tháng để duy trì hứng thú',
+        'Kết nối với cộng đồng yêu thích thể thao mạo hiểm',
+      ],
+    })
+  }
+
+  // High C (Conscientiousness) = Structured training, goal-oriented
+  if (domainLevels.C === 'high' || domainLevels.C === 'very-high') {
+    recommendations.push({
+      category: 'Thể thao có mục tiêu rõ ràng',
+      activities: [
+        'Marathon (chạy bộ đường dài)',
+        'Triathlon',
+        'Cử tạ/Powerlifting',
+        'Yoga (Ashtanga, Iyengar)',
+        'Võ thuật truyền thống (Karate, Taekwondo)',
+      ],
+      reason: 'Bạn thích kế hoạch rõ ràng và theo dõi tiến độ, các môn thể thao có hệ thống training giúp bạn đạt mục tiêu.',
+      benefits: [
+        'Cảm giác hoàn thành khi đạt được milestone',
+        'Cải thiện kỷ luật và tính kiên nhẫn',
+        'Kết quả đo lường được (thời gian, tạ, belt)',
+      ],
+      tips: [
+        'Lập kế hoạch training 12 tuần với mục tiêu cụ thể',
+        'Sử dụng app theo dõi tiến độ (Strava, MyFitnessPal)',
+      ],
+    })
+  }
+
+  // High N (Neuroticism) = Calming activities, stress reduction
+  if (domainLevels.N === 'high' || domainLevels.N === 'very-high') {
+    recommendations.push({
+      category: 'Thể thao giảm căng thẳng',
+      activities: [
+        'Bơi lội',
+        'Đạp xe nhẹ',
+        'Đi bộ đường dài',
+        'Tai Chi',
+        'Pilates',
+      ],
+      reason: 'Bạn dễ bị stress và lo âu, các hoạt động nhẹ nhàng giúp điều hòa cảm xúc và giảm cortisol.',
+      benefits: [
+        'Giảm lo âu và cải thiện tâm trạng',
+        'Ngủ ngon hơn',
+        'Tăng cảm giác kiểm soát và ổn định',
+      ],
+      tips: [
+        'Tập vào môi trường yên tĩnh (công viên, hồ bơi vắng)',
+        'Tránh thi đấu căng thẳng ban đầu, tập nhẹ nhàng',
+      ],
+    })
+  }
+
+  // MBTI integration
+  if (mbtiType) {
+    if (mbtiType.includes('S') && mbtiType.includes('J')) {
+      // SJ types: Traditional, structured sports
+      recommendations.push({
+        category: 'Thể thao truyền thống & có cấu trúc',
+        activities: [
+          'Golf',
+          'Quần vợt',
+          'Cầu lông',
+          'Bơi lội',
+          'Chạy bộ',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích các hoạt động có quy tắc rõ ràng và lịch sử lâu đời.`,
+        benefits: ['Kỹ thuật rõ ràng, dễ học', 'Cộng đồng lớn và ổn định'],
+        tips: ['Tham gia các câu lạc bộ có uy tín'],
+      })
+    }
+
+    if (mbtiType.includes('N') && mbtiType.includes('P')) {
+      // NP types: Creative, spontaneous sports
+      recommendations.push({
+        category: 'Thể thao sáng tạo & linh hoạt',
+        activities: [
+          'Skateboarding',
+          'Bouldering',
+          'Freerunning/Parkour',
+          'Breakdancing',
+          'Surfing',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích tự do sáng tạo và ứng biến linh hoạt.`,
+        benefits: ['Không gò bó, phát triển phong cách riêng', 'Luôn có thử thách mới'],
+        tips: ['Khám phá nhiều môn khác nhau, không cần chuyên sâu'],
+      })
+    }
+  }
+
+  return recommendations
+}
+
+// ============================================
+// HOBBIES & LIFESTYLE ACTIVITIES
+// ============================================
+
+export interface HobbyRecommendation {
+  category: string
+  hobbies: string[]
+  reason: string
+  benefits: string[]
+  tips: string[]
+}
+
+/**
+ * Đề xuất sở thích/hoạt động giải trí phù hợp dựa trên Big Five
+ * Based on: Chamorro-Premuzic et al. (2007), Cuperman & Ickes (2009)
+ */
+export function getHobbyRecommendations(score: BFI2Score, mbtiType?: string): HobbyRecommendation[] {
+  const recommendations: HobbyRecommendation[] = []
+
+  const { tScores } = score
+  const domainLevels = {
+    E: interpretTScore(tScores.domains.E).level,
+    A: interpretTScore(tScores.domains.A).level,
+    C: interpretTScore(tScores.domains.C).level,
+    N: interpretTScore(tScores.domains.N).level,
+    O: interpretTScore(tScores.domains.O).level,
+  }
+
+  // High O (Openness) = Creative hobbies
+  if (domainLevels.O === 'high' || domainLevels.O === 'very-high') {
+    recommendations.push({
+      category: 'Sở thích sáng tạo',
+      hobbies: [
+        'Vẽ tranh/Họa sĩ',
+        'Chơi nhạc cụ (Guitar, Piano, Violin)',
+        'Viết lách (Blog, Tiểu thuyết, Thơ)',
+        'Nhiếp ảnh',
+        'Thiết kế đồ họa/3D',
+        'Làm phim/Edit video',
+        'Nấu ăn sáng tạo (Fusion cuisine)',
+      ],
+      reason: 'Bạn có trí tưởng tượng phong phú và thích khám phá ý tưởng mới, sở thích sáng tạo giúp bạn thể hiện bản thân.',
+      benefits: [
+        'Phát triển tư duy sáng tạo và giải quyết vấn đề',
+        'Giảm stress qua việc thể hiện cảm xúc',
+        'Có thể trở thành side-hustle (bán tranh, nhận gig)',
+      ],
+      tips: [
+        'Dành 1-2 giờ mỗi tuần cho sở thích sáng tạo',
+        'Tham gia cộng đồng online để chia sẻ tác phẩm',
+      ],
+    })
+  }
+
+  // High C (Conscientiousness) = Skill-building hobbies
+  if (domainLevels.C === 'high' || domainLevels.C === 'very-high') {
+    recommendations.push({
+      category: 'Sở thích xây dựng kỹ năng',
+      hobbies: [
+        'Học ngôn ngữ mới',
+        'Lập trình/Code side projects',
+        'Chơi cờ vua',
+        'Làm vườn (Gardening)',
+        'Woodworking/DIY projects',
+        'Đọc sách phi hư cấu',
+        'Đầu tư chứng khoán',
+      ],
+      reason: 'Bạn thích có mục tiêu rõ ràng và theo dõi tiến độ, các sở thích này giúp bạn phát triển năng lực.',
+      benefits: [
+        'Xây dựng kỹ năng có giá trị lâu dài',
+        'Cảm giác thành tựu khi hoàn thành project',
+        'Có thể mở rộng sự nghiệp',
+      ],
+      tips: [
+        'Đặt mục tiêu SMART cho mỗi sở thích (ví dụ: đọc 24 cuốn sách/năm)',
+        'Theo dõi tiến độ bằng journal hoặc app',
+      ],
+    })
+  }
+
+  // High E (Extraversion) = Social hobbies
+  if (domainLevels.E === 'high' || domainLevels.E === 'very-high') {
+    recommendations.push({
+      category: 'Sở thích xã hội',
+      hobbies: [
+        'Tham gia câu lạc bộ (Book club, Toastmasters)',
+        'Tình nguyện cộng đồng',
+        'Tổ chức sự kiện/Networking',
+        'Nhảy nhóm (Salsa, Hip-hop)',
+        'Board games/Card games meetups',
+        'Du lịch nhóm',
+      ],
+      reason: 'Bạn năng động và thích gặp gỡ người mới, các hoạt động xã hội giúp bạn nạp năng lượng.',
+      benefits: [
+        'Mở rộng mạng lưới quan hệ',
+        'Phát triển kỹ năng giao tiếp',
+        'Tạo kỷ niệm đẹp với bạn bè',
+      ],
+      tips: [
+        'Sử dụng Meetup.com để tìm nhóm phù hợp',
+        'Tổ chức ít nhất 1 hoạt động xã hội mỗi tuần',
+      ],
+    })
+  }
+
+  // Low E (Introversion) = Solo hobbies
+  if (domainLevels.E === 'low' || domainLevels.E === 'very-low') {
+    recommendations.push({
+      category: 'Sở thích cá nhân',
+      hobbies: [
+        'Đọc sách',
+        'Viết nhật ký',
+        'Chơi game solo (RPG, Strategy)',
+        'Nghe podcast/Audiobook',
+        'Thiền/Reflection',
+        'Làm mô hình (Gundam, LEGO)',
+        'Nghiên cứu sâu về chủ đề yêu thích',
+      ],
+      reason: 'Bạn cần thời gian riêng để suy ngẫm và phục hồi năng lượng, sở thích cá nhân giúp bạn thư giãn.',
+      benefits: [
+        'Không gian riêng tư để suy nghĩ sâu',
+        'Tự do kiểm soát thời gian và nhịp độ',
+        'Phát triển kiến thức chuyên sâu',
+      ],
+      tips: [
+        'Tạo không gian yên tĩnh tại nhà cho sở thích',
+        'Đặt lịch "me time" cố định mỗi ngày',
+      ],
+    })
+  }
+
+  // High A (Agreeableness) = Helping/caring hobbies
+  if (domainLevels.A === 'high' || domainLevels.A === 'very-high') {
+    recommendations.push({
+      category: 'Sở thích giúp đỡ người khác',
+      hobbies: [
+        'Tình nguyện tại trại trẻ em/người già',
+        'Nuôi thú cưng/Foster animals',
+        'Dạy kèm học sinh',
+        'Làm mentor',
+        'Chăm sóc cây cảnh',
+        'Tham gia các tổ chức từ thiện',
+      ],
+      reason: 'Bạn quan tâm đến người khác và thích giúp đỡ, các hoạt động này mang lại ý nghĩa cho cuộc sống.',
+      benefits: [
+        'Cảm giác thỏa mãn khi giúp đỡ người khác',
+        'Xây dựng mối quan hệ chân thành',
+        'Đóng góp tích cực cho xã hội',
+      ],
+      tips: [
+        'Tìm tổ chức từ thiện phù hợp với giá trị cá nhân',
+        'Cam kết dài hạn thay vì tình nguyện tản mát',
+      ],
+    })
+  }
+
+  // MBTI integration
+  if (mbtiType) {
+    if (mbtiType.includes('NT')) {
+      recommendations.push({
+        category: 'Sở thích tri thức (NT)',
+        hobbies: [
+          'Nghiên cứu khoa học nghiệp dư',
+          'Triết học/Debate',
+          'Chiến lược (Chess, Go)',
+          'Lập trình AI/Machine Learning',
+          'Đọc sách lý thuyết phức tạp',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích tư duy logic và khái niệm trừu tượng.`,
+        benefits: ['Phát triển tư duy phê phán', 'Hiểu sâu về hệ thống'],
+        tips: ['Tham gia diễn đàn học thuật online'],
+      })
+    }
+
+    if (mbtiType.includes('SF')) {
+      recommendations.push({
+        category: 'Sở thích thực tế & ý nghĩa (SF)',
+        hobbies: [
+          'Làm bánh/Nấu ăn',
+          'Handcraft (Đan len, May vá)',
+          'Chăm sóc cây cảnh',
+          'Trang trí nội thất',
+          'Chụp ảnh gia đình',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích các hoạt động thực tế mang lại giá trị cho người khác.`,
+        benefits: ['Tạo ra sản phẩm hữu ích', 'Chia sẻ với gia đình/bạn bè'],
+        tips: ['Làm quà handmade cho người thân'],
+      })
+    }
+  }
+
+  return recommendations
+}
+
+// ============================================
+// MUSICAL INSTRUMENTS
+// ============================================
+
+export interface MusicInstrumentRecommendation {
+  category: string
+  instruments: string[]
+  reason: string
+  benefits: string[]
+  learningTips: string[]
+  researchBacking: string
+}
+
+/**
+ * Đề xuất nhạc cụ phù hợp dựa trên Big Five và MBTI
+ * Based on:
+ * - Greenberg et al. (2015) - Musical preferences reflect personality
+ * - Rentfrow & Gosling (2003) - Music and personality
+ * - Corrigall et al. (2013) - Personality and instrumental music preferences
+ */
+export function getMusicInstrumentRecommendations(score: BFI2Score, mbtiType?: string): MusicInstrumentRecommendation[] {
+  const recommendations: MusicInstrumentRecommendation[] = []
+
+  const { tScores } = score
+  const domainLevels = {
+    E: interpretTScore(tScores.domains.E).level,
+    A: interpretTScore(tScores.domains.A).level,
+    C: interpretTScore(tScores.domains.C).level,
+    N: interpretTScore(tScores.domains.N).level,
+    O: interpretTScore(tScores.domains.O).level,
+  }
+
+  // High O (Openness) = Complex, unconventional instruments
+  if (domainLevels.O === 'high' || domainLevels.O === 'very-high') {
+    recommendations.push({
+      category: 'Nhạc cụ sáng tạo & phức tạp',
+      instruments: [
+        'Piano (Classical & Jazz)',
+        'Violin',
+        'Saxophone',
+        'Guitar điện (Rock/Jazz)',
+        'Synthesizer/Electronic music',
+        'Đàn Tranh (Traditional Vietnamese)',
+        'Cello',
+      ],
+      reason: 'Bạn có độ cởi mở cao, thích khám phá âm thanh mới và kỹ thuật phức tạp. Các nhạc cụ này cho phép sự sáng tạo và biểu đạt cảm xúc sâu sắc.',
+      benefits: [
+        'Phát triển tư duy sáng tạo và khả năng ứng biến',
+        'Biểu đạt cảm xúc phức tạp qua âm nhạc',
+        'Không ngừng học hỏi kỹ thuật mới',
+      ],
+      learningTips: [
+        'Thử nghiệm nhiều thể loại nhạc khác nhau (classical, jazz, experimental)',
+        'Học cả lý thuyết âm nhạc để hiểu sâu hơn',
+        'Tham gia jam sessions để ứng biến sáng tạo',
+      ],
+      researchBacking: 'Corrigall et al. (2013): Openness cao liên quan đến sở thích nhạc cụ phức tạp và đa dạng thể loại',
+    })
+  }
+
+  // High E (Extraversion) = Social, ensemble instruments
+  if (domainLevels.E === 'high' || domainLevels.E === 'very-high') {
+    recommendations.push({
+      category: 'Nhạc cụ hòa tấu & biểu diễn',
+      instruments: [
+        'Trống (Drums)',
+        'Saxophone',
+        'Trumpet',
+        'Guitar Acoustic (đệm hát)',
+        'Keyboard (trong band)',
+        'Bass Guitar',
+      ],
+      reason: 'Bạn hướng ngoại, thích năng lượng cao và tương tác nhóm. Các nhạc cụ này phù hợp để chơi trong band, hòa tấu, và biểu diễn trước đám đông.',
+      benefits: [
+        'Giao lưu với nhạc sĩ khác trong band/ensemble',
+        'Năng lượng cao khi biểu diễn trước công chúng',
+        'Tạo không khí sôi động trong nhóm',
+      ],
+      learningTips: [
+        'Tham gia band hoặc nhóm nhạc ngay từ đầu',
+        'Học các bài hát phổ biến để jam với bạn bè',
+        'Tham gia open mic nights để thực hành biểu diễn',
+      ],
+      researchBacking: 'Greenberg et al. (2015): Extraversion cao thích nhạc energetic và môi trường hòa tấu nhóm',
+    })
+  }
+
+  // Low E (Introversion) = Solo, contemplative instruments
+  if (domainLevels.E === 'low' || domainLevels.E === 'very-low') {
+    recommendations.push({
+      category: 'Nhạc cụ độc tấu & suy ngẫm',
+      instruments: [
+        'Piano Solo',
+        'Classical Guitar',
+        'Flute',
+        'Đàn Bầu (Vietnamese monochord)',
+        'Harp',
+        'Cello Solo',
+      ],
+      reason: 'Bạn hướng nội, thích không gian riêng tư và suy ngẫm sâu. Các nhạc cụ này cho phép bạn tập luyện và biểu diễn độc lập, tạo âm thanh tĩnh lặng và sâu lắng.',
+      benefits: [
+        'Thời gian riêng tư để khám phá bản thân qua âm nhạc',
+        'Kiểm soát hoàn toàn tiến độ học tập',
+        'Tạo không gian tĩnh lặng và thiền định',
+      ],
+      learningTips: [
+        'Tập luyện tại nhà trong không gian yên tĩnh',
+        'Học các bản nhạc cổ điển hoặc ballad chậm',
+        'Ghi âm để tự đánh giá tiến bộ',
+      ],
+      researchBacking: 'Rentfrow & Gosling (2003): Introversion liên quan đến sở thích nhạc reflective và complex',
+    })
+  }
+
+  // High C (Conscientiousness) = Structured, disciplined instruments
+  if (domainLevels.C === 'high' || domainLevels.C === 'very-high') {
+    recommendations.push({
+      category: 'Nhạc cụ kỹ thuật cao',
+      instruments: [
+        'Piano Classical',
+        'Violin',
+        'Cello',
+        'Oboe',
+        'Classical Guitar',
+        'Flute',
+      ],
+      reason: 'Bạn có tính kỷ luật cao và kiên nhẫn. Các nhạc cụ này đòi hỏi luyện tập đều đặn, kỹ thuật chính xác, và tiến bộ từng bước rõ ràng.',
+      benefits: [
+        'Cảm giác thành tựu khi hoàn thành bản nhạc khó',
+        'Phát triển kỷ luật và sự kiên nhẫn',
+        'Kỹ thuật tiến bộ đo lường được (grades, exams)',
+      ],
+      learningTips: [
+        'Theo chương trình học có cấu trúc (ABRSM, RCM)',
+        'Luyện tập 30-60 phút mỗi ngày đều đặn',
+        'Đặt mục tiêu cụ thể (VD: hoàn thành Grade 3 trong 6 tháng)',
+      ],
+      researchBacking: 'Conscientiousness cao dự đoán thành công trong học nhạc cổ điển (yêu cầu luyện tập kỷ luật)',
+    })
+  }
+
+  // High N (Neuroticism) = Expressive, emotional instruments
+  if (domainLevels.N === 'high' || domainLevels.N === 'very-high') {
+    recommendations.push({
+      category: 'Nhạc cụ biểu cảm',
+      instruments: [
+        'Guitar Acoustic (fingerstyle)',
+        'Piano (ballad, neo-classical)',
+        'Violin (romantic repertoire)',
+        'Cello',
+        'Ukulele',
+      ],
+      reason: 'Bạn nhạy cảm cảm xúc, âm nhạc giúp bạn xử lý và biểu đạt cảm xúc. Các nhạc cụ này cho phép diễn tả cảm xúc tinh tế và có hiệu quả trị liệu.',
+      benefits: [
+        'Giảm lo âu và stress qua việc chơi nhạc',
+        'Biểu đạt cảm xúc khó nói thành lời',
+        'Cải thiện điều hòa cảm xúc',
+      ],
+      learningTips: [
+        'Chọn các bản nhạc có ý nghĩa cảm xúc với bạn',
+        'Không quá áp lực về kỹ thuật hoàn hảo ban đầu',
+        'Sử dụng âm nhạc như công cụ tự chăm sóc (self-care)',
+      ],
+      researchBacking: 'Music therapy research: chơi nhạc cụ giảm anxiety và cải thiện mood regulation',
+    })
+  }
+
+  // MBTI Integration
+  if (mbtiType) {
+    // NT types: Analytical, complex music
+    if (mbtiType.includes('NT')) {
+      recommendations.push({
+        category: 'Nhạc cụ phân tích & lý thuyết (NT)',
+        instruments: [
+          'Piano (với focus vào harmony & theory)',
+          'Synthesizer/Electronic composition',
+          'Guitar Jazz',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích hiểu sâu về lý thuyết và cấu trúc âm nhạc.`,
+        benefits: [
+          'Phát triển tư duy logic qua âm nhạc',
+          'Hiểu sâu về lý thuyết và hệ thống âm nhạc',
+        ],
+        learningTips: [
+          'Học lý thuyết âm nhạc song song với thực hành',
+          'Phân tích các tác phẩm classical để hiểu cấu trúc',
+        ],
+        researchBacking: 'NT types thường thích nhạc phức tạp và có cấu trúc rõ ràng',
+      })
+    }
+
+    // SF types: Hands-on, expressive
+    if (mbtiType.includes('SF')) {
+      recommendations.push({
+        category: 'Nhạc cụ cảm xúc & thực tế (SF)',
+        instruments: [
+          'Guitar Acoustic',
+          'Piano (pop/ballad)',
+          'Ukulele',
+          'Đàn Bầu',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích âm nhạc gần gũi và mang lại niềm vui cho người khác.`,
+        benefits: [
+          'Dễ học, nhanh chóng chơi được bài hát',
+          'Mang niềm vui cho bạn bè và gia đình',
+        ],
+        learningTips: [
+          'Học các bài hát quen thuộc trước',
+          'Chơi cho người thân nghe để tạo động lực',
+        ],
+        researchBacking: 'SF types ưa thích nhạc upbeat và conventional',
+      })
+    }
+
+    // NP types: Experimental, improvisational
+    if (mbtiType.includes('N') && mbtiType.includes('P')) {
+      recommendations.push({
+        category: 'Nhạc cụ ứng biến & thử nghiệm (NP)',
+        instruments: [
+          'Synthesizer/Electronic',
+          'Guitar (improvisation)',
+          'Saxophone (Jazz)',
+          'Hang Drum',
+        ],
+        reason: `Với MBTI ${mbtiType}, bạn thích tự do sáng tạo và ứng biến.`,
+        benefits: [
+          'Tự do sáng tạo không giới hạn',
+          'Khám phá âm thanh và kỹ thuật mới',
+        ],
+        learningTips: [
+          'Học improvisation thay vì chỉ đọc nhạc',
+          'Thử nghiệm với effects và sound design',
+        ],
+        researchBacking: 'NP types thích âm nhạc innovative và unconventional',
+      })
+    }
+  }
+
+  return recommendations
+}

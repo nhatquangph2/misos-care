@@ -10,6 +10,9 @@ import { useFadeIn, useStagger } from '@/hooks/useGSAP'
 import { createClient } from '@/lib/supabase/client'
 import { useMascotStore } from '@/stores/mascotStore'
 import { ArrowRight, TrendingUp, Target, Brain, Heart, Sparkles } from 'lucide-react'
+import { ProductTour } from '@/components/onboarding/ProductTour'
+import { dashboardTour } from '@/lib/tours/dashboard-tour'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
 
 interface DashboardStats {
   testsCompleted: number
@@ -35,12 +38,22 @@ export default function DashboardPage() {
     activeGoals: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [dashboardTourCompleted, setDashboardTourCompleted] = useLocalStorage('dashboard-tour-completed', false)
+  const [startTour, setStartTour] = useState(false)
 
   const { userStats, currentMood, setMood, addMessage } = useMascotStore()
 
   useEffect(() => {
     loadDashboardData()
   }, [])
+
+  useEffect(() => {
+    // Trigger tour for first-time visitors after data loads
+    if (!loading && !dashboardTourCompleted && stats.testsCompleted >= 0) {
+      const timer = setTimeout(() => setStartTour(true), 1000)
+      return () => clearTimeout(timer)
+    }
+  }, [loading, dashboardTourCompleted, stats.testsCompleted])
 
   async function loadDashboardData() {
     try {
@@ -127,8 +140,17 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl" ref={fadeRef}>
+      <ProductTour
+        steps={dashboardTour.getConfig().steps as any}
+        tourKey="dashboard"
+        startTrigger={startTour}
+        onComplete={() => {
+          setStartTour(false)
+          setDashboardTourCompleted(true)
+        }}
+      />
       {/* Welcome Section */}
-      <div className="mb-8">
+      <div id="dashboard-welcome" className="mb-8">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           Xin chào, {user?.name || 'bạn'}! 👋
         </h1>
@@ -138,7 +160,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8" ref={staggerRef}>
+      <div id="stats-summary" className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8" ref={staggerRef}>
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -216,8 +238,8 @@ export default function DashboardPage() {
                 <Badge
                   variant={
                     stats.latestMentalHealthScore.severity === 'normal' ? 'default' :
-                    stats.latestMentalHealthScore.severity === 'mild' ? 'secondary' :
-                    'destructive'
+                      stats.latestMentalHealthScore.severity === 'mild' ? 'secondary' :
+                        'destructive'
                   }
                 >
                   {stats.latestMentalHealthScore.severity}
@@ -300,7 +322,7 @@ export default function DashboardPage() {
 
       {/* Recommendations */}
       {stats.testsCompleted === 0 && (
-        <Card className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-none">
+        <Card id="recommended-tests" className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-none">
           <CardHeader>
             <CardTitle className="text-xl">Bắt đầu hành trình của bạn</CardTitle>
           </CardHeader>

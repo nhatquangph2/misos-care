@@ -8,9 +8,22 @@
 import { TestSelectionCard } from '@/components/features/tests/TestSelectionCard'
 import { useRouter } from 'next/navigation'
 import { Brain, Heart, Activity, Check, AlertTriangle } from 'lucide-react'
+import { ProductTour } from '@/components/onboarding/ProductTour'
+import { testPageTour } from '@/lib/tours/test-tour'
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { useState, useEffect } from 'react'
 
 export default function TestsPage() {
   const router = useRouter()
+  const [testTourCompleted, setTestTourCompleted] = useLocalStorage('test-tour-completed', false)
+  const [startTour, setStartTour] = useState(false)
+
+  useEffect(() => {
+    if (!testTourCompleted) {
+      const timer = setTimeout(() => setStartTour(true), 800)
+      return () => clearTimeout(timer)
+    }
+  }, [testTourCompleted])
 
   const tests = [
     {
@@ -23,6 +36,7 @@ export default function TestsPage() {
       difficulty: 'easy' as const,
       recommended: true,
       route: '/tests/via',
+      className: 'test-card-via',
     },
     {
       id: 'mbti',
@@ -34,6 +48,7 @@ export default function TestsPage() {
       difficulty: 'medium' as const,
       recommended: true,
       route: '/tests/mbti',
+      className: 'test-card-mbti',
     },
     {
       id: 'big5',
@@ -76,8 +91,17 @@ export default function TestsPage() {
 
   return (
     <div className="min-h-screen">
+      <ProductTour
+        steps={testPageTour.getConfig().steps as any}
+        tourKey="test-page"
+        startTrigger={startTour}
+        onComplete={() => {
+          setStartTour(false)
+          setTestTourCompleted(true)
+        }}
+      />
       {/* Hero Section */}
-      <div className="container mx-auto px-6 py-12">
+      <div id="test-categories" className="container mx-auto px-6 py-12">
         <div className="text-center mb-12 relative">
           <div className="blob-purple absolute -top-10 left-1/2 -translate-x-1/2" />
           <h1 className="text-4xl md:text-5xl font-heading font-bold mb-4">
@@ -108,7 +132,7 @@ export default function TestsPage() {
         </div>
 
         {/* Test Cards Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+        <div id="test-search" className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
           {tests.map((test) => (
             <TestSelectionCard
               key={test.id}

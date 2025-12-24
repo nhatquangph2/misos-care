@@ -101,7 +101,7 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
       )}
 
       {/* Big Five Section */}
-      {profile.big5_openness !== null && (
+      {(profile.big5_openness !== null && profile.big5_openness !== undefined) && (
         <Card className="glass-panel p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <span>✨</span>
@@ -109,11 +109,25 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
           </h3>
           <div className="space-y-4">
             {Object.entries(BIG5_TRAITS).map(([key, info]) => {
-              // Score is already stored as percentage (0-100) in database
-              const percentage = Math.round(profile[`big5_${key}` as keyof PersonalityProfile] as number || 50);
+              // Get raw value from database
+              const rawValue = profile[`big5_${key}` as keyof PersonalityProfile] as number;
 
-              // Convert back to 1-5 scale for display
-              const rawScore = 1 + (percentage / 100) * 4;
+              // Auto-detect format: if value > 5, it's percentage (0-100), otherwise it's 1-5 scale
+              let percentage: number;
+              let rawScore: number;
+
+              if (rawValue === null || rawValue === undefined) {
+                percentage = 50; // Default middle
+                rawScore = 3;
+              } else if (rawValue > 5) {
+                // New format: 0-100 percentage
+                percentage = Math.round(rawValue);
+                rawScore = 1 + (percentage / 100) * 4;
+              } else {
+                // Old format: 1-5 scale - convert to percentage
+                rawScore = rawValue;
+                percentage = Math.round(((rawValue - 1) / 4) * 100);
+              }
 
               // For neuroticism, lower is better - invert for display meaning
               const isNeuroticism = key === 'neuroticism';

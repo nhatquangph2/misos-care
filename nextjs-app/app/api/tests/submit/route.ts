@@ -29,6 +29,12 @@ interface SubmitTestRequest {
     // VIA specific
     signatureStrengths?: any[]
     topVirtue?: string
+    // NEW: MISO V3
+    raw_scores?: any
+    score?: any
+    completion_time_seconds?: number
+    quality_warnings?: string[]
+    responses?: any
   }
   completedAt?: string
 }
