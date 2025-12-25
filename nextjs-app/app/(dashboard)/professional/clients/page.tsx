@@ -11,7 +11,7 @@ export default async function ProfessionalClientsPage() {
     }
 
     // Check if user is a mentor
-    const { data: mentorProfile } = await supabase
+    await supabase
         .from('mentors')
         .select('id')
         .eq('id', user.id) // Assuming user.id same as mentor.id for simplicity or linked

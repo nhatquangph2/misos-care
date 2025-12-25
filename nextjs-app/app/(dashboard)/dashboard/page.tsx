@@ -108,11 +108,7 @@ export default function DashboardPage() {
         .eq('user_id', authUser.id)
         .eq('status', 'active')
 
-      // Get VIA High Score (Top Strength)
-      const { data: viaResults } = await supabase
-        .from('via_results') // Assuming this table exists and stores raw scores/answers
-        .select('*')
-        .eq('user_id', authUser.id)
+
 
       // We need to calculate top strength from via_results if they are raw answers, 
       // OR if we store the calculated result somewhere. 
@@ -136,7 +132,9 @@ export default function DashboardPage() {
         .single()
 
       let topVia = undefined
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (latestAnalysis?.analysis_result && (latestAnalysis.analysis_result as any).via_analysis) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const via = (latestAnalysis.analysis_result as any).via_analysis
         if (via.signature_strengths && via.signature_strengths.length > 0) {
           topVia = via.signature_strengths[0].name
@@ -205,6 +203,7 @@ export default function DashboardPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl" ref={fadeRef}>
       <ProductTour
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         steps={dashboardTour.getConfig().steps as any}
         tourKey="dashboard"
         startTrigger={startTour}

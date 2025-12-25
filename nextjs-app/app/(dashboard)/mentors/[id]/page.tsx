@@ -2,10 +2,10 @@ import React from 'react';
 import { notFound } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Star, MapPin, Briefcase, Clock, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Star, Briefcase, Clock, ShieldCheck, GraduationCap } from 'lucide-react';
 import { getMentorById } from '@/app/actions/mentor-actions';
 import { getReviews } from '@/app/actions/review-actions';
 import { BookingCalendar } from '@/components/features/booking/BookingCalendar';

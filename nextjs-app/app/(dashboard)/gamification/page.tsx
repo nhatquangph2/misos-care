@@ -4,10 +4,9 @@ import { OceanGarden } from '@/components/features/gamification/OceanGarden';
 import { QuestList } from '@/components/features/gamification/QuestList';
 import UserEngagement from '@/components/gamification/UserEngagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Coins, Fish, Flower2, Box } from 'lucide-react';
-import { revalidatePath } from 'next/cache';
+import { ShoppingBag, Coins, Fish, Flower2, Box } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { OceanItem } from '@/types/gamification';
 
@@ -16,7 +15,7 @@ export default async function GamificationPage() {
 
     // Fetch available shop items
     const supabase = await createClient();
-    const { data: shopItems } = await (supabase as any)
+    const { data: shopItems } = await supabase
         .from('ocean_items')
         .select('*')
         .order('unlock_price', { ascending: true });

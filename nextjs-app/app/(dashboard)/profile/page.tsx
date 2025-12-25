@@ -21,8 +21,11 @@ export default async function ProfilePage() {
   }
 
   // Fetch data with granular error handling to prevent 500 crashes
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let profileData: any = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let timelineData: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let unifiedProfile: any = {};
 
   try {

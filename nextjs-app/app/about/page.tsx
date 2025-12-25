@@ -72,7 +72,7 @@ export default function AboutPage() {
                                 <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20" />
                                 <span className="text-9xl animate-pulse">🐬</span>
                                 <div className="absolute bottom-6 left-6 right-6 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-                                    <p className="text-white font-medium text-center">"Thấu hiểu bản thân là khởi đầu của mọi trí tuệ" - Aristotle</p>
+                                    <p className="text-white font-medium text-center">&quot;Thấu hiểu bản thân là khởi đầu của mọi trí tuệ&quot; - Aristotle</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -185,8 +185,8 @@ export default function AboutPage() {
                             <div key={i} className="flex gap-6 relative">
                                 {i !== 2 && <div className="absolute left-[15px] top-10 bottom-[-40px] w-0.5 bg-muted" />}
                                 <div className={`mt-1 h-8 w-8 rounded-full border-4 flex items-center justify-center flex-shrink-0 ${step.status === 'done' ? 'bg-blue-600 border-blue-100' :
-                                        step.status === 'current' ? 'bg-amber-500 border-amber-100 animate-pulse' :
-                                            'bg-muted border-muted-foreground/10'
+                                    step.status === 'current' ? 'bg-amber-500 border-amber-100 animate-pulse' :
+                                        'bg-muted border-muted-foreground/10'
                                     }`}>
                                     {step.status === 'done' && <Sparkles className="h-4 w-4 text-white" />}
                                 </div>
@@ -205,7 +205,7 @@ export default function AboutPage() {
             {/* Final CTA */}
             <section className="py-20 border-t">
                 <div className="container px-4 mx-auto text-center">
-                    <h2 className="text-3xl font-bold mb-6 italic">"The unexamined life is not worth living" - Socrates</h2>
+                    <h2 className="text-3xl font-bold mb-6 italic">&quot;The unexamined life is not worth living&quot; - Socrates</h2>
                     <Link href="/tests">
                         <Button size="lg" className="rounded-full px-10 h-14 text-lg">
                             Bắt đầu khám phá ngay

@@ -1,6 +1,4 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { professionalService } from '@/services/professional.service';
 import MisoInsightCard from '@/components/profile/MisoInsightCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';

@@ -1,7 +1,7 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { motion } from "framer-motion"
+
 import {
     Clock,
     FileText,
