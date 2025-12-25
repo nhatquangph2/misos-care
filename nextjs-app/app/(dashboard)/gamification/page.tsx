@@ -6,7 +6,7 @@ import UserEngagement from '@/components/gamification/UserEngagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Coins, Fish, Flower2, Box } from 'lucide-react';
-import { ShoppingBag, Coins, Fish, Flower2, Box } from 'lucide-react';
+
 import { createClient } from '@/lib/supabase/server';
 import { OceanItem } from '@/types/gamification';
 
