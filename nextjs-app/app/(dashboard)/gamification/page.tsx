@@ -15,7 +15,8 @@ export default async function GamificationPage() {
 
     // Fetch available shop items
     const supabase = await createClient();
-    const { data: shopItems } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: shopItems } = await (supabase as any)
         .from('ocean_items')
         .select('*')
         .order('unlock_price', { ascending: true });
