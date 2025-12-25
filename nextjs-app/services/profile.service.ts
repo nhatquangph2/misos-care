@@ -24,6 +24,7 @@ export class ProfileService extends BaseService {
       throw error;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as PersonalityProfile | null;
   }
 
@@ -43,6 +44,7 @@ export class ProfileService extends BaseService {
 
     if (error) throw error;
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -84,18 +86,22 @@ export class ProfileService extends BaseService {
       }
 
       const dayData = recordsByDate.get(date)!;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const score = record.total_score || (record as any).score || 0;
 
       switch (record.test_type) {
         case 'PHQ9':
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         case 'PHQ-9' as any:
           dayData.depression = score;
           break;
         case 'GAD7':
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         case 'GAD-7' as any:
           dayData.anxiety = score;
           break;
         case 'PSS':
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         case 'PSS-10' as any:
           dayData.stress = score;
           break;
@@ -224,7 +230,7 @@ export class ProfileService extends BaseService {
   private getBigFiveRecommendations(personality: PersonalityProfile): Recommendation[] {
     const recommendations: Recommendation[] = [];
     const HIGH = 3.5;
-    const LOW = 2.5;
+
     const n = personality.big5_neuroticism;
     if (n && n > HIGH) {
       recommendations.push({ id: 'stress-reframing', type: 'habit', title: 'Nhìn Nhận Lại Căng Thẳng', description: 'Coi khó khăn là cơ hội phát triển.', priority: 'high', icon: '🔄' });

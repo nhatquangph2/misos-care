@@ -23,6 +23,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse request body safely
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let body: any = {};
     try {
       body = await request.json();
@@ -45,6 +46,7 @@ export async function POST(request: NextRequest) {
         .maybeSingle();
 
       if (latestDass?.subscale_scores) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const s = latestDass.subscale_scores as any;
         dass21_raw = {
           D: s.depression ?? 0,
@@ -138,6 +140,7 @@ export async function POST(request: NextRequest) {
           };
 
           Object.entries(columnKeys).forEach(([col, key]) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const val = (viaResult as any)[col];
             if (viaMap[key] === undefined && val !== undefined) {
               viaMap[key] = Number(val);
@@ -145,12 +148,14 @@ export async function POST(request: NextRequest) {
           });
 
           if (Object.keys(viaMap).length > 0) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             userData.via_raw = viaMap as any;
           }
         }
 
         // Fallback to signature strengths if still no VIA and no via_results record
         if (!userData.via_raw && profile?.via_signature_strengths) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const signatureStrengths = profile.via_signature_strengths as any[];
           if (Array.isArray(signatureStrengths) && signatureStrengths.length > 0) {
             const viaMap: Record<string, number> = {};
@@ -172,6 +177,7 @@ export async function POST(request: NextRequest) {
               const pctScore = s.percentageScore ?? s.percentile ?? 85; // High score for sig
               viaMap[key] = (pctScore / 100) * 4 + 1;
             });
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             userData.via_raw = viaMap as any;
           }
         }
@@ -180,6 +186,7 @@ export async function POST(request: NextRequest) {
 
 
     // Fetch history if requested
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let history: any = undefined
     if (include_history) {
       // Fetch DASS-21 history from mental_health_records
@@ -200,6 +207,7 @@ export async function POST(request: NextRequest) {
         .limit(10)
 
       history = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         dass21: dassHistory?.map((d: any) => ({
           timestamp: new Date(d.completed_at),
           raw_scores: {
@@ -208,6 +216,7 @@ export async function POST(request: NextRequest) {
             S: d.subscale_scores?.stress ?? 0
           },
         })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         big5: big5History?.map((b: any) => ({
           timestamp: new Date(b.completed_at),
           raw_scores: b.raw_scores, // Direct access from bfi2_test_history
@@ -227,7 +236,9 @@ export async function POST(request: NextRequest) {
       analysis_result: analysisResult,
       bvs: analysisResult.scores?.BVS,
       rcs: analysisResult.scores?.RCS,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       profile_id: ('profile' in analysisResult && analysisResult.profile && 'id' in analysisResult.profile) ? (analysisResult.profile as any).id : null,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       risk_level: ('profile' in analysisResult && analysisResult.profile && 'risk_level' in analysisResult.profile) ? (analysisResult.profile as any).risk_level : null,
       completeness_level: analysisResult.completeness.level,
       dass21_depression: userData.dass21_raw?.D,

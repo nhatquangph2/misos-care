@@ -94,7 +94,7 @@ export type UserRole = 'user' | 'mentor' | 'admin'
 export type ProfileVisibility = 'private' | 'mentors_only' | 'public'
 
 // Mentor Relationship Status
-export type MentorRelationshipStatus = 'pending' | 'active' | 'paused' | 'ended'
+export type MentorRelationshipStatus = 'pending' | 'active' | 'paused' | 'ended' | 'cancelled'
 
 // Mentor Note Type
 export type MentorNoteType = 'general' | 'session' | 'observation' | 'recommendation' | 'follow_up'

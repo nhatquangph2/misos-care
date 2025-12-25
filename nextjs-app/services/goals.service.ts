@@ -35,6 +35,7 @@ export class GoalsService extends BaseService {
 
     const { data, error } = await query;
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -49,6 +50,7 @@ export class GoalsService extends BaseService {
       .maybeSingle();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any;
   }
 
@@ -61,11 +63,13 @@ export class GoalsService extends BaseService {
       .insert({
         user_id: userId,
         ...input,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .select()
       .single();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as UserGoal;
   }
 
@@ -75,12 +79,14 @@ export class GoalsService extends BaseService {
   async updateGoal(goalId: string, input: UpdateGoalInput): Promise<UserGoal> {
     const { data, error } = await this.supabase
       .from('user_goals')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update(input as any)
       .eq('id', goalId)
       .select()
       .single();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as UserGoal;
   }
 
@@ -126,6 +132,7 @@ export class GoalsService extends BaseService {
 
     const { data, error } = await query;
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -141,6 +148,7 @@ export class GoalsService extends BaseService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -154,11 +162,13 @@ export class GoalsService extends BaseService {
         user_id: userId,
         reminder_enabled: input.reminder_enabled ?? false,
         ...input,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .select()
       .single();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as ActionPlan;
   }
 
@@ -168,12 +178,14 @@ export class GoalsService extends BaseService {
   async updateActionPlan(planId: string, input: UpdateActionPlanInput): Promise<ActionPlan> {
     const { data, error } = await this.supabase
       .from('action_plans')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update(input as any)
       .eq('id', planId)
       .select()
       .single();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as ActionPlan;
   }
 
@@ -205,6 +217,7 @@ export class GoalsService extends BaseService {
       .limit(limit);
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -221,6 +234,7 @@ export class GoalsService extends BaseService {
       .order('completion_date', { ascending: false });
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -238,6 +252,7 @@ export class GoalsService extends BaseService {
         notes: input.notes,
         mood: input.mood,
         completion_date: completionDate,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .select()
       .single();
@@ -249,6 +264,7 @@ export class GoalsService extends BaseService {
       throw error;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as ActionCompletion;
   }
 
@@ -284,6 +300,7 @@ export class GoalsService extends BaseService {
 
     const { data, error } = await query;
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -299,11 +316,13 @@ export class GoalsService extends BaseService {
         reminder_time: input.reminder_time || '09:00',
         reminder_method: input.reminder_method || ['notification'],
         ...input,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .select()
       .single();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as TestReminder;
   }
 
@@ -313,12 +332,14 @@ export class GoalsService extends BaseService {
   async updateTestReminder(reminderId: string, input: UpdateTestReminderInput): Promise<TestReminder> {
     const { data, error } = await this.supabase
       .from('test_reminders')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update(input as any)
       .eq('id', reminderId)
       .select()
       .single();
 
     if (error) throw error;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as TestReminder;
   }
 

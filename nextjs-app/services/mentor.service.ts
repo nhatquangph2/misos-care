@@ -57,6 +57,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching mentor profile:', error);
       return null;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as MentorProfile;
   }
 
@@ -74,6 +75,7 @@ export class MentorService extends BaseService {
     if (existing) {
       const { error } = await this.supabase
         .from('mentor_profiles')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .update(profileData as any)
         .eq('user_id', user.id);
       if (error) {
@@ -83,6 +85,7 @@ export class MentorService extends BaseService {
     } else {
       const { error } = await this.supabase
         .from('mentor_profiles')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .insert({ user_id: user.id, ...profileData } as any);
       if (error) {
         console.error('Error creating mentor profile:', error);
@@ -106,6 +109,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching available mentors:', error);
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data || []) as any;
   }
 
@@ -138,6 +142,7 @@ export class MentorService extends BaseService {
       return [];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data || []).map((item: any) => ({
       id: item.id,
       user_id: item.user_id,
@@ -164,7 +169,9 @@ export class MentorService extends BaseService {
       .maybeSingle();
 
     if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((existing as any).status === 'active') return { success: false, error: 'Bạn đã có quan hệ với mentor này' };
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if ((existing as any).status === 'pending') return { success: false, error: 'Yêu cầu của bạn đang chờ xử lý' };
     }
 
@@ -175,6 +182,7 @@ export class MentorService extends BaseService {
         user_id: user.id,
         request_message: message || null,
         status: 'pending',
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
     if (error) {
@@ -188,6 +196,7 @@ export class MentorService extends BaseService {
     const { data: { user } } = await this.supabase.auth.getUser();
     if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {
       response_message: responseMessage || null,
       response_date: new Date().toISOString(),
@@ -224,6 +233,7 @@ export class MentorService extends BaseService {
         status: 'ended',
         ended_at: new Date().toISOString(),
         end_reason: reason || null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .eq('id', relationshipId)
       .or(`mentor_id.eq.${user.id},user_id.eq.${user.id}`);
@@ -251,6 +261,7 @@ export class MentorService extends BaseService {
       .eq('status', 'active')
       .maybeSingle();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(relationship as any)?.can_view_test_results) {
       console.error('No permission to view test results');
       return [];
@@ -266,6 +277,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching mentee test results:', error);
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -281,6 +293,7 @@ export class MentorService extends BaseService {
       .eq('status', 'active')
       .maybeSingle();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(relationship as any)?.can_view_test_results) {
       console.error('No permission to view personality profile');
       return null;
@@ -296,6 +309,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching mentee personality:', error);
       return null;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any as PersonalityProfile;
   }
 
@@ -316,6 +330,7 @@ export class MentorService extends BaseService {
       return null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const fields = (relationship as any).can_view_contact_info
       ? 'id, name, full_name, nickname, email, phone, avatar_url, date_of_birth, gender, occupation, bio, zalo, facebook'
       : 'id, name, full_name, nickname, avatar_url, occupation, bio';
@@ -330,6 +345,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching mentee profile:', error);
       return null;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any;
   }
 
@@ -356,6 +372,7 @@ export class MentorService extends BaseService {
         shared_with_user: data.sharedWithUser ?? false,
         requires_follow_up: data.requiresFollowUp ?? false,
         follow_up_date: data.followUpDate || null,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
 
     if (error) {
@@ -380,6 +397,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching notes:', error);
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -399,6 +417,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching follow-up notes:', error);
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 
@@ -408,6 +427,7 @@ export class MentorService extends BaseService {
 
     const { error } = await this.supabase
       .from('mentor_notes')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .update({ follow_up_completed: true } as any)
       .eq('id', noteId)
       .eq('mentor_id', user.id);
@@ -441,6 +461,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching current mentor:', error);
       return null;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return data as any;
   }
 
@@ -459,6 +480,7 @@ export class MentorService extends BaseService {
       console.error('Error fetching shared notes:', error);
       return [];
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (data as any) || [];
   }
 }

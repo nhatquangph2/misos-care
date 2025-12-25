@@ -116,6 +116,32 @@ export default function OceanBackground({ oceanLevel = 1 }: OceanBackgroundProps
   const bubbleCount = getBubbleCount(oceanLevel);
   const godRayOpacity = getGodRayOpacity(oceanLevel);
 
+  const [bubbles, setBubbles] = useState<any[]>([]);
+  const [particles, setParticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!mounted) return;
+
+    setBubbles(Array.from({ length: bubbleCount }).map(() => ({
+      width: `${Math.random() * 20 + 5}px`,
+      height: `${Math.random() * 20 + 5}px`,
+      boxShadow: '0 0 8px rgba(255, 255, 255, 0.2)',
+      filter: 'blur(0.5px)',
+      willChange: 'transform, opacity',
+    })));
+
+    if (!isLowPowerMode && oceanLevel >= 3) {
+      setParticles(Array.from({ length: 20 }).map(() => ({
+        width: `${Math.random() * 3 + 1}px`,
+        height: `${Math.random() * 3 + 1}px`,
+        left: `${Math.random() * 100}%`,
+        top: `${Math.random() * 100}%`,
+        animation: `float ${Math.random() * 10 + 15}s linear infinite`,
+        animationDelay: `${Math.random() * 5}s`,
+      })));
+    }
+  }, [mounted, bubbleCount, isLowPowerMode, oceanLevel]);
+
   return (
     <div
       ref={containerRef}
@@ -150,33 +176,20 @@ export default function OceanBackground({ oceanLevel = 1 }: OceanBackgroundProps
       )}
 
       {/* Bong bóng - giảm 80% trên mobile */}
-      {mounted && Array.from({ length: bubbleCount }).map((_, i) => (
+      {mounted && bubbles.map((style, i) => (
         <div
           key={i}
           className="ocean-bubble absolute rounded-full bg-blue-300/40 pointer-events-none"
-          style={{
-            width: `${Math.random() * 20 + 5}px`,
-            height: `${Math.random() * 20 + 5}px`,
-            boxShadow: '0 0 8px rgba(255, 255, 255, 0.2)',
-            filter: 'blur(0.5px)', // Giảm blur
-            willChange: 'transform, opacity',
-          }}
+          style={style}
         />
       ))}
 
       {/* Particles - chỉ hiển thị trên desktop ở level sâu */}
-      {!isLowPowerMode && mounted && oceanLevel >= 3 && Array.from({ length: 20 }).map((_, i) => (
+      {!isLowPowerMode && mounted && oceanLevel >= 3 && particles.map((style, i) => (
         <div
           key={`particle-${i}`}
           className="absolute rounded-full bg-white/10"
-          style={{
-            width: `${Math.random() * 3 + 1}px`,
-            height: `${Math.random() * 3 + 1}px`,
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animation: `float ${Math.random() * 10 + 15}s linear infinite`,
-            animationDelay: `${Math.random() * 5}s`,
-          }}
+          style={style}
         />
       ))}
 

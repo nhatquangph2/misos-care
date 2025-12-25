@@ -37,6 +37,7 @@ export class ProfessionalService extends BaseService {
             return [];
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return data.map((item: any) => ({
             relationshipId: item.id,
             client: item.client,

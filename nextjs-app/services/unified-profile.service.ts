@@ -1,5 +1,5 @@
 import { BFI2Score } from '@/constants/tests/bfi2-questions';
-import { MisoAnalysisResult, UserInputData } from '@/types/miso-v3';
+import { MisoAnalysisResult } from '@/types/miso-v3';
 import { BaseService } from './base.service';
 import {
   BFI2TestHistory,
@@ -83,9 +83,11 @@ export class UnifiedProfileService extends BaseService {
    * Fetch all assessment results and build unified profile
    */
   async getUnifiedProfile(userId: string): Promise<UnifiedProfile> {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { runMisoAnalysis } = await import('@/lib/miso/engine');
 
-    const [bfi2Res, viaRes, dassRes, mbtiRes, sisriRes, legacyProfileRes] = await Promise.all([
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [bfi2Res, viaRes, _dassRes, mbtiRes, sisriRes, legacyProfileRes] = await Promise.all([
       this.supabase.from('bfi2_test_history').select('*').eq('user_id', userId).order('completed_at', { ascending: false }).limit(1).maybeSingle(),
       this.supabase.from('via_results').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).maybeSingle(),
       this.supabase.from('mental_health_records').select('*').eq('user_id', userId).eq('test_type', 'DASS21').order('completed_at', { ascending: false }).limit(1).maybeSingle(),
@@ -150,7 +152,9 @@ export class UnifiedProfileService extends BaseService {
           // Try to find score in viaData directly (column) or in score JSONB
           let scoreVal = 0;
           const colName = s.toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           if ((viaData as any)[colName] !== undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             scoreVal = Number((viaData as any)[colName]);
           } else if (viaData.score && typeof viaData.score === 'object') {
             const scores = viaData.score as Record<string, number>;

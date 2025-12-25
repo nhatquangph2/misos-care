@@ -36,7 +36,7 @@ export const reportGeneratorService = {
         doc.setFontSize(16);
         doc.setTextColor(102, 51, 153);
         doc.setFont('helvetica', 'bold');
-        // @ts-ignore
+        // @ts-expect-error - Profile dynamic property
         const profileName = analysis.profile.name || analysis.profile.id;
         doc.text(`Core Profile: ${profileName}`, 20, yPos);
 
@@ -44,7 +44,7 @@ export const reportGeneratorService = {
         doc.setFontSize(11);
         doc.setTextColor(60, 60, 60);
         doc.setFont('helvetica', 'italic');
-        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const mechanism = (analysis.profile as any).mechanism || 'No details available.';
         const splitMechanism = doc.splitTextToSize(String(mechanism), 170);
         doc.text(splitMechanism, 20, yPos);
@@ -99,7 +99,6 @@ export const reportGeneratorService = {
             yPos += 10;
 
             // Immediate
-            // @ts-ignore
             const immediate = analysis.interventions.immediate || [];
             if (immediate.length > 0) {
                 doc.setFontSize(12);
@@ -107,6 +106,7 @@ export const reportGeneratorService = {
                 doc.text('Immediate Actions:', 20, yPos);
                 yPos += 7;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 immediate.forEach((item: any) => {
                     doc.setFontSize(10);
                     doc.text(`- ${item.type.replace(/_/g, ' ')}`, 25, yPos);
@@ -116,13 +116,14 @@ export const reportGeneratorService = {
             }
 
             // Short Term
-            // @ts-ignore
-            const shortTerm = analysis.interventions.short_term || [];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const shortTerm = (analysis.interventions as any).short_term || [];
             if (shortTerm.length > 0) {
                 doc.setFontSize(12);
                 doc.text('Short-term Strategy:', 20, yPos);
                 yPos += 7;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 shortTerm.forEach((item: any) => {
                     doc.setFontSize(10);
                     doc.text(`- ${item.type.replace(/_/g, ' ')}`, 25, yPos);

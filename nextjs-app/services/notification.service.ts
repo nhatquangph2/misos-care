@@ -143,10 +143,12 @@ export class NotificationService extends BaseService {
     };
 
     if (registration) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await registration.showNotification(payload.title, options as any);
     } else {
       // Fallback for browsers without service worker active but supported notifications
       // Remove 'actions' as it's not supported in standard Notification constructor
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { actions: _actions, ...standardOptions } = options;
       new Notification(payload.title, standardOptions as NotificationOptions);
     }

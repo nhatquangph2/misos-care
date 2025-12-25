@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Database Types (Auto-generated structure from Supabase Schema)
  * These types match the SQL schema exactly
@@ -322,6 +323,10 @@ export type Database = {
         Update: any
         Relationships: []
       }
+      action_plans: { Row: any; Insert: any; Update: any; Relationships: [] }
+      action_completions: { Row: any; Insert: any; Update: any; Relationships: [] }
+      test_reminders: { Row: any; Insert: any; Update: any; Relationships: [] }
+
       prediction_feedback: { Row: any; Insert: any; Update: any; Relationships: [] }
 
       // Gamification

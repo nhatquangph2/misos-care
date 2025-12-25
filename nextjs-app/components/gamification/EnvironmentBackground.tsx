@@ -136,15 +136,18 @@ export default function EnvironmentBackground({
   const particleCount = isLowPowerMode ? 8 : (type === 'cosmos' ? 40 : 20)
 
   // Generate stable particle configs
-  const particles = useMemo(() => {
-    return Array.from({ length: particleCount }).map(() => ({
+  // Generate stable particle configs
+  const [particles, setParticles] = useState<any[]>([]);
+
+  useEffect(() => {
+    setParticles(Array.from({ length: particleCount }).map(() => ({
       left: `${Math.random() * 100}%`,
       top: `${Math.random() * 100}%`,
       width: type === 'sky' ? `${Math.random() * 60 + 40}px` : (type === 'cosmos' ? `${Math.random() * 3 + 1}px` : `${Math.random() * 10 + 5}px`),
       height: type === 'sky' ? `${Math.random() * 20 + 10}px` : (type === 'cosmos' ? `${Math.random() * 3 + 1}px` : `${Math.random() * 10 + 5}px`),
       filter: (type === 'forest' || type === 'sky') ? 'blur(2px)' : 'none',
       boxShadow: type === 'cosmos' ? '0 0 2px rgba(255,255,255,0.8)' : 'none'
-    }))
+    })));
   }, [particleCount, type]);
 
   return (

@@ -330,6 +330,7 @@ export class TestService extends BaseService {
   /**
    * Check if test result should trigger crisis alert
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   shouldTriggerCrisisAlert(testType: string, result: any): boolean {
     if (testType === 'PHQ9') return (result as PHQ9Result).crisisFlag
     if (testType === 'DASS21') return (result as DASS21Result).needsCrisisIntervention
@@ -422,5 +423,6 @@ export const calculateBig5 = (a: Big5Answer[]) => testService.calculateBig5(a)
 export const calculateSISRI24 = (a: SISRI24Answer[]) => testService.calculateSISRI24(a)
 export const getMBTIDescription = (t: MBTIType) => testService.getMBTIDescription(t)
 export const getPHQ9Recommendations = (s: SeverityLevel) => testService.getPHQ9Recommendations(s)
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const shouldTriggerCrisisAlert = (t: string, r: any) => testService.shouldTriggerCrisisAlert(t, r)
 export const calculateDASS21 = (r: DASS21QuestionResponse[]) => testService.calculateDASS21(r)

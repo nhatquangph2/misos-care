@@ -258,6 +258,7 @@ export interface Intervention {
   score?: number
   reasoning?: string[]
   rank?: number
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   intervention?: any // For full metadata carry-over
 }
 

@@ -92,6 +92,7 @@ export class UserProfileService extends BaseService {
       return { success: false, error: 'Bạn chưa đăng nhập' };
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: Record<string, any> = {};
 
     // Map fields to update
@@ -262,6 +263,7 @@ export const userProfileService = new UserProfileService();
 export const getCurrentUserProfile = () => userProfileService.getCurrentUserProfile();
 export const updateUserProfile = (data: UserProfileData) => userProfileService.updateUserProfile(data);
 export const completeOnboarding = (data: OnboardingData) => userProfileService.completeOnboarding(data);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logUserConsent = (type: any, given: boolean) => userProfileService.logUserConsent(type, given);
 export const hasCompletedOnboarding = () => userProfileService.hasCompletedOnboarding();
 export const isUserMentor = () => userProfileService.isUserMentor();

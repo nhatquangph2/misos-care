@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -32,31 +32,31 @@ export default function OceanQuestionView({
   // Tính toán tiến độ (0 -> 1)
   const progress = currentIndex / (totalQuestions - 1 || 1);
 
-  // Generate stable random values for sparkles
-  const sparkles = useMemo(() => {
-    return [...Array(10)].map(() => ({
+  const [sparkles, setSparkles] = useState<any[]>([]);
+  const [bubbleAnimations, setBubbleAnimations] = useState<any[]>([]);
+  const [popParticles, setPopParticles] = useState<any[]>([]);
+
+  // Generate stable random values after mount
+  useEffect(() => {
+    setSparkles([...Array(10)].map(() => ({
       x: Math.random() * 1000,
       scale: Math.random() * 2,
       duration: 2 + Math.random() * 3,
       delay: Math.random() * 2,
       size: 2 + Math.random() * 3
-    }));
-  }, []);
+    })));
 
-  // Generate stable random values for bubble animations
-  const bubbleAnimations = useMemo(() => {
-    return options.map(() => ({
-      duration: 4 + Math.random(),
-    }));
-  }, [options.length]);
-
-  // Generate stable random offsets for pop particles
-  const popParticles = useMemo(() => {
-    return [...Array(12)].map(() => ({
+    setPopParticles([...Array(12)].map(() => ({
       xOff: (Math.random() - 0.5) * 150,
       yOff: Math.random() * 150
-    }));
+    })));
   }, []);
+
+  useEffect(() => {
+    setBubbleAnimations(options.map(() => ({
+      duration: 4 + Math.random(),
+    })));
+  }, [options]);
 
   // U-SHAPE: Hai đầu to nhất, giữa nhỏ nhất
   const getBubbleConfig = (index: number, total: number) => {
