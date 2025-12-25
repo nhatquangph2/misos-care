@@ -16,37 +16,28 @@ const nextConfig: NextConfig = {
   typescript: {
     // ⚠️ Allow production builds despite type errors
     // TODO: Fix database type definitions
-    ignoreBuildErrors: true,
-  },
+    // 4. Tối ưu hóa việc import các thư viện nặng (Tree shaking tốt hơn)
+    experimental: {
+      optimizePackageImports: [
+        'lucide-react',
+        'date-fns',
+        'recharts',
+        '@radix-ui/react-icons',
+        'framer-motion',
+        'gsap'
+      ],
+    },
 
-  // 4. Ignore eslint errors during build to unblock CI/CD
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+    // 5. Cấu hình hình ảnh (nếu dùng Supabase Storage hoặc nguồn ngoài)
+    images: {
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: '**.supabase.co',
+        },
+      ],
+      formats: ['image/avif', 'image/webp'],
+    },
+  };
 
-
-  // 4. Tối ưu hóa việc import các thư viện nặng (Tree shaking tốt hơn)
-  experimental: {
-    optimizePackageImports: [
-      'lucide-react',
-      'date-fns',
-      'recharts',
-      '@radix-ui/react-icons',
-      'framer-motion',
-      'gsap'
-    ],
-  },
-
-  // 5. Cấu hình hình ảnh (nếu dùng Supabase Storage hoặc nguồn ngoài)
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.supabase.co',
-      },
-    ],
-    formats: ['image/avif', 'image/webp'],
-  },
-};
-
-export default withBundleAnalyzer(nextConfig);
+  export default withBundleAnalyzer(nextConfig);
