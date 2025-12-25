@@ -330,14 +330,14 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
         </div>
 
         {/* 2.5 VIA Strengths Analysis */}
-        {activeAnalysis.via_analysis && activeAnalysis.via_analysis.signature_strengths?.length > 0 && (
+        {activeAnalysis.via_analysis && activeAnalysis.via_analysis.signature_strengths && activeAnalysis.via_analysis.signature_strengths.length > 0 && (
           <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 p-5 rounded-2xl shadow-sm border border-amber-100 dark:border-amber-900/20">
             <h3 className="font-bold text-lg text-amber-800 dark:text-amber-100 mb-4 flex items-center gap-2">
               🌟 Điểm Mạnh Đặc Trưng (Top 5)
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {activeAnalysis.via_analysis.signature_strengths.slice(0, 5).map((s, idx) => (
+              {activeAnalysis.via_analysis.signature_strengths?.slice(0, 5).map((s, idx) => (
                 <div key={idx} className="bg-white/60 dark:bg-slate-800/60 p-3 rounded-xl border border-amber-200/50 flex items-start gap-3">
                   <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-sm">
                     {idx + 1}
