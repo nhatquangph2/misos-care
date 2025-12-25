@@ -137,7 +137,7 @@ function getImmediateActions(severity: LiteModeAnalysis['severity']): LiteModeAn
       priority: 'HIGH',
       message: 'Stress rất cao. Hãy làm bài thư giãn cơ nhanh.',
       exercise: {
-        name: 'Progressive Muscle Relaxation',
+        name: 'Thư giãn cơ bắp tiến triển (PMR)',
         steps: [
           'Nắm chặt tay 5 giây, thả lỏng',
           'Nhăn mặt 5 giây, thả lỏng',
@@ -339,27 +339,27 @@ export function assessDataCompleteness(data: {
     level = 'COMPLETE'
     mode = 'FULL_PLUS'
     confidence = 'VERY_HIGH'
-    features = ['severity', 'profile', 'BVS/RCS', 'discrepancy', 'strengths', 'cross_validation']
+    features = ['mức độ nghiêm trọng', 'hồ sơ tính cách', 'điểm BVS/RCS', 'phát hiện mâu thuẫn', 'phân tích điểm mạnh', 'kiểm chứng chéo']
   } else if (hasDASS && hasBig5 && hasVIA) {
     level = 'COMPREHENSIVE'
     mode = 'FULL'
     confidence = 'HIGH'
-    features = ['severity', 'profile', 'BVS/RCS', 'discrepancy', 'strength_interventions']
+    features = ['mức độ nghiêm trọng', 'hồ sơ tính cách', 'điểm BVS/RCS', 'phát hiện mâu thuẫn', 'can thiệp dựa trên điểm mạnh']
   } else if (hasDASS && hasBig5) {
     level = 'STANDARD'
     mode = 'STANDARD'
     confidence = 'MEDIUM'
-    features = ['severity', 'profile', 'BVS', 'discrepancy']
+    features = ['mức độ nghiêm trọng', 'hồ sơ tính cách', 'điểm BVS', 'phát hiện mâu thuẫn']
   } else if (hasDASS && hasMBTI) {
     level = 'BASIC'
     mode = 'BASIC'
     confidence = 'MEDIUM_LOW'
-    features = ['severity', 'mbti_profile', 'basic_recommendations']
+    features = ['mức độ nghiêm trọng', 'phong cách MBTI', 'khuyến nghị cơ bản']
   } else {
     level = 'MINIMAL'
     mode = 'LITE'
     confidence = 'LOW'
-    features = ['severity', 'first_aid', 'crisis']
+    features = ['mức độ nghiêm trọng', 'sơ cứu tâm lý', 'cảnh báo khủng hoảng']
   }
 
   // Determine what's missing for upgrade

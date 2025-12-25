@@ -429,10 +429,12 @@ export function calculateMBTI(responses: MBTIQuestionResponse[]): {
     const normalizedScore = score - 3; // Convert to -2 to +2
 
     if (question.reverse) {
-      // Reverse scored: higher score means first letter (E, S, T, J)
-      dimensionScores[question.dimension] -= normalizedScore;
+      // Reverse scored: higher score means second letter (I, N, F, P)
+      // So we ADD the score to move towards positive
+      dimensionScores[question.dimension] += normalizedScore;
     } else {
-      // Normal scored: higher score means first letter
+      // Normal scored: higher score means first letter (E, S, T, J)
+      // So we SUBTRACT the score to move towards negative
       dimensionScores[question.dimension] -= normalizedScore;
     }
   });

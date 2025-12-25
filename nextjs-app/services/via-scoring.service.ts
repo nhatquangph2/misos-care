@@ -4,11 +4,16 @@
  * Based on VIA Institute on Character methodology
  */
 
+import { BaseService } from './base.service'
 import { VIA_QUESTIONS, VIA_STRENGTH_DETAILS, type VIAVirtue } from '@/constants/tests/via-questions'
+
+// ============================================
+// INTERFACES
+// ============================================
 
 export interface VIAAnswer {
   questionId: number
-  value: number // 1-5 Likert scale
+  value: number
 }
 
 export interface VIAStrengthScore {
@@ -16,10 +21,10 @@ export interface VIAStrengthScore {
   strengthName: string
   virtue: string
   virtueName: string
-  rawScore: number // Sum of 2 questions (2-10)
-  percentageScore: number // 0-100
-  rank: number // 1-24 (1 is strongest)
-  isSignature: boolean // Top 5 strengths
+  rawScore: number
+  percentageScore: number
+  rank: number
+  isSignature: boolean
   icon: string
   color: string
   advice: string
@@ -28,211 +33,152 @@ export interface VIAStrengthScore {
 export interface VIAVirtueScore {
   virtue: VIAVirtue
   virtueName: string
-  averageScore: number // Average of all strengths in this virtue
-  percentageScore: number // 0-100
-  strengths: string[] // List of strength keys in this virtue
+  averageScore: number
+  percentageScore: number
+  strengths: string[]
 }
 
 export interface VIAResult {
   strengthScores: VIAStrengthScore[]
   virtueScores: VIAVirtueScore[]
-  signatureStrengths: VIAStrengthScore[] // Top 5
+  signatureStrengths: VIAStrengthScore[]
   overallProfile: string
   topVirtue: VIAVirtue
 }
 
-/**
- * Calculate VIA Character Strengths scores
- */
-export function calculateVIA(answers: VIAAnswer[]): VIAResult {
-  // Step 1: Calculate raw scores for each strength (24 strengths, 2 questions each)
-  const strengthRawScores: Record<string, number> = {}
-  const strengthQuestionCounts: Record<string, number> = {}
+export class ViaScoringService extends BaseService {
+  /**
+   * Calculate VIA Character Strengths scores
+   */
+  calculateVIA(answers: VIAAnswer[]): VIAResult {
+    const strengthRawScores: Record<string, number> = {}
+    const strengthQuestionCounts: Record<string, number> = {}
 
-  answers.forEach((answer) => {
-    const question = VIA_QUESTIONS.find((q) => q.id === answer.questionId)
-    if (!question) return
+    answers.forEach((answer) => {
+      const question = VIA_QUESTIONS.find((q) => q.id === answer.questionId)
+      if (!question) return
 
-    if (!strengthRawScores[question.strength]) {
-      strengthRawScores[question.strength] = 0
-      strengthQuestionCounts[question.strength] = 0
-    }
-
-    strengthRawScores[question.strength] += answer.value
-    strengthQuestionCounts[question.strength]++
-  })
-
-  // Step 2: Convert to strength scores with metadata
-  const strengthScores: VIAStrengthScore[] = Object.entries(strengthRawScores).map(
-    ([strengthKey, rawScore]) => {
-      const questionCount = strengthQuestionCounts[strengthKey] || 2
-      const maxPossibleScore = questionCount * 5 // Max is 10 for 2 questions
-      const percentageScore = Math.round((rawScore / maxPossibleScore) * 100)
-
-      const strengthInfo = VIA_STRENGTH_DETAILS[strengthKey]
-      const question = VIA_QUESTIONS.find((q) => q.strength === strengthKey)
-
-      return {
-        strength: strengthKey,
-        strengthName: strengthInfo?.title || strengthKey,
-        virtue: question?.virtue || 'wisdom',
-        virtueName: strengthInfo?.virtue || 'Trí tuệ',
-        rawScore,
-        percentageScore,
-        rank: 0, // Will be calculated below
-        isSignature: false, // Will be calculated below
-        icon: strengthInfo?.icon || '⭐',
-        color: strengthInfo?.color || 'text-gray-500',
-        advice: strengthInfo?.advice || '',
+      if (!strengthRawScores[question.strength]) {
+        strengthRawScores[question.strength] = 0
+        strengthQuestionCounts[question.strength] = 0
       }
-    }
-  )
+      strengthRawScores[question.strength] += answer.value
+      strengthQuestionCounts[question.strength]++
+    })
 
-  // Step 3: Sort by percentage score and assign ranks
-  strengthScores.sort((a, b) => b.percentageScore - a.percentageScore)
-  strengthScores.forEach((score, index) => {
-    score.rank = index + 1
-    score.isSignature = index < 5 // Top 5 are signature strengths
-  })
+    const strengthScores: VIAStrengthScore[] = Object.entries(strengthRawScores).map(
+      ([strengthKey, rawScore]) => {
+        const questionCount = strengthQuestionCounts[strengthKey] || 2
+        const percentageScore = Math.round((rawScore / (questionCount * 5)) * 100)
+        const info = VIA_STRENGTH_DETAILS[strengthKey]
+        const question = VIA_QUESTIONS.find((q) => q.strength === strengthKey)
 
-  // Step 4: Calculate virtue scores (average of strengths in each virtue)
-  const virtueMap: Record<string, { scores: number[]; strengths: string[] }> = {
-    wisdom: { scores: [], strengths: [] },
-    courage: { scores: [], strengths: [] },
-    humanity: { scores: [], strengths: [] },
-    justice: { scores: [], strengths: [] },
-    temperance: { scores: [], strengths: [] },
-    transcendence: { scores: [], strengths: [] },
-  }
-
-  strengthScores.forEach((score) => {
-    if (virtueMap[score.virtue]) {
-      virtueMap[score.virtue].scores.push(score.percentageScore)
-      virtueMap[score.virtue].strengths.push(score.strength)
-    }
-  })
-
-  const virtueScores: VIAVirtueScore[] = Object.entries(virtueMap).map(
-    ([virtueKey, data]) => {
-      const averageScore =
-        data.scores.length > 0
-          ? data.scores.reduce((sum, s) => sum + s, 0) / data.scores.length
-          : 0
-
-      return {
-        virtue: virtueKey as VIAVirtue,
-        virtueName: getVirtueName(virtueKey as VIAVirtue),
-        averageScore: Math.round(averageScore),
-        percentageScore: Math.round(averageScore),
-        strengths: data.strengths,
+        return {
+          strength: strengthKey,
+          strengthName: info?.title || strengthKey,
+          virtue: question?.virtue || 'wisdom',
+          virtueName: info?.virtue || 'Trí tuệ',
+          rawScore,
+          percentageScore,
+          rank: 0,
+          isSignature: false,
+          icon: info?.icon || '⭐',
+          color: info?.color || 'text-gray-500',
+          advice: info?.advice || '',
+        }
       }
+    )
+
+    strengthScores.sort((a, b) => b.percentageScore - a.percentageScore)
+    strengthScores.forEach((score, index) => {
+      score.rank = index + 1
+      score.isSignature = index < 5
+    })
+
+    const virtueMap: Record<string, { scores: number[]; strengths: string[] }> = {
+      wisdom: { scores: [], strengths: [] },
+      courage: { scores: [], strengths: [] },
+      humanity: { scores: [], strengths: [] },
+      justice: { scores: [], strengths: [] },
+      temperance: { scores: [], strengths: [] },
+      transcendence: { scores: [], strengths: [] },
     }
-  )
 
-  // Sort virtues by score
-  virtueScores.sort((a, b) => b.percentageScore - a.percentageScore)
+    strengthScores.forEach((score) => {
+      if (virtueMap[score.virtue]) {
+        virtueMap[score.virtue].scores.push(score.percentageScore)
+        virtueMap[score.virtue].strengths.push(score.strength)
+      }
+    })
 
-  // Step 5: Identify signature strengths (top 5)
-  const signatureStrengths = strengthScores.filter((s) => s.isSignature)
+    const virtueScores: VIAVirtueScore[] = Object.entries(virtueMap).map(
+      ([virtueKey, data]) => {
+        const avg = data.scores.length > 0 ? data.scores.reduce((s, x) => s + x, 0) / data.scores.length : 0
+        return {
+          virtue: virtueKey as VIAVirtue,
+          virtueName: this.getVirtueName(virtueKey as VIAVirtue),
+          averageScore: Math.round(avg),
+          percentageScore: Math.round(avg),
+          strengths: data.strengths,
+        }
+      }
+    )
 
-  // Step 6: Generate overall profile description
-  const topVirtue = virtueScores[0]?.virtue || 'wisdom'
-  const overallProfile = generateOverallProfile(signatureStrengths, topVirtue)
+    virtueScores.sort((a, b) => b.percentageScore - a.percentageScore)
+    const signatureStrengths = strengthScores.filter((s) => s.isSignature)
+    const topVirtue = virtueScores[0]?.virtue || 'wisdom'
 
-  return {
-    strengthScores,
-    virtueScores,
-    signatureStrengths,
-    overallProfile,
-    topVirtue,
-  }
-}
-
-/**
- * Get virtue display name
- */
-function getVirtueName(virtue: VIAVirtue): string {
-  const virtueNames: Record<VIAVirtue, string> = {
-    wisdom: 'Trí tuệ & Kiến thức',
-    courage: 'Lòng can đảm',
-    humanity: 'Tính nhân văn',
-    justice: 'Công lý',
-    temperance: 'Sự điều độ',
-    transcendence: 'Siêu việt',
-  }
-  return virtueNames[virtue]
-}
-
-/**
- * Generate overall profile description based on top strengths
- */
-function generateOverallProfile(
-  signatureStrengths: VIAStrengthScore[],
-  topVirtue: VIAVirtue
-): string {
-  if (signatureStrengths.length === 0) {
-    return 'Kết quả chưa đầy đủ để phân tích.'
-  }
-
-  const topStrengthNames = signatureStrengths
-    .slice(0, 3)
-    .map((s) => s.strengthName)
-    .join(', ')
-
-  const virtueDescriptions: Record<VIAVirtue, string> = {
-    wisdom:
-      'Bạn là người có óc tư duy sắc bén, luôn tìm kiếm kiến thức và hiểu biết sâu sắc về thế giới.',
-    courage:
-      'Bạn có một trái tim dũng cảm, không ngại đối mặt với thử thách và luôn trung thực với chính mình.',
-    humanity:
-      'Bạn là người ấm áp và nhân ái, luôn quan tâm đến cảm xúc và hạnh phúc của người xung quanh.',
-    justice:
-      'Bạn có tinh thần công bằng cao, luôn đóng góp cho cộng đồng và làm việc tốt cho nhóm.',
-    temperance:
-      'Bạn là người biết điều độ, kiềm chế và tha thứ, luôn giữ được sự cân bằng trong cuộc sống.',
-    transcendence:
-      'Bạn có khả năng kết nối với điều cao cả hơn, nhìn thấy vẻ đẹp trong cuộc sống và lan tỏa niềm vui.',
-  }
-
-  return `Điểm mạnh đặc trưng của bạn là: ${topStrengthNames}. ${virtueDescriptions[topVirtue]} Những điểm mạnh này giúp bạn tạo ra giá trị độc đáo trong công việc và cuộc sống.`
-}
-
-/**
- * Get recommendations for developing specific strengths
- */
-export function getStrengthRecommendations(strengthKey: string): string {
-  const strengthInfo = VIA_STRENGTH_DETAILS[strengthKey]
-  return strengthInfo?.advice || 'Hãy tìm cơ hội để thực hành điểm mạnh này mỗi ngày.'
-}
-
-/**
- * Check if two VIA profiles are compatible (for relationships/team building)
- * Returns a compatibility score from 0-100
- */
-export function calculateVIACompatibility(
-  profile1: VIAResult,
-  profile2: VIAResult
-): number {
-  // Simple algorithm: Check overlap in top 10 strengths
-  const top10Profile1 = new Set(
-    profile1.strengthScores.slice(0, 10).map((s) => s.strength)
-  )
-  const top10Profile2 = new Set(
-    profile2.strengthScores.slice(0, 10).map((s) => s.strength)
-  )
-
-  let overlap = 0
-  top10Profile1.forEach((strength) => {
-    if (top10Profile2.has(strength)) {
-      overlap++
+    return {
+      strengthScores,
+      virtueScores,
+      signatureStrengths,
+      overallProfile: this.generateOverallProfile(signatureStrengths, topVirtue),
+      topVirtue,
     }
-  })
+  }
 
-  // Also check virtue compatibility
-  const virtueCompatibility =
-    profile1.topVirtue === profile2.topVirtue ? 20 : 0
+  getVirtueName(virtue: VIAVirtue): string {
+    const names: Record<VIAVirtue, string> = {
+      wisdom: 'Trí tuệ & Kiến thức',
+      courage: 'Lòng can đảm',
+      humanity: 'Tính nhân văn',
+      justice: 'Công lý',
+      temperance: 'Sự điều độ',
+      transcendence: 'Siêu việt',
+    }
+    return names[virtue]
+  }
 
-  const strengthCompatibility = (overlap / 10) * 80
+  private generateOverallProfile(signatureStrengths: VIAStrengthScore[], topVirtue: VIAVirtue): string {
+    if (signatureStrengths.length === 0) return 'Kết quả chưa đầy đủ.'
+    const topNames = signatureStrengths.slice(0, 3).map((s) => s.strengthName).join(', ')
+    const descs: Record<VIAVirtue, string> = {
+      wisdom: 'Bạn là người tư duy sắc bén, luôn tìm kiếm hiểu biết sâu sắc.',
+      courage: 'Bạn có trái tim dũng cảm, không ngại thử thách and trung thực.',
+      humanity: 'Bạn ấm áp and nhân ái, luôn quan tâm đến người dân.',
+      justice: 'Bạn có tinh thần công bằng cao, đóng góp cho cộng đồng.',
+      temperance: 'Bạn biết điều độ, kiềm chế and tha thứ.',
+      transcendence: 'Bạn kết nối with điều cao cả, lan tỏa niềm vui.',
+    }
+    return `Điểm mạnh: ${topNames}. ${descs[topVirtue]} Những điểm này tạo ra giá trị độc đáo cho bạn.`
+  }
 
-  return Math.round(strengthCompatibility + virtueCompatibility)
+  getStrengthRecommendations(strengthKey: string): string {
+    return VIA_STRENGTH_DETAILS[strengthKey]?.advice || 'Hãy thực hành điểm mạnh này mỗi ngày.'
+  }
+
+  calculateVIACompatibility(profile1: VIAResult, profile2: VIAResult): number {
+    const top10_1 = new Set(profile1.strengthScores.slice(0, 10).map((s) => s.strength))
+    const top10_2 = new Set(profile2.strengthScores.slice(0, 10).map((s) => s.strength))
+    let overlap = 0
+    top10_1.forEach((s) => { if (top10_2.has(s)) overlap++ })
+    const virtueComp = profile1.topVirtue === profile2.topVirtue ? 20 : 0
+    return Math.round((overlap / 10) * 80 + virtueComp)
+  }
 }
+
+export const viaScoringService = new ViaScoringService()
+
+export const calculateVIA = (a: VIAAnswer[]) => viaScoringService.calculateVIA(a)
+export const getStrengthRecommendations = (k: string) => viaScoringService.getStrengthRecommendations(k)
+export const calculateVIACompatibility = (p1: VIAResult, p2: VIAResult) => viaScoringService.calculateVIACompatibility(p1, p2)

@@ -13,7 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { useFadeIn, useStagger } from '@/hooks/useGSAP'
-import { DASS21_SUBSCALES, CRISIS_RESOURCES } from '@/constants/tests/dass21-questions'
+import { CRISIS_RESOURCES } from '@/constants/tests/dass21-questions'
 import type { DASS21SubscaleScore } from '@/constants/tests/dass21-questions'
 import { saveMentalHealthRecord } from '@/services/mental-health-records.service'
 import { Home, RefreshCw, Share2, Brain, AlertTriangle, Phone } from 'lucide-react'
@@ -98,6 +98,35 @@ export default function DASS21ResultsPage() {
           })
 
           setSaveStatus('saved')
+
+          // TRIGGER MISO ANALYSIS
+          try {
+            // We only send DASS-21 raw scores. The API now handles fetching stored MBTI/VIA/Big5.
+            // DASS-21 questions map: D=Depression, A=Anxiety, S=Stress.
+            // We have normalized scores in subscaleScoresObj (0-42).
+            // MISO Engine expects DASS raw scores? Let's check engine.ts. 
+            // Engine usually expects inputs. DASS21 input usually refers to 0-42 scale or 0-21? 
+            // looking at prior code: dass21_depression: dass21_raw.D
+            // We will pass the normalized scores (x2) as that is standard for DASS-21 'full' score.
+
+            await fetch('/api/miso/analyze', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                dass21_raw: {
+                  D: subscaleScoresObj['depression'],
+                  A: subscaleScoresObj['anxiety'],
+                  S: subscaleScoresObj['stress']
+                },
+                // Optional: include history for trends
+                include_history: true
+              })
+            });
+            console.log('MISO Analysis triggered successfully');
+          } catch (misoError) {
+            console.error('Failed to trigger MISO analysis:', misoError);
+            // Verify silently, don't show error to user as it's a background process
+          }
         } catch (error) {
           console.error('Failed to save DASS-21 results:', error)
           setSaveStatus('error')

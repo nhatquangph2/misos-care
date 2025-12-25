@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, User, Activity, Settings, BookOpen, Target, Brain } from 'lucide-react';
+import { Home, User, Activity, Settings, BookOpen, Target, Brain, Fish } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function FloatingDock() {
@@ -13,6 +13,7 @@ export default function FloatingDock() {
     { name: 'Bài Test', href: '/tests', icon: Activity },
     { name: 'Tư vấn AI', href: '/ai-consultant', icon: Brain },
     { name: 'Mục tiêu', href: '/goals', icon: Target },
+    { name: 'Vườn Cảm Xúc', href: '/gamification', icon: Fish },
     { name: 'Tìm Mentor', href: '/mentors', icon: BookOpen },
     { name: 'Hồ sơ', href: '/profile', icon: User },
     { name: 'Cài đặt', href: '/settings', icon: Settings },

@@ -11,6 +11,8 @@ import { detectDiscrepancies, prioritizeDiscrepancies } from './discrepancy'
 import { allocateInterventions } from './interventions'
 import { analyzeDASSTrend, analyzeBig5Stability } from './temporal'
 import { analyzeDASS21Only, assessDataCompleteness } from './lite-mode'
+import { predictDASSFromBig5, applyVIACompensation, calculateResidualDistress } from './mechanisms'
+import { findVIAProblemMatches } from './mbti-via-integration'
 import type {
   UserInputData,
   MisoAnalysisResult,
@@ -18,12 +20,14 @@ import type {
   VIAPercentiles,
   VIAAnalysis,
 } from '@/types/miso-v3'
+import { VIA_STRENGTH_DETAILS } from '@/constants/tests/via-questions'
+
 
 // ============================================
 // VIA ANALYSIS HELPER
 // ============================================
 
-function analyzeVIAForDASS(
+export function analyzeFullVIA(
   viaPercentiles: Partial<VIAPercentiles>,
   dassRaw: { D: number; A: number; S: number },
   big5Percentiles: Partial<Big5Percentiles>
@@ -34,20 +38,94 @@ function analyzeVIAForDASS(
     build_strengths: [],
     interpretation: '',
     priority_intervention: null,
+    // Initialize new fields
+    signature_strengths: [],
+    weaknesses: [],
+    virtue_profile: [],
   }
 
   const VIA_HIGH = 70
   const VIA_LOW = 30
   const DASS_HIGH = { D: 20, A: 14, S: 25 }
 
+  // 1. FULL RANKING ANALYSIS
+  // ============================================
+  const strengthScores = Object.entries(viaPercentiles).map(([key, score]) => {
+    // Normalize key to match VIA_STRENGTH_DETAILS keys (snake_case vs CamelCase/kebab)
+    // Keys in viaPercentiles seem to be 'Hope', 'Zest', 'Self-Regulation' etc.
+    // VIA_STRENGTH_DETAILS keys are 'hope', 'zest', 'self_regulation'
+    let normKey = key.toLowerCase().replace(/-/g, '_').replace(/ /g, '_')
+    if (normKey === 'self_regulation') normKey = 'self_regulation'; // Ensure match
+
+    // Handle potential key mismatches manual mapping if needed, but assuming simple transform works
+    const info = VIA_STRENGTH_DETAILS[normKey]
+
+    return {
+      strength: normKey,
+      originalKey: key,
+      name: info?.title || key,
+      percentile: typeof score === 'number' ? score : 50,
+      virtue: info?.virtue || 'Không xác định',
+      description: info?.desc || '',
+    }
+  })
+
+  // Sort by percentile descending
+  strengthScores.sort((a, b) => b.percentile - a.percentile)
+
+  // Identify Signature Strengths (Top 5)
+  analysis.signature_strengths = strengthScores.slice(0, 5).map(s => ({
+    strength: s.strength,
+    name: s.name,
+    percentile: s.percentile,
+    virtue: s.virtue,
+    description: s.description
+  }))
+
+  // Identify Weaknesses (Bottom 5 or < 30)
+  // FIXED: Ensure weaknesses don't overlap with signatures if total strengths are few
+  const lowStrengths = strengthScores.filter(s => s.percentile < 30)
+
+  // If we have enough strengths (> 10), take bottom 5. 
+  // If few strengths, only take those that are actually low (< 30) and not in signatures
+  let bottomCandidates = strengthScores.slice(-5)
+  if (strengthScores.length <= 10) {
+    bottomCandidates = lowStrengths.filter(ls =>
+      !analysis.signature_strengths?.some(ss => ss.strength === ls.strength)
+    )
+  }
+
+  analysis.weaknesses = bottomCandidates.map(s => ({
+    strength: s.strength,
+    name: s.name,
+    percentile: s.percentile
+  }))
+
+  // Virtue Profile
+  const virtueMap: Record<string, { total: number, count: number }> = {}
+  strengthScores.forEach(s => {
+    if (!virtueMap[s.virtue]) virtueMap[s.virtue] = { total: 0, count: 0 }
+    virtueMap[s.virtue].total += s.percentile
+    virtueMap[s.virtue].count++
+  })
+
+  analysis.virtue_profile = Object.entries(virtueMap).map(([virtue, data]) => ({
+    virtue,
+    name: virtue,
+    score: Math.round(data.total / data.count)
+  })).sort((a, b) => b.score - a.score)
+
+
+  // 2. DASS-SPECIFIC INTERGRATION (Legacy Logic Preserved)
+  // ============================================
   const hope = viaPercentiles.Hope ?? 50
   const zest = viaPercentiles.Zest ?? 50
 
   // Hope analysis
   if (hope > VIA_HIGH) {
-    analysis.protective_factors.push('Hope')
+    analysis.protective_factors.push('Hy vọng (Hope)')
   } else if (hope < VIA_LOW) {
-    analysis.risk_factors.push('Low Hope')
+    analysis.risk_factors.push('Hy vọng thấp')
     analysis.build_strengths.push({
       strength: 'Hope',
       priority: 'HIGH',
@@ -57,9 +135,9 @@ function analyzeVIAForDASS(
 
   // Zest analysis
   if (zest > VIA_HIGH) {
-    analysis.protective_factors.push('Zest')
+    analysis.protective_factors.push('Nhiệt huyết (Zest)')
   } else if (zest < VIA_LOW) {
-    analysis.risk_factors.push('Low Zest')
+    analysis.risk_factors.push('Nhiệt huyết thấp')
     analysis.build_strengths.push({
       strength: 'Zest',
       priority: 'HIGH',
@@ -70,11 +148,11 @@ function analyzeVIAForDASS(
   // Depression-specific
   if (dassRaw.D > DASS_HIGH.D) {
     if (hope < VIA_LOW) {
-      analysis.interpretation += 'Trầm cảm liên quan đến thiếu Hope. '
+      analysis.interpretation += 'Cần can thiệp nhận thức để cải thiện Trầm cảm và Hy vọng. '
       analysis.priority_intervention = 'hope_therapy'
     }
     if (zest < VIA_LOW) {
-      analysis.interpretation += 'Trầm cảm liên quan đến thiếu Zest (anhedonia). '
+      analysis.interpretation += 'Triệu chứng mất hứng thú (anhedonia) rõ rệt. '
       if (!analysis.priority_intervention) {
         analysis.priority_intervention = 'behavioral_activation'
       }
@@ -96,12 +174,12 @@ function analyzeVIAForDASS(
     analysis.control_composite = Math.round(control * 100) / 100
 
     if (control < -0.5) {
-      analysis.risk_factors.push('Low Control + High N')
-      analysis.interpretation += 'Nguy cơ impulsive coping cao. '
+      analysis.risk_factors.push('Khả năng kiểm soát kém + Nhạy cảm cảm xúc cao')
+      analysis.interpretation += 'Nguy cơ ứng phó bốc đồng cao (Impulsive Coping). '
       analysis.flags = ['IMPULSIVE_COPING_RISK']
     } else if (control > 0.5) {
-      analysis.interpretation += 'Healthy Neurotic pattern. '
-      analysis.protective_factors.push('Strong Control')
+      analysis.interpretation += 'Khả năng kiểm soát tốt giúp giảm nhẹ tác động của tính nhạy cảm (Neuroticism). '
+      analysis.protective_factors.push('Khả năng tự kiểm soát mạnh mẽ')
     }
   }
 
@@ -111,10 +189,10 @@ function analyzeVIAForDASS(
     const gratitude = viaPercentiles.Gratitude ?? 50
 
     if (spirituality > VIA_HIGH || gratitude > VIA_HIGH) {
-      analysis.interpretation += 'Stress cực độ nhưng có Transcendence. Growth potential. '
+      analysis.interpretation += 'Stress cao nhưng có yếu tố Transcendence bảo vệ. Tiềm năng tăng trưởng hậu sang chấn (PTG). '
       analysis.prognosis = 'GROWTH_POTENTIAL'
     } else {
-      analysis.interpretation += 'Stress cực độ, thiếu Transcendence. Collapse risk. '
+      analysis.interpretation += 'Stress cực độ và thiếu yếu tố tinh thần bảo vệ. Nguy cơ suy sụp. '
       analysis.prognosis = 'COLLAPSE_RISK'
     }
   }
@@ -203,8 +281,11 @@ export async function runMisoAnalysis(
   }
 
   // STEP 3: Route by Completeness Level
-  if (result.completeness.level === 'MINIMAL') {
-    // LITE MODE
+  // Allow BASIC (DASS + Big5) or MINIMAL (DASS only) to proceed, but handle them differently
+  const isBasicOrHigher = ['BASIC', 'STANDARD', 'COMPREHENSIVE', 'COMPLETE'].includes(result.completeness.level);
+
+  if (result.completeness.level === 'MINIMAL' && !isBasicOrHigher) {
+    // LITE MODE (Only DASS)
     const liteResult = analyzeDASS21Only(userData.dass21_raw!)
     result.profile = liteResult as any
     result.interventions = {
@@ -219,10 +300,76 @@ export async function runMisoAnalysis(
   let big5Percentiles = normalized.big5?.percentiles || {}
   const viaPercentiles = normalized.via?.percentiles || {}
 
-  // Use MBTI priors if Big5 missing
-  if (!userData.big5_raw && userData.mbti && normalized.mbti_priors) {
+  // Fallback to MBTI priors if Big5 is missing OR if normalization produced no percentiles (invalid raw data)
+  if (Object.keys(big5Percentiles).length === 0 && userData.mbti && normalized.mbti_priors) {
     big5Percentiles = normalized.mbti_priors as Partial<Big5Percentiles>
   }
+
+
+  // STEP 3.5: Causal Pathway Analysis (Deep Integration)
+  // ============================================
+  if (Object.keys(big5Percentiles).length > 0 && userData.dass21_raw) {
+    const { predicted, activeMechanisms } = predictDASSFromBig5(big5Percentiles as Big5Percentiles)
+
+    let adjusted = predicted
+    let activeCompensations: any[] = []
+
+    // Apply VIA compensation if available
+    if (Object.keys(viaPercentiles).length > 0) {
+      const compensation = applyVIACompensation(
+        predicted,
+        big5Percentiles as Big5Percentiles,
+        viaPercentiles as VIAPercentiles
+      )
+      adjusted = compensation.adjusted
+      activeCompensations = compensation.activeCompensations
+    }
+
+    // Calculate residual (actual - predicted)
+    const { residual, interpretation } = calculateResidualDistress(
+      userData.dass21_raw,
+      adjusted
+    )
+
+    // Find VIA-problem matches
+    const viaProblemMatches = Object.keys(viaPercentiles).length > 0
+      ? findVIAProblemMatches(userData.dass21_raw, viaPercentiles as Record<string, number>)
+      : []
+
+    // Store in result
+    result.mechanisms = {
+      active: activeMechanisms.map(m => ({
+        id: m.id,
+        pathway: m.pathway,
+        strength: m.strength,
+        predictedDASS: m.predictedDASS,
+      })),
+      compensations: activeCompensations.map(c => {
+        const normKey = c.strength.toLowerCase().replace(/-/g, '_').replace(/ /g, '_')
+        const info = VIA_STRENGTH_DETAILS[normKey]
+        return {
+          id: c.id,
+          condition: c.condition,
+          mechanism: c.mechanism,
+          strength: info?.title || c.strength,
+          percentile: c.percentile,
+        }
+      }),
+      residual: {
+        D: residual.D,
+        A: residual.A,
+        S: residual.S,
+        interpretation,
+      },
+      via_problem_matches: viaProblemMatches.slice(0, 3).map(m => ({
+        id: m.id,
+        intervention: m.intervention,
+        technique: m.technique,
+        expected_effect: m.expected_effect,
+      })),
+    }
+  }
+
 
   // STEP 4: Calculate Scores
   if (Object.keys(big5Percentiles).length > 0) {
@@ -266,15 +413,23 @@ export async function runMisoAnalysis(
 
   // STEP 7: VIA Analysis
   if (Object.keys(viaPercentiles).length > 0 && userData.dass21_raw) {
-    result.via_analysis = analyzeVIAForDASS(viaPercentiles, userData.dass21_raw, big5Percentiles)
+    result.via_analysis = analyzeFullVIA(viaPercentiles, userData.dass21_raw, big5Percentiles)
   }
 
-  // STEP 8: Intervention Allocation
+  // STEP 8: Intervention Allocation (with Smart Scoring if data available)
   result.interventions = allocateInterventions(
     result.profile,
     result.discrepancies,
     result.via_analysis || null,
-    userData.mbti
+    userData.mbti,
+    // Smart scoring context (Phase 2)
+    result.mechanisms && Object.keys(big5Percentiles).length > 0 && userData.dass21_raw
+      ? {
+        big5_percentiles: big5Percentiles as { N: number; E: number; O: number; A: number; C: number },
+        dass_raw: userData.dass21_raw,
+        mechanisms: result.mechanisms,
+      }
+      : undefined
   )
 
   // STEP 9: Generate Summary
@@ -291,28 +446,29 @@ function generateSummary(result: MisoAnalysisResult): string {
   const parts: string[] = []
 
   // Mode
-  parts.push(`Mode: ${result.completeness.mode}`)
+  const modeMap: Record<string, string> = { 'FULL': 'Đầy đủ', 'LITE': 'Rút gọn', 'BASIC': 'Cơ bản' };
+  parts.push(`Chế độ: ${modeMap[result.completeness.mode] || result.completeness.mode}`);
 
   // Profile
   if ('name' in result.profile) {
-    parts.push(`Profile: ${result.profile.name} (${result.profile.risk_level})`)
+    parts.push(`Hồ sơ: ${result.profile.name} (${result.profile.risk_level})`);
   }
 
   // Effectiveness
   if (result.temporal.dass21?.intervention_effectiveness) {
-    parts.push(`Effectiveness: ${result.temporal.dass21.intervention_effectiveness}`)
+    parts.push(`Hiệu quả: ${result.temporal.dass21.intervention_effectiveness}`);
   }
 
   // Discrepancies
   if (result.discrepancies.length > 0) {
-    const names = result.discrepancies.slice(0, 2).map((d) => d.name)
-    parts.push(`Notes: ${names.join(', ')}`)
+    const names = result.discrepancies.slice(0, 2).map((d) => d.name);
+    parts.push(`Lưu ý: ${names.join(', ')}`);
   }
 
   // Priority intervention
   if (result.interventions.immediate && result.interventions.immediate.length > 0) {
-    const imm = result.interventions.immediate[0]
-    parts.push(`Priority: ${imm.type}`)
+    const imm = result.interventions.immediate[0] as { name?: string, type: string };
+    parts.push(`Ưu tiên: ${imm.name || imm.type}`);
   }
 
   return parts.join(' | ')

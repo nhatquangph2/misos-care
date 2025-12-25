@@ -1,15 +1,6 @@
-/**
- * Mentor Service
- * Handles mentor-related operations including relationships and notes
- */
-
-import { createClient } from '@/lib/supabase/client';
+import { BaseService } from './base.service';
 import type { User, MentorProfile, MentorRelationship, MentorNote, MentalHealthRecord, PersonalityProfile } from '@/types/database';
 import type { MentorRelationshipStatus, MentorNoteType } from '@/types/enums';
-
-// =====================================================
-// MENTOR PROFILE OPERATIONS
-// =====================================================
 
 export interface MentorProfileData {
   title?: string;
@@ -23,100 +14,6 @@ export interface MentorProfileData {
   max_mentees?: number;
 }
 
-// Get mentor profile by user ID
-export async function getMentorProfile(userId: string): Promise<MentorProfile | null> {
-  const supabase = createClient();
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_profiles')
-    .select('*')
-    .eq('user_id', userId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching mentor profile:', error);
-    return null;
-  }
-
-  return data as MentorProfile | null;
-}
-
-// Get current mentor's profile
-export async function getCurrentMentorProfile(): Promise<MentorProfile | null> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  return getMentorProfile(user.id);
-}
-
-// Update mentor profile
-export async function updateMentorProfile(profileData: MentorProfileData): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false, error: 'Bạn chưa đăng nhập' };
-  }
-
-  // Check if mentor profile exists
-  const existing = await getMentorProfile(user.id);
-
-  if (existing) {
-    // Update existing profile
-    const { error } = await (supabase as any)
-      .from('mentor_profiles')
-      .update(profileData)
-      .eq('user_id', user.id);
-
-    if (error) {
-      console.error('Error updating mentor profile:', error);
-      return { success: false, error: 'Không thể cập nhật thông tin. Vui lòng thử lại.' };
-    }
-  } else {
-    // Create new profile
-    const { error } = await (supabase as any)
-      .from('mentor_profiles')
-      .insert({
-        user_id: user.id,
-        ...profileData,
-      });
-
-    if (error) {
-      console.error('Error creating mentor profile:', error);
-      return { success: false, error: 'Không thể tạo hồ sơ mentor. Vui lòng thử lại.' };
-    }
-  }
-
-  return { success: true };
-}
-
-// Get available mentors
-export async function getAvailableMentors(): Promise<(MentorProfile & { user: Pick<User, 'name' | 'full_name' | 'avatar_url' | 'email'> })[]> {
-  const supabase = createClient();
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_profiles')
-    .select(`
-      *,
-      user:users!mentor_profiles_user_id_fkey(name, full_name, avatar_url, email)
-    `)
-    .eq('is_available', true)
-    .order('rating', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching available mentors:', error);
-    return [];
-  }
-
-  return (data || []) as any;
-}
-
-// =====================================================
-// MENTOR RELATIONSHIP OPERATIONS
-// =====================================================
-
 export interface MenteeInfo {
   id: string;
   user_id: string;
@@ -129,279 +26,6 @@ export interface MenteeInfo {
   can_view_goals: boolean;
   can_view_contact_info: boolean;
 }
-
-// Get mentor's mentees
-export async function getMentees(): Promise<MenteeInfo[]> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_relationships')
-    .select(`
-      id,
-      user_id,
-      status,
-      started_at,
-      can_view_test_results,
-      can_view_goals,
-      can_view_contact_info,
-      user:users!mentor_relationships_user_id_fkey(name, full_name, email, avatar_url)
-    `)
-    .eq('mentor_id', user.id)
-    .order('status', { ascending: true })
-    .order('started_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching mentees:', error);
-    return [];
-  }
-
-  return (data || []).map((item: any) => ({
-    id: item.id,
-    user_id: item.user_id,
-    user_name: item.user?.full_name || item.user?.name || 'Unknown',
-    user_email: item.user?.email || '',
-    user_avatar: item.user?.avatar_url || null,
-    status: item.status as MentorRelationshipStatus,
-    started_at: item.started_at,
-    can_view_test_results: item.can_view_test_results,
-    can_view_goals: item.can_view_goals,
-    can_view_contact_info: item.can_view_contact_info,
-  }));
-}
-
-// Request a mentor
-export async function requestMentor(mentorId: string, message?: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false, error: 'Bạn chưa đăng nhập' };
-  }
-
-  // Check if relationship already exists
-  const { data: existing } = await (supabase as any)
-    .from('mentor_relationships')
-    .select('id, status')
-    .eq('mentor_id', mentorId)
-    .eq('user_id', user.id)
-    .single();
-
-  if (existing) {
-    if (existing.status === 'active') {
-      return { success: false, error: 'Bạn đã có quan hệ với mentor này' };
-    }
-    if (existing.status === 'pending') {
-      return { success: false, error: 'Yêu cầu của bạn đang chờ xử lý' };
-    }
-  }
-
-  const { error } = await (supabase as any)
-    .from('mentor_relationships')
-    .insert({
-      mentor_id: mentorId,
-      user_id: user.id,
-      request_message: message || null,
-      status: 'pending',
-    });
-
-  if (error) {
-    console.error('Error requesting mentor:', error);
-    return { success: false, error: 'Không thể gửi yêu cầu. Vui lòng thử lại.' };
-  }
-
-  return { success: true };
-}
-
-// Accept/reject mentor request (for mentors)
-export async function respondToMentorRequest(
-  relationshipId: string,
-  accept: boolean,
-  responseMessage?: string
-): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false, error: 'Bạn chưa đăng nhập' };
-  }
-
-  const updateData: Record<string, unknown> = {
-    response_message: responseMessage || null,
-    response_date: new Date().toISOString(),
-  };
-
-  if (accept) {
-    updateData.status = 'active';
-    updateData.started_at = new Date().toISOString();
-  } else {
-    updateData.status = 'ended';
-    updateData.end_reason = 'rejected';
-  }
-
-  const { error } = await (supabase as any)
-    .from('mentor_relationships')
-    .update(updateData)
-    .eq('id', relationshipId)
-    .eq('mentor_id', user.id);
-
-  if (error) {
-    console.error('Error responding to request:', error);
-    return { success: false, error: 'Không thể xử lý yêu cầu. Vui lòng thử lại.' };
-  }
-
-  return { success: true };
-}
-
-// End mentor relationship
-export async function endMentorRelationship(
-  relationshipId: string,
-  reason?: string
-): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false, error: 'Bạn chưa đăng nhập' };
-  }
-
-  const { error } = await (supabase as any)
-    .from('mentor_relationships')
-    .update({
-      status: 'ended',
-      ended_at: new Date().toISOString(),
-      end_reason: reason || null,
-    })
-    .eq('id', relationshipId)
-    .or(`mentor_id.eq.${user.id},user_id.eq.${user.id}`);
-
-  if (error) {
-    console.error('Error ending relationship:', error);
-    return { success: false, error: 'Không thể kết thúc quan hệ. Vui lòng thử lại.' };
-  }
-
-  return { success: true };
-}
-
-// =====================================================
-// MENTEE DATA ACCESS (for mentors)
-// =====================================================
-
-// Get mentee's test results
-export async function getMenteeTestResults(menteeId: string): Promise<MentalHealthRecord[]> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  // Verify mentor has access to this mentee
-  const { data: relationship } = await (supabase as any)
-    .from('mentor_relationships')
-    .select('can_view_test_results')
-    .eq('mentor_id', user.id)
-    .eq('user_id', menteeId)
-    .eq('status', 'active')
-    .single();
-
-  if (!relationship?.can_view_test_results) {
-    console.error('No permission to view test results');
-    return [];
-  }
-
-  const { data, error } = await supabase
-    .from('mental_health_records')
-    .select('*')
-    .eq('user_id', menteeId)
-    .order('completed_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching mentee test results:', error);
-    return [];
-  }
-
-  return data || [];
-}
-
-// Get mentee's personality profile
-export async function getMenteePersonalityProfile(menteeId: string): Promise<PersonalityProfile | null> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  // Verify mentor has access
-  const { data: relationship } = await (supabase as any)
-    .from('mentor_relationships')
-    .select('can_view_test_results')
-    .eq('mentor_id', user.id)
-    .eq('user_id', menteeId)
-    .eq('status', 'active')
-    .single();
-
-  if (!relationship?.can_view_test_results) {
-    console.error('No permission to view personality profile');
-    return null;
-  }
-
-  const { data, error } = await supabase
-    .from('personality_profiles')
-    .select('*')
-    .eq('user_id', menteeId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching mentee personality:', error);
-    return null;
-  }
-
-  return data;
-}
-
-// Get mentee's basic profile
-export async function getMenteeProfile(menteeId: string): Promise<Partial<User> | null> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  // Verify mentor has relationship
-  const { data: relationship } = await (supabase as any)
-    .from('mentor_relationships')
-    .select('can_view_contact_info')
-    .eq('mentor_id', user.id)
-    .eq('user_id', menteeId)
-    .eq('status', 'active')
-    .single();
-
-  if (!relationship) {
-    console.error('No relationship with mentee');
-    return null;
-  }
-
-  // Select fields based on permissions
-  const fields = relationship.can_view_contact_info
-    ? 'id, name, full_name, nickname, email, phone, avatar_url, date_of_birth, gender, occupation, bio, zalo, facebook'
-    : 'id, name, full_name, nickname, avatar_url, occupation, bio';
-
-  const { data, error } = await supabase
-    .from('users')
-    .select(fields)
-    .eq('id', menteeId)
-    .single();
-
-  if (error) {
-    console.error('Error fetching mentee profile:', error);
-    return null;
-  }
-
-  return data;
-}
-
-// =====================================================
-// MENTOR NOTES OPERATIONS
-// =====================================================
 
 export interface CreateNoteData {
   relationshipId: string;
@@ -417,155 +41,444 @@ export interface CreateNoteData {
   followUpDate?: string;
 }
 
-// Create mentor note
-export async function createMentorNote(data: CreateNoteData): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
+export class MentorService extends BaseService {
+  // =====================================================
+  // MENTOR PROFILE OPERATIONS
+  // =====================================================
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false, error: 'Bạn chưa đăng nhập' };
+  async getMentorProfile(userId: string): Promise<MentorProfile | null> {
+    const { data, error } = await this.supabase
+      .from('mentor_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching mentor profile:', error);
+      return null;
+    }
+    return data as any as MentorProfile;
   }
 
-  const { error } = await (supabase as any)
-    .from('mentor_notes')
-    .insert({
-      relationship_id: data.relationshipId,
-      mentor_id: user.id,
-      user_id: data.menteeId,
-      title: data.title || null,
-      content: data.content,
-      note_type: data.noteType || 'general',
-      related_test_id: data.relatedTestId || null,
-      related_goal_id: data.relatedGoalId || null,
-      is_private: data.isPrivate ?? true,
-      shared_with_user: data.sharedWithUser ?? false,
-      requires_follow_up: data.requiresFollowUp ?? false,
-      follow_up_date: data.followUpDate || null,
-    });
-
-  if (error) {
-    console.error('Error creating note:', error);
-    return { success: false, error: 'Không thể tạo ghi chú. Vui lòng thử lại.' };
+  async getCurrentMentorProfile(): Promise<MentorProfile | null> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return null;
+    return this.getMentorProfile(user.id);
   }
 
-  return { success: true };
+  async updateMentorProfile(profileData: MentorProfileData): Promise<{ success: boolean; error?: string }> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
+
+    const existing = await this.getMentorProfile(user.id);
+    if (existing) {
+      const { error } = await this.supabase
+        .from('mentor_profiles')
+        .update(profileData as any)
+        .eq('user_id', user.id);
+      if (error) {
+        console.error('Error updating mentor profile:', error);
+        return { success: false, error: 'Không thể cập nhật thông tin. Vui lòng thử lại.' };
+      }
+    } else {
+      const { error } = await this.supabase
+        .from('mentor_profiles')
+        .insert({ user_id: user.id, ...profileData } as any);
+      if (error) {
+        console.error('Error creating mentor profile:', error);
+        return { success: false, error: 'Không thể tạo hồ sơ mentor. Vui lòng thử lại.' };
+      }
+    }
+    return { success: true };
+  }
+
+  async getAvailableMentors(): Promise<(MentorProfile & { user: Pick<User, 'name' | 'full_name' | 'avatar_url' | 'email'> })[]> {
+    const { data, error } = await this.supabase
+      .from('mentor_profiles')
+      .select(`
+        *,
+        user:users!mentor_profiles_user_id_fkey(name, full_name, avatar_url, email)
+      `)
+      .eq('is_available', true)
+      .order('rating', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching available mentors:', error);
+      return [];
+    }
+    return (data || []) as any;
+  }
+
+  // =====================================================
+  // MENTOR RELATIONSHIP OPERATIONS
+  // =====================================================
+
+  async getMentees(): Promise<MenteeInfo[]> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await this.supabase
+      .from('mentor_relationships')
+      .select(`
+        id,
+        user_id,
+        status,
+        started_at,
+        can_view_test_results,
+        can_view_goals,
+        can_view_contact_info,
+        user:users!mentor_relationships_user_id_fkey(name, full_name, email, avatar_url)
+      `)
+      .eq('mentor_id', user.id)
+      .order('status', { ascending: true })
+      .order('started_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching mentees:', error);
+      return [];
+    }
+
+    return (data || []).map((item: any) => ({
+      id: item.id,
+      user_id: item.user_id,
+      user_name: item.user?.full_name || item.user?.name || 'Unknown',
+      user_email: item.user?.email || '',
+      user_avatar: item.user?.avatar_url || null,
+      status: item.status as MentorRelationshipStatus,
+      started_at: item.started_at,
+      can_view_test_results: item.can_view_test_results,
+      can_view_goals: item.can_view_goals,
+      can_view_contact_info: item.can_view_contact_info,
+    }));
+  }
+
+  async requestMentor(mentorId: string, message?: string): Promise<{ success: boolean; error?: string }> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
+
+    const { data: existing } = await this.supabase
+      .from('mentor_relationships')
+      .select('id, status')
+      .eq('mentor_id', mentorId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existing) {
+      if ((existing as any).status === 'active') return { success: false, error: 'Bạn đã có quan hệ với mentor này' };
+      if ((existing as any).status === 'pending') return { success: false, error: 'Yêu cầu của bạn đang chờ xử lý' };
+    }
+
+    const { error } = await this.supabase
+      .from('mentor_relationships')
+      .insert({
+        mentor_id: mentorId,
+        user_id: user.id,
+        request_message: message || null,
+        status: 'pending',
+      } as any);
+
+    if (error) {
+      console.error('Error requesting mentor:', error);
+      return { success: false, error: 'Không thể gửi yêu cầu. Vui lòng thử lại.' };
+    }
+    return { success: true };
+  }
+
+  async respondToMentorRequest(relationshipId: string, accept: boolean, responseMessage?: string): Promise<{ success: boolean; error?: string }> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
+
+    const updateData: any = {
+      response_message: responseMessage || null,
+      response_date: new Date().toISOString(),
+    };
+
+    if (accept) {
+      updateData.status = 'active';
+      updateData.started_at = new Date().toISOString();
+    } else {
+      updateData.status = 'ended';
+      updateData.end_reason = 'rejected';
+    }
+
+    const { error } = await this.supabase
+      .from('mentor_relationships')
+      .update(updateData)
+      .eq('id', relationshipId)
+      .eq('mentor_id', user.id);
+
+    if (error) {
+      console.error('Error responding to request:', error);
+      return { success: false, error: 'Không thể xử lý yêu cầu. Vui lòng thử lại.' };
+    }
+    return { success: true };
+  }
+
+  async endMentorRelationship(relationshipId: string, reason?: string): Promise<{ success: boolean; error?: string }> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
+
+    const { error } = await this.supabase
+      .from('mentor_relationships')
+      .update({
+        status: 'ended',
+        ended_at: new Date().toISOString(),
+        end_reason: reason || null,
+      } as any)
+      .eq('id', relationshipId)
+      .or(`mentor_id.eq.${user.id},user_id.eq.${user.id}`);
+
+    if (error) {
+      console.error('Error ending relationship:', error);
+      return { success: false, error: 'Không thể kết thúc quan hệ. Vui lòng thử lại.' };
+    }
+    return { success: true };
+  }
+
+  // =====================================================
+  // MENTEE DATA ACCESS (for mentors)
+  // =====================================================
+
+  async getMenteeTestResults(menteeId: string): Promise<MentalHealthRecord[]> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: relationship } = await this.supabase
+      .from('mentor_relationships')
+      .select('can_view_test_results')
+      .eq('mentor_id', user.id)
+      .eq('user_id', menteeId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (!(relationship as any)?.can_view_test_results) {
+      console.error('No permission to view test results');
+      return [];
+    }
+
+    const { data, error } = await this.supabase
+      .from('mental_health_records')
+      .select('*')
+      .eq('user_id', menteeId)
+      .order('completed_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching mentee test results:', error);
+      return [];
+    }
+    return (data as any) || [];
+  }
+
+  async getMenteePersonalityProfile(menteeId: string): Promise<PersonalityProfile | null> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: relationship } = await this.supabase
+      .from('mentor_relationships')
+      .select('can_view_test_results')
+      .eq('mentor_id', user.id)
+      .eq('user_id', menteeId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (!(relationship as any)?.can_view_test_results) {
+      console.error('No permission to view personality profile');
+      return null;
+    }
+
+    const { data, error } = await this.supabase
+      .from('personality_profiles')
+      .select('*')
+      .eq('user_id', menteeId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching mentee personality:', error);
+      return null;
+    }
+    return data as any as PersonalityProfile;
+  }
+
+  async getMenteeProfile(menteeId: string): Promise<Partial<User> | null> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: relationship } = await this.supabase
+      .from('mentor_relationships')
+      .select('can_view_contact_info')
+      .eq('mentor_id', user.id)
+      .eq('user_id', menteeId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (!relationship) {
+      console.error('No relationship with mentee');
+      return null;
+    }
+
+    const fields = (relationship as any).can_view_contact_info
+      ? 'id, name, full_name, nickname, email, phone, avatar_url, date_of_birth, gender, occupation, bio, zalo, facebook'
+      : 'id, name, full_name, nickname, avatar_url, occupation, bio';
+
+    const { data, error } = await this.supabase
+      .from('users')
+      .select(fields)
+      .eq('id', menteeId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching mentee profile:', error);
+      return null;
+    }
+    return data as any;
+  }
+
+  // =====================================================
+  // MENTOR NOTES OPERATIONS
+  // =====================================================
+
+  async createMentorNote(data: CreateNoteData): Promise<{ success: boolean; error?: string }> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
+
+    const { error } = await this.supabase
+      .from('mentor_notes')
+      .insert({
+        relationship_id: data.relationshipId,
+        mentor_id: user.id,
+        user_id: data.menteeId,
+        title: data.title || null,
+        content: data.content,
+        note_type: data.noteType || 'general',
+        related_test_id: data.relatedTestId || null,
+        related_goal_id: data.relatedGoalId || null,
+        is_private: data.isPrivate ?? true,
+        shared_with_user: data.sharedWithUser ?? false,
+        requires_follow_up: data.requiresFollowUp ?? false,
+        follow_up_date: data.followUpDate || null,
+      } as any);
+
+    if (error) {
+      console.error('Error creating note:', error);
+      return { success: false, error: 'Không thể tạo ghi chú. Vui lòng thử lại.' };
+    }
+    return { success: true };
+  }
+
+  async getMenteeNotes(menteeId: string): Promise<MentorNote[]> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await this.supabase
+      .from('mentor_notes')
+      .select('*')
+      .eq('mentor_id', user.id)
+      .eq('user_id', menteeId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching notes:', error);
+      return [];
+    }
+    return (data as any) || [];
+  }
+
+  async getFollowUpNotes(): Promise<MentorNote[]> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await this.supabase
+      .from('mentor_notes')
+      .select('*')
+      .eq('mentor_id', user.id)
+      .eq('requires_follow_up', true)
+      .eq('follow_up_completed', false)
+      .order('follow_up_date', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching follow-up notes:', error);
+      return [];
+    }
+    return (data as any) || [];
+  }
+
+  async completeFollowUp(noteId: string): Promise<{ success: boolean; error?: string }> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Bạn chưa đăng nhập' };
+
+    const { error } = await this.supabase
+      .from('mentor_notes')
+      .update({ follow_up_completed: true } as any)
+      .eq('id', noteId)
+      .eq('mentor_id', user.id);
+
+    if (error) {
+      console.error('Error completing follow-up:', error);
+      return { success: false, error: 'Không thể cập nhật. Vui lòng thử lại.' };
+    }
+    return { success: true };
+  }
+
+  // =====================================================
+  // USER'S MENTOR VIEW (for regular users)
+  // =====================================================
+
+  async getCurrentMentor(): Promise<(MentorRelationship & { mentor: Pick<User, 'name' | 'full_name' | 'avatar_url' | 'email'> }) | null> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data, error } = await this.supabase
+      .from('mentor_relationships')
+      .select(`
+        *,
+        mentor:users!mentor_relationships_mentor_id_fkey(name, full_name, avatar_url, email)
+      `)
+      .eq('user_id', user.id)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching current mentor:', error);
+      return null;
+    }
+    return data as any;
+  }
+
+  async getSharedMentorNotes(): Promise<MentorNote[]> {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await this.supabase
+      .from('mentor_notes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('shared_with_user', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching shared notes:', error);
+      return [];
+    }
+    return (data as any) || [];
+  }
 }
 
-// Get notes for a mentee
-export async function getMenteeNotes(menteeId: string): Promise<MentorNote[]> {
-  const supabase = createClient();
+export const mentorService = new MentorService();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_notes')
-    .select('*')
-    .eq('mentor_id', user.id)
-    .eq('user_id', menteeId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching notes:', error);
-    return [];
-  }
-
-  return (data || []) as MentorNote[];
-}
-
-// Get follow-up notes
-export async function getFollowUpNotes(): Promise<MentorNote[]> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_notes')
-    .select('*')
-    .eq('mentor_id', user.id)
-    .eq('requires_follow_up', true)
-    .eq('follow_up_completed', false)
-    .order('follow_up_date', { ascending: true });
-
-  if (error) {
-    console.error('Error fetching follow-up notes:', error);
-    return [];
-  }
-
-  return (data || []) as MentorNote[];
-}
-
-// Mark follow-up as completed
-export async function completeFollowUp(noteId: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) {
-    return { success: false, error: 'Bạn chưa đăng nhập' };
-  }
-
-  const { error } = await (supabase as any)
-    .from('mentor_notes')
-    .update({ follow_up_completed: true })
-    .eq('id', noteId)
-    .eq('mentor_id', user.id);
-
-  if (error) {
-    console.error('Error completing follow-up:', error);
-    return { success: false, error: 'Không thể cập nhật. Vui lòng thử lại.' };
-  }
-
-  return { success: true };
-}
-
-// =====================================================
-// USER'S MENTOR VIEW (for regular users)
-// =====================================================
-
-// Get user's current mentor
-export async function getCurrentMentor(): Promise<(MentorRelationship & { mentor: Pick<User, 'name' | 'full_name' | 'avatar_url' | 'email'> }) | null> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_relationships')
-    .select(`
-      *,
-      mentor:users!mentor_relationships_mentor_id_fkey(name, full_name, avatar_url, email)
-    `)
-    .eq('user_id', user.id)
-    .eq('status', 'active')
-    .single();
-
-  if (error) {
-    console.error('Error fetching current mentor:', error);
-    return null;
-  }
-
-  return data as any;
-}
-
-// Get notes shared by mentor (for users)
-export async function getSharedMentorNotes(): Promise<MentorNote[]> {
-  const supabase = createClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data, error } = await (supabase as any)
-    .from('mentor_notes')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('shared_with_user', true)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching shared notes:', error);
-    return [];
-  }
-
-  return (data || []) as MentorNote[];
-}
+export const getMentorProfile = (id: string) => mentorService.getMentorProfile(id);
+export const getCurrentMentorProfile = () => mentorService.getCurrentMentorProfile();
+export const updateMentorProfile = (d: MentorProfileData) => mentorService.updateMentorProfile(d);
+export const getAvailableMentors = () => mentorService.getAvailableMentors();
+export const getMentees = () => mentorService.getMentees();
+export const requestMentor = (id: string, m?: string) => mentorService.requestMentor(id, m);
+export const respondToMentorRequest = (id: string, a: boolean, m?: string) => mentorService.respondToMentorRequest(id, a, m);
+export const endMentorRelationship = (id: string, r?: string) => mentorService.endMentorRelationship(id, r);
+export const getMenteeTestResults = (id: string) => mentorService.getMenteeTestResults(id);
+export const getMenteePersonalityProfile = (id: string) => mentorService.getMenteePersonalityProfile(id);
+export const getMenteeProfile = (id: string) => mentorService.getMenteeProfile(id);
+export const createMentorNote = (d: CreateNoteData) => mentorService.createMentorNote(d);
+export const getMenteeNotes = (id: string) => mentorService.getMenteeNotes(id);
+export const getFollowUpNotes = () => mentorService.getFollowUpNotes();
+export const completeFollowUp = (id: string) => mentorService.completeFollowUp(id);
+export const getCurrentMentor = () => mentorService.getCurrentMentor();
+export const getSharedMentorNotes = () => mentorService.getSharedMentorNotes();

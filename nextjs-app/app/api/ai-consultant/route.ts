@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAIConsultation, type ConsultationRequest } from '@/services/ai-consultant.service'
 import { createClient } from '@/lib/supabase/server'
+import { MisoAnalysisResult } from '@/types/miso-v3'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -41,6 +42,20 @@ export async function POST(request: NextRequest) {
         { error: `Invalid issue type. Must be one of: ${validIssues.join(', ')}` },
         { status: 400 }
       )
+    }
+
+    // Fetch latest MISO analysis (Server-side enrichment)
+    const { data: logData } = await supabase
+      .from('miso_analysis_logs')
+      .select('analysis_result')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle() // Use maybeSingle to avoid error if no log exists
+
+    if (logData && logData.analysis_result) {
+      // Inject trusted server-side MISO analysis
+      body.misoAnalysis = logData.analysis_result as unknown as MisoAnalysisResult
     }
 
     // Call AI consultation service

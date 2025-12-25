@@ -3,7 +3,7 @@
  * Calculates BVS, RCS, and Predicted DASS scores
  */
 
-import { BVS_WEIGHTS, RCS_COMPONENTS, RCS_MBTI_J_BONUS, DEFAULT_PREDICTION_COEFFICIENTS } from './constants'
+import { BVS_WEIGHTS, RCS_WEIGHTS, RCS_MBTI_J_BONUS, DEFAULT_PREDICTION_COEFFICIENTS } from './constants'
 import type { Big5Percentiles, VIAPercentiles, CalibrationCoefficients } from '@/types/miso-v3'
 
 // ============================================
@@ -12,20 +12,25 @@ import type { Big5Percentiles, VIAPercentiles, CalibrationCoefficients } from '@
 
 /**
  * Calculate Base Vulnerability Score
- * BVS = (0.40 × Z_N) - (0.20 × Z_C) - (0.15 × Z_E)
+ * BVS = (0.50 × Z_N) - (0.25 × Z_C) - (0.15 × Z_E) - (0.10 × Z_A)
  *
  * Higher BVS = Higher vulnerability to mental health issues
  */
 export function calculateBVS(percentiles: Partial<Big5Percentiles>): number {
-  const { N = 50, C = 50, E = 50 } = percentiles
+  const { N = 50, C = 50, E = 50, A = 50 } = percentiles
 
   // Convert percentiles to Z-scores (approximate)
   // Z ≈ (percentile - 50) / 15
   const z_N = (N - 50) / 15
   const z_C = (C - 50) / 15
   const z_E = (E - 50) / 15
+  const z_A = (A - 50) / 15
 
-  const bvs = BVS_WEIGHTS.N * z_N + BVS_WEIGHTS.C * z_C + BVS_WEIGHTS.E * z_E
+  const bvs =
+    BVS_WEIGHTS.N * z_N +
+    BVS_WEIGHTS.C * z_C +
+    BVS_WEIGHTS.E * z_E +
+    BVS_WEIGHTS.A * z_A
 
   return Math.round(bvs * 1000) / 1000 // Round to 3 decimals
 }
@@ -36,7 +41,7 @@ export function calculateBVS(percentiles: Partial<Big5Percentiles>): number {
 
 /**
  * Calculate Resilience Capacity Score
- * RCS = (Z_Hope + Z_Zest + Z_SelfReg + Z_Gratitude) / 4
+ * RCS = Weighted sum of 6 key strengths
  * Optional: +0.1 bonus if MBTI type ends with J
  *
  * Higher RCS = Higher resilience/protective factors
@@ -50,15 +55,25 @@ export function calculateRCS(
   const zest = viaPercentiles.Zest ?? 50
   const selfReg = viaPercentiles['Self-Regulation'] ?? 50
   const gratitude = viaPercentiles.Gratitude ?? 50
+  const curiosity = viaPercentiles.Curiosity ?? 50
+  const love = viaPercentiles.Love ?? 50
 
   // Convert to Z-scores
   const z_hope = (hope - 50) / 15
   const z_zest = (zest - 50) / 15
   const z_selfReg = (selfReg - 50) / 15
   const z_gratitude = (gratitude - 50) / 15
+  const z_curiosity = (curiosity - 50) / 15
+  const z_love = (love - 50) / 15
 
-  // Average
-  let rcs = (z_hope + z_zest + z_selfReg + z_gratitude) / 4
+  // Weighted Sum
+  let rcs =
+    RCS_WEIGHTS.Hope * z_hope +
+    RCS_WEIGHTS.Zest * z_zest +
+    RCS_WEIGHTS.SelfReg * z_selfReg +
+    RCS_WEIGHTS.Gratitude * z_gratitude +
+    RCS_WEIGHTS.Curiosity * z_curiosity +
+    RCS_WEIGHTS.Love * z_love
 
   // J-type bonus (planning/structure aids resilience)
   if (mbti && mbti.length === 4 && mbti[3].toUpperCase() === 'J') {

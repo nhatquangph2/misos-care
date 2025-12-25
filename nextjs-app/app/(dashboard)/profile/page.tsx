@@ -20,13 +20,30 @@ export default async function ProfilePage() {
     redirect('/auth/login');
   }
 
-  // Promise.all to fetch data in parallel - reduces waiting time by ~50%
-  // Now includes MISO V3 unified profile with integrated analysis
-  const [profileData, timelineData, unifiedProfile] = await Promise.all([
-    getProfileSummaryServer(user.id),
-    getTestTimelineServer(user.id),
-    getUnifiedProfile(user.id)
-  ]);
+  // Fetch data with granular error handling to prevent 500 crashes
+  let profileData: any = {};
+  let timelineData: any[] = [];
+  let unifiedProfile: any = {};
+
+  try {
+    profileData = await getProfileSummaryServer(user.id);
+  } catch (e) {
+    console.error('❌ Failed to fetch ProfileSummary:', e);
+    // Continue with empty profile
+  }
+
+  try {
+    timelineData = await getTestTimelineServer(user.id);
+  } catch (e) {
+    console.error('❌ Failed to fetch TestTimeline:', e);
+  }
+
+  try {
+    // Inject server client for RLS
+    unifiedProfile = await getUnifiedProfile(user.id, supabase);
+  } catch (e) {
+    console.error('❌ Failed to fetch UnifiedProfile:', e);
+  }
 
   return (
     <ProfileClientView
@@ -34,6 +51,7 @@ export default async function ProfilePage() {
       timeline={timelineData}
       unifiedProfile={unifiedProfile}
       userId={user.id}
+      userName={user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'User'}
     />
   );
 }

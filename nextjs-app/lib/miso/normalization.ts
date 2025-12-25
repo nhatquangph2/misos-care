@@ -99,10 +99,29 @@ export function normalizeBig5(rawScores: Partial<Big5RawScores>): {
 
   const traits = ['N', 'E', 'O', 'A', 'C'] as const
 
+  // Detect scale and rescale to BFI-44 (8-40 range) if needed
+  // BFI-2 raw scores are typically 12-60
+  // BFI-44 raw scores are typically 8-40 (O is 10-50)
+  const needsScaling = Object.values(rawScores).some(v => v !== undefined && v !== null && v > 40)
+  const isBFI2 = Object.values(rawScores).some(v => v !== undefined && v !== null && v > 10) &&
+    Object.values(rawScores).every(v => v === undefined || v === null || v <= 60)
+
   for (const trait of traits) {
-    const raw = rawScores[trait]
+    let raw = rawScores[trait]
     if (raw !== undefined && raw !== null) {
       const norm = BIG5_NORMS[trait]
+
+      // Auto-scaling logic
+      if (raw > norm.range[1]) {
+        if (raw <= 60) {
+          // Likely BFI-2 (12-60)
+          raw = ((raw - 12) / 48) * (norm.range[1] - norm.range[0]) + norm.range[0]
+        } else if (raw <= 100) {
+          // Likely Percentage (0-100)
+          raw = (raw / 100) * (norm.range[1] - norm.range[0]) + norm.range[0]
+        }
+      }
+
       normalized[trait] = createNormalizedScore(raw, norm)
       percentiles[trait] = normalized[trait].percentile
     }
@@ -228,98 +247,98 @@ export function getMBTIRiskProfile(mbti: string): MBTIRiskProfile {
   const profiles: Record<string, MBTIRiskProfile> = {
     INFP: {
       risk_level: 'VERY_HIGH' as RiskLevel,
-      risks: ['depression', 'anxiety', 'emotional_overwhelm'],
-      interventions: ['hope_therapy', 'structure_building', 'micro_habits'],
+      risks: ['Trầm cảm', 'Lo âu', 'Quá tải cảm xúc'],
+      interventions: ['Liệu pháp hy vọng', 'Xây dựng cấu trúc', 'Thói quen nhỏ'],
       communication_style: 'value_focused' as CommunicationStyle,
     },
     INFJ: {
       risk_level: 'HIGH' as RiskLevel,
-      risks: ['empathy_distress', 'burnout'],
-      interventions: ['boundary_setting', 'solitude_time'],
+      risks: ['Kiệt sức do thấu cảm', 'Burnout'],
+      interventions: ['Thiết lập ranh giới', 'Thời gian tĩnh tâm'],
       communication_style: 'meaning_focused' as CommunicationStyle,
     },
     ISFP: {
       risk_level: 'HIGH' as RiskLevel,
-      risks: ['depression', 'avoidance'],
-      interventions: ['physical_activation', 'zest_building'],
+      risks: ['Trầm cảm', 'Né tránh'],
+      interventions: ['Kích hoạt vận động', 'Xây dựng nhiệt huyết'],
       communication_style: 'experience_focused' as CommunicationStyle,
     },
     INTP: {
       risk_level: 'MEDIUM' as RiskLevel,
-      risks: ['analysis_paralysis', 'isolation'],
-      interventions: ['action_focus', 'structure'],
+      risks: ['Tê liệt phân tích', 'Cô lập'],
+      interventions: ['Tập trung hành động', 'Xây dựng cấu trúc'],
       communication_style: 'logic_focused' as CommunicationStyle,
     },
     ISFJ: {
       risk_level: 'MEDIUM' as RiskLevel,
-      risks: ['burnout', 'people_pleasing'],
-      interventions: ['self_care', 'boundaries'],
+      risks: ['Burnout', 'Lấy lòng người khác'],
+      interventions: ['Tự chăm sóc', 'Thiết lập ranh giới'],
       communication_style: 'duty_focused' as CommunicationStyle,
     },
     ENFP: {
       risk_level: 'MEDIUM' as RiskLevel,
-      risks: ['overwhelm', 'scattered'],
-      interventions: ['focus', 'self_regulation'],
+      risks: ['Quá tải', 'Phân tán'],
+      interventions: ['Tập trung', 'Tự điều chỉnh'],
       communication_style: 'possibility_focused' as CommunicationStyle,
     },
     ENFJ: {
       risk_level: 'MEDIUM' as RiskLevel,
-      risks: ['over_giving'],
-      interventions: ['self_care', 'self_focus'],
+      risks: ['Cho đi quá mức'],
+      interventions: ['Tự chăm sóc', 'Tập trung vào bản thân'],
       communication_style: 'people_focused' as CommunicationStyle,
     },
     INTJ: {
       risk_level: 'MEDIUM' as RiskLevel,
-      risks: ['isolation', 'perfectionism'],
-      interventions: ['connection', 'flexibility'],
+      risks: ['Cô lập', 'Cầu toàn'],
+      interventions: ['Kết nối xã hội', 'Sự linh hoạt'],
       communication_style: 'strategy_focused' as CommunicationStyle,
     },
     ISTP: {
       risk_level: 'MEDIUM' as RiskLevel,
-      risks: ['disengagement'],
-      interventions: ['engagement', 'structure'],
+      risks: ['Mất kết nối'],
+      interventions: ['Tham gia hoạt động', 'Xây dựng cấu trúc'],
       communication_style: 'practical_focused' as CommunicationStyle,
     },
     ISTJ: {
       risk_level: 'LOW' as RiskLevel,
-      risks: ['rigidity'],
-      interventions: ['flexibility'],
+      risks: ['Cứng nhắc'],
+      interventions: ['Sự linh hoạt'],
       communication_style: 'procedure_focused' as CommunicationStyle,
     },
     ENTP: {
       risk_level: 'LOW' as RiskLevel,
-      risks: ['scattered_energy'],
-      interventions: ['focus', 'follow_through'],
+      risks: ['Năng lượng phân tán'],
+      interventions: ['Tập trung', 'Hoàn tất mục tiêu'],
       communication_style: 'debate_focused' as CommunicationStyle,
     },
     ESFP: {
       risk_level: 'LOW' as RiskLevel,
-      risks: ['impulsivity'],
-      interventions: ['planning', 'reflection'],
+      risks: ['Bốc đồng'],
+      interventions: ['Lập kế hoạch', 'Suy ngẫm'],
       communication_style: 'action_focused' as CommunicationStyle,
     },
     ESFJ: {
       risk_level: 'LOW' as RiskLevel,
-      risks: ['people_pleasing'],
-      interventions: ['assertiveness'],
+      risks: ['Lấy lòng người khác'],
+      interventions: ['Sự quyết đoán'],
       communication_style: 'harmony_focused' as CommunicationStyle,
     },
     ESTJ: {
       risk_level: 'VERY_LOW' as RiskLevel,
-      risks: ['rigidity', 'hostility'],
-      interventions: ['flexibility', 'empathy'],
+      risks: ['Cứng nhắc', 'Thù địch'],
+      interventions: ['Sự linh hoạt', 'Sự thấu cảm'],
       communication_style: 'efficiency_focused' as CommunicationStyle,
     },
     ENTJ: {
       risk_level: 'VERY_LOW' as RiskLevel,
-      risks: ['burnout_if_overwork'],
-      interventions: ['balance', 'delegation'],
+      risks: ['Kiệt sức nếu làm việc quá sức'],
+      interventions: ['Sự cân bằng', 'Ủy thác công việc'],
       communication_style: 'goal_focused' as CommunicationStyle,
     },
     ESTP: {
       risk_level: 'VERY_LOW' as RiskLevel,
-      risks: ['risk_taking'],
-      interventions: ['prudence'],
+      risks: ['Chấp nhận rủi ro'],
+      interventions: ['Sự thận trọng'],
       communication_style: 'results_focused' as CommunicationStyle,
     },
   }
@@ -365,10 +384,9 @@ export function validateBig5Scores(
 
   for (const [trait, value] of Object.entries(scores)) {
     if (value !== undefined && value !== null) {
-      const norm = BIG5_NORMS[trait]
-      const validation = validateRawScore(value, norm, `Big5-${trait}`)
-      if (!validation.valid && validation.error) {
-        errors.push(validation.error)
+      // For Big5, we are lenient to support BFI-44 (max 40/50), BFI-2 (max 60) and % (max 100)
+      if (value < 0 || value > 100) {
+        errors.push(`Big5-${trait} score ${value} out of logical range [0, 100]`)
       }
     }
   }

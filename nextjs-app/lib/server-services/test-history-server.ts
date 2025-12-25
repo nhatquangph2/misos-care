@@ -5,7 +5,7 @@
 
 import { createClient as createServerClient } from '@/lib/supabase/server';
 import type { MentalHealthRecord, TestType } from '@/services/mental-health-records.service';
-import type { PersonalityProfile } from '@/services/personality-profile.service';
+import type { PersonalityProfile } from '@/types/database';
 import type { TimelineEntry } from '@/services/test-history.service';
 
 /**
@@ -23,7 +23,7 @@ export async function getTestTimelineServer(userId: string): Promise<TimelineEnt
     .order('completed_at', { ascending: false });
 
   if (!mhError && mentalHealthData) {
-    mentalHealthData.forEach((record: MentalHealthRecord) => {
+    (mentalHealthData as MentalHealthRecord[]).forEach((record) => {
       const testNames: Record<string, string> = {
         PHQ9: 'PHQ-9: Trầm cảm',
         GAD7: 'GAD-7: Lo âu',
@@ -63,11 +63,11 @@ export async function getTestTimelineServer(userId: string): Promise<TimelineEnt
         testName: 'BFI-2: Big Five Inventory',
         testType: 'BFI2',
         domains: {
-          E: profile.big5_extraversion,
-          A: profile.big5_agreeableness,
-          C: profile.big5_conscientiousness,
-          N: profile.big5_neuroticism,
-          O: profile.big5_openness
+          E: profile.big5_extraversion ?? undefined,
+          A: profile.big5_agreeableness ?? undefined,
+          C: profile.big5_conscientiousness ?? undefined,
+          N: profile.big5_neuroticism ?? undefined,
+          O: profile.big5_openness ?? undefined
         }
       });
     }

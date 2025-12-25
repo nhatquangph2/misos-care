@@ -1,58 +1,104 @@
-// FILE: app/api/miso-debug/route.ts
-import { NextResponse } from 'next/server'
-import { getUnifiedProfile } from '@/services/unified-profile.service'
+import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
+import { runMisoAnalysis } from '@/lib/miso/engine'
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const userId = searchParams.get('userId')
-
-  if (!userId) {
-    return NextResponse.json({ error: 'Cần userId để test (vd: ?userId=...)' }, { status: 400 })
-  }
-
-  console.log(`🔍 Starting Smoke Test for User: ${userId}`)
-  const t0 = performance.now()
-
+export async function GET(request: NextRequest) {
   try {
-    // 1. GỌI SERVICE CHÍNH (Core Injection Test)
-    const profile = await getUnifiedProfile(userId)
-    const t1 = performance.now()
-    const executionTime = Math.round(t1 - t0)
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // 2. KIỂM TRA DỮ LIỆU (Assertion)
-    const analysis = profile.miso_analysis
-    const hasData = !!analysis
-    const hasScores = !!analysis?.scores?.BVS && !!analysis?.scores?.RCS
-    const hasProfile = !!analysis?.profile?.id
-
-    // 3. ĐÁNH GIÁ KẾT QUẢ
-    const testResult = {
-      status: hasData && hasScores ? '✅ PASSED' : '❌ FAILED',
-      performance: {
-        execution_time_ms: executionTime,
-        rating: executionTime < 100 ? 'EXCELLENT (<100ms)' : 'ACCEPTABLE'
-      },
-      integrity_check: {
-        miso_object_exists: hasData,
-        scores_calculated: hasScores,
-        profile_classified: hasProfile,
-      },
-      debug_data: {
-        profile_name: analysis?.profile?.name,
-        BVS: analysis?.scores?.BVS,
-        RCS: analysis?.scores?.RCS,
-        discrepancies_found: analysis?.discrepancies?.length || 0,
-        interventions_count: analysis?.interventions?.immediate?.length || 0
-      }
+    if (!user) {
+      return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
     }
 
-    return NextResponse.json(testResult)
+    console.log('[Miso-Debug] Starting diagnosis for user:', user.id)
 
-  } catch (error: any) {
+    // 1. Check DASS-21 (The likely culprit)
+    const dassRecords = await supabase
+      .from('mental_health_records')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('test_type', 'DASS21')
+      .order('completed_at', { ascending: false })
+
+    console.log('[Miso-Debug] DASS Records found:', dassRecords.data?.length || 0)
+
+    // 2. Check Big5 History
+    const bfi2History = await supabase
+      .from('bfi2_test_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('completed_at', { ascending: false })
+
+    console.log('[Miso-Debug] BFI2 History Records found:', bfi2History.data?.length || 0)
+    console.log('[Miso-Debug] BFI2 Query Error:', bfi2History.error)
+
+    // 3. Check Legacy Profile
+    const legacyProfile = await (supabase as any)
+      .from('personality_profiles')
+      .select('*')
+      .eq('user_id', user.id)
+      .single()
+
+    // 4. Trace the extraction logic
+    const dassTop = dassRecords.data?.[0];
+    const dassScores = (dassTop as any)?.subscale_scores;
+
+    const bfi2Top = bfi2History.data?.[0];
+    const bfi2RawAvg = (bfi2Top as any)?.raw_scores || (legacyProfile.data as any)?.bfi2_score?.raw_scores || {
+      N: (Number((legacyProfile.data as any)?.big5_neuroticism) / 100 * 4) + 1,
+      E: (Number((legacyProfile.data as any)?.big5_extraversion) / 100 * 4) + 1,
+      O: (Number((legacyProfile.data as any)?.big5_openness) / 100 * 4) + 1,
+      A: (Number((legacyProfile.data as any)?.big5_agreeableness) || 50 / 100 * 4) + 1,
+      C: (Number((legacyProfile.data as any)?.big5_conscientiousness) || 50 / 100 * 4) + 1
+    };
+
+    // Scale to matched Engine norms
+    const big5ItemCounts: Record<string, number> = { N: 8, E: 8, O: 10, A: 9, C: 9 }
+    const bfi2RawSummed = bfi2RawAvg ? Object.fromEntries(
+      Object.entries(bfi2RawAvg as any).map(([k, v]) => [k, (Number(v) || 3) * (big5ItemCounts[k] || 8)])
+    ) : null;
+
+    // 5. Simulate Engine Input
+    const engineInput = {
+      mbti: (legacyProfile.data as any)?.mbti_type,
+      big5_raw: bfi2RawSummed,
+      dass21_raw: dassScores ? {
+        D: (dassScores as any).depression || 0,
+        A: (dassScores as any).anxiety || 0,
+        S: (dassScores as any).stress || 0
+      } : undefined
+    }
+
+    let analysisResult = null;
+    let engineError = null;
+    try {
+      analysisResult = await runMisoAnalysis(engineInput as any, user.id);
+    } catch (e: any) {
+      engineError = e.message;
+    }
+
     return NextResponse.json({
-      status: '❌ CRASHED',
-      error: error.message,
-      stack: error.stack
-    }, { status: 500 })
+      userId: user.id,
+      mentalHealthRecordsTable: {
+        count: dassRecords.data?.length,
+        latestSubscales: dassScores,
+        error: dassRecords.error
+      },
+      bfi2HistoryTable: {
+        count: bfi2History.data?.length,
+        error: bfi2History.error
+      },
+      personalityProfileTable: {
+        found: !!legacyProfile.data,
+        hasRawColumns: !!legacyProfile.data?.big5_openness_raw,
+        error: legacyProfile.error
+      },
+      determinedEngineInput: engineInput,
+      engineOutput: analysisResult,
+      engineError
+    })
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }

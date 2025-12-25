@@ -208,7 +208,7 @@ export function analyzeBig5Stability(
     result.use_baseline = true
     result.discrepancy = {
       id: 'T1',
-      name: 'Big5 Temporal Instability',
+      name: 'Mất ổn định tính cách (Temporal Instability)',
       severity: 'WARNING',
       interpretation: `Traits ${unstable.join(', ')} thay đổi bất thường trong ${daysSinceBaseline} ngày. Có thể do mood hiện tại ảnh hưởng hoặc không nhất quán khi trả lời.`,
     }

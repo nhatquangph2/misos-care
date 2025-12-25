@@ -1,265 +1,160 @@
-/**
- * Gamification Service - "Đại dương của Miso"
- *
- * Service này quản lý:
- * - Điểm thưởng (Bubbles)
- * - Cấp độ đại dương (Ocean Level)
- * - Chuỗi ngày liên tiếp (Streak Days)
- */
-
 import { createClient } from '@/lib/supabase/client';
-
-export interface GamificationState {
-  user_id: string;
-  bubbles: number;
-  ocean_level: number;
-  streak_days: number;
-  last_interaction_at: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface OceanLevelInfo {
-  level: number;
-  name: string;
-  description: string;
-  minBubbles: number;
-  maxBubbles: number;
-  color: string;
-  icon: string;
-}
-
-// Định nghĩa các cấp độ đại dương
-export const OCEAN_LEVELS: Record<number, OceanLevelInfo> = {
-  1: {
-    level: 1,
-    name: 'Bờ biển ánh sáng',
-    description: 'Bạn mới bắt đầu hành trình khám phá đại dương',
-    minBubbles: 0,
-    maxBubbles: 99,
-    color: '#60A5FA', // blue-400
-    icon: '🌊'
-  },
-  2: {
-    level: 2,
-    name: 'Vùng biển nông',
-    description: 'Bạn đang làm quen với những sinh vật biển đầu tiên',
-    minBubbles: 100,
-    maxBubbles: 299,
-    color: '#3B82F6', // blue-500
-    icon: '🐠'
-  },
-  3: {
-    level: 3,
-    name: 'Rạn san hô',
-    description: 'Bạn đã khám phá được vùng rạn san hô đầy màu sắc',
-    minBubbles: 300,
-    maxBubbles: 599,
-    color: '#2563EB', // blue-600
-    icon: '🪸'
-  },
-  4: {
-    level: 4,
-    name: 'Vực sâu huyền bí',
-    description: 'Bạn đang đi sâu vào những bí ẩn của đại dương',
-    minBubbles: 600,
-    maxBubbles: 999,
-    color: '#1E40AF', // blue-700
-    icon: '🐋'
-  },
-  5: {
-    level: 5,
-    name: 'Hố đen đại dương',
-    description: 'Bạn đã chinh phục được độ sâu tột cùng của đại dương!',
-    minBubbles: 1000,
-    maxBubbles: Infinity,
-    color: '#1E3A8A', // blue-800
-    icon: '🔱'
-  }
-};
-
-// Phần thưởng cho các hoạt động
-export const REWARD_AMOUNTS = {
-  COMPLETE_TEST: 50,           // Hoàn thành bài test
-  DAILY_LOGIN: 10,             // Đăng nhập hàng ngày
-  STREAK_BONUS: 5,             // Bonus cho mỗi ngày streak (nhân với số ngày)
-  SHARE_RESULT: 20,            // Chia sẻ kết quả
-  COMPLETE_PROFILE: 30,        // Hoàn thành profile
-  SET_GOAL: 25,                // Đặt mục tiêu
-  ACHIEVE_GOAL: 100,           // Đạt được mục tiêu
-  HELP_OTHERS: 15,             // Giúp đỡ người khác (mentor)
-};
+import { GamificationProfile, Badge, UserBadge } from '@/types/gamification';
 
 export const gamificationService = {
-  /**
-   * Lấy trạng thái gamification hiện tại của user
-   */
-  async getGamificationState(userId: string): Promise<GamificationState | null> {
+  // Get user profile
+  async getProfile(userId: string): Promise<GamificationProfile | null> {
     const supabase = createClient();
     const { data, error } = await supabase
-      .from('user_gamification')
+      .from('gamification_profiles')
       .select('*')
       .eq('user_id', userId)
       .single();
 
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching gamification profile:', error);
+      return null;
+    }
+    return data;
+  },
+
+  // Get user badges
+  async getUserBadges(userId: string): Promise<UserBadge[]> {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from('user_badges')
+      .select('*, badge:badges(*)')
+      .eq('user_id', userId);
+
     if (error) {
-      // Nếu chưa có data, tạo mới với giá trị mặc định
-      if (error.code === 'PGRST116') {
-        return await this.initializeGamification(userId);
+      console.error('Error fetching badges:', error);
+      return [];
+    }
+    return data as unknown as UserBadge[];
+  },
+
+  // Check and update streak (Call this on app load or key actions)
+  async checkIn(userId: string): Promise<{ updated: boolean; streak: number; message?: string }> {
+    const supabase = createClient();
+
+    // 1. Get current profile or create if not exists
+    let { data: profile, error: fetchError } = await supabase
+      .from('gamification_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    // If profile doesn't exist, try to create carefully with conflict handling
+    if (!profile) {
+      // Create new profile with upsert to handle race conditions/duplicates
+      const { data: newProfile, error } = await supabase
+        .from('gamification_profiles')
+        .upsert(
+          { user_id: userId, current_streak: 1, longest_streak: 1, last_activity_date: new Date().toISOString() },
+          { onConflict: 'user_id', ignoreDuplicates: false } // We can set ignoreDuplicates: false to get the return data properly update
+        )
+        .select()
+        .single();
+
+      // If upsert "failed" (e.g. race condition), try fetching again
+      if (error) {
+        // If error is duplicate key or similar, just fetch again
+        const { data: existingProfile } = await supabase
+          .from('gamification_profiles')
+          .select('*')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+        if (existingProfile) {
+          profile = existingProfile;
+        } else {
+          console.error('Error creating gamification profile:', error);
+          return { updated: false, streak: 0 };
+        }
+      } else {
+        profile = newProfile;
+        // If strictly created new, return here
+        return { updated: true, streak: 1, message: 'Chào mừng! Bạn đã bắt đầu chuỗi ngày hoạt động.' };
       }
-      console.error('Error fetching gamification state:', error);
-      return null;
-    }
-    return data;
-  },
-
-  /**
-   * Khởi tạo gamification state cho user mới
-   */
-  async initializeGamification(userId: string): Promise<GamificationState | null> {
-    const supabase = createClient();
-    const { data, error } = await (supabase
-      .from('user_gamification') as any)
-      .insert({
-        user_id: userId,
-        bubbles: 0,
-        ocean_level: 1,
-        streak_days: 0,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error initializing gamification:', error);
-      return null;
-    }
-    return data;
-  },
-
-  /**
-   * Cộng điểm bubbles (sử dụng RPC để tránh race condition)
-   */
-  async addBubbles(userId: string, amount: number): Promise<boolean> {
-    const supabase = createClient();
-    const { error } = await (supabase.rpc as any)('increment_bubbles', {
-      user_id_param: userId,
-      amount_param: amount
-    });
-
-    if (error) {
-      console.error('Error adding bubbles:', error);
-      return false;
-    }
-    return true;
-  },
-
-  /**
-   * Cập nhật streak days
-   */
-  async updateStreak(userId: string): Promise<boolean> {
-    const supabase = createClient();
-    const { error } = await (supabase.rpc as any)('update_streak_days', {
-      user_id_param: userId
-    });
-
-    if (error) {
-      console.error('Error updating streak:', error);
-      return false;
-    }
-    return true;
-  },
-
-  /**
-   * Lấy thông tin về ocean level hiện tại
-   */
-  getOceanLevelInfo(level: number): OceanLevelInfo {
-    return OCEAN_LEVELS[level] || OCEAN_LEVELS[1];
-  },
-
-  /**
-   * Tính toán tiến độ đến level tiếp theo
-   */
-  calculateProgress(bubbles: number, currentLevel: number): {
-    currentLevel: OceanLevelInfo;
-    nextLevel: OceanLevelInfo | null;
-    progress: number; // 0-100
-    bubblesNeeded: number;
-  } {
-    const currentLevelInfo = this.getOceanLevelInfo(currentLevel);
-    const nextLevel = currentLevel < 5 ? currentLevel + 1 : null;
-    const nextLevelInfo = nextLevel ? this.getOceanLevelInfo(nextLevel) : null;
-
-    if (!nextLevelInfo) {
-      return {
-        currentLevel: currentLevelInfo,
-        nextLevel: null,
-        progress: 100,
-        bubblesNeeded: 0
-      };
     }
 
-    const bubblesInCurrentLevel = bubbles - currentLevelInfo.minBubbles;
-    const bubblesNeededForLevel = nextLevelInfo.minBubbles - currentLevelInfo.minBubbles;
-    const progress = Math.min(100, (bubblesInCurrentLevel / bubblesNeededForLevel) * 100);
-    const bubblesNeeded = nextLevelInfo.minBubbles - bubbles;
+    // 2. Check dates
+    const today = new Date().toISOString().split('T')[0];
+    const lastActivity = profile.last_activity_date ? new Date(profile.last_activity_date).toISOString().split('T')[0] : null;
 
-    return {
-      currentLevel: currentLevelInfo,
-      nextLevel: nextLevelInfo,
-      progress: Math.round(progress),
-      bubblesNeeded: Math.max(0, bubblesNeeded)
+    if (lastActivity === today) {
+      return { updated: false, streak: profile.current_streak };
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    let newStreak = 1;
+    let message = 'Chuỗi ngày đã được reset. Hãy bắt đầu lại nhé!';
+
+    if (lastActivity === yesterdayStr) {
+      newStreak = profile.current_streak + 1;
+      message = `Tuyệt vời! Bạn đã duy trì chuỗi ${newStreak} ngày.`;
+    }
+
+    // 3. Update profile
+    const updates: any = {
+      current_streak: newStreak,
+      last_activity_date: new Date().toISOString(),
     };
-  },
 
-  /**
-   * Thưởng điểm cho một hành động cụ thể
-   */
-  async rewardAction(
-    userId: string,
-    action: keyof typeof REWARD_AMOUNTS,
-    multiplier: number = 1
-  ): Promise<{ success: boolean; amount: number; newTotal?: number }> {
-    const amount = REWARD_AMOUNTS[action] * multiplier;
-    const success = await this.addBubbles(userId, amount);
-
-    if (success) {
-      const state = await this.getGamificationState(userId);
-      return {
-        success: true,
-        amount,
-        newTotal: state?.bubbles
-      };
+    if (newStreak > profile.longest_streak) {
+      updates.longest_streak = newStreak;
     }
 
-    return { success: false, amount };
+    const { error: updateError } = await supabase
+      .from('gamification_profiles')
+      .update(updates)
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('Error updating streak:', updateError);
+      return { updated: false, streak: profile.current_streak };
+    }
+
+    // 4. Check streak badges
+    await this.checkStreakBadges(userId, newStreak);
+
+    return { updated: true, streak: newStreak, message };
   },
 
-  /**
-   * Lấy leaderboard (top users theo bubbles)
-   */
-  async getLeaderboard(limit: number = 10): Promise<Array<{
-    user_id: string;
-    bubbles: number;
-    ocean_level: number;
-    rank: number;
-  }> | null> {
+  // Internal: Check awarding streak badges
+  async checkStreakBadges(userId: string, streak: number) {
     const supabase = createClient();
-    const { data, error } = await (supabase
-      .from('user_gamification') as any)
-      .select('user_id, bubbles, ocean_level')
-      .order('bubbles', { ascending: false })
-      .limit(limit);
 
-    if (error) {
-      console.error('Error fetching leaderboard:', error);
-      return null;
+    // Define streak milestones
+    const milestones = [3, 7, 14, 30];
+    if (!milestones.includes(streak)) return;
+
+    const slug = `streak_${streak}`;
+    await this.awardBadge(userId, slug);
+  },
+
+  // Award a specific badge if not owned
+  async awardBadge(userId: string, badgeSlug: string): Promise<boolean> {
+    const supabase = createClient();
+
+    // 1. Get badge ID
+    const { data: badge } = await supabase.from('badges').select('id, name').eq('slug', badgeSlug).single();
+    if (!badge) return false;
+
+    // 2. Check if already owned
+    const { count } = await supabase.from('user_badges').select('*', { count: 'exact', head: true }).eq('user_id', userId).eq('badge_id', badge.id);
+    if (count && count > 0) return false;
+
+    // 3. Award
+    const { error } = await supabase.from('user_badges').insert({ user_id: userId, badge_id: badge.id });
+
+    if (!error) {
+      console.log(`🏆 Badge awarded: ${badge.name}`);
+      return true; // New badge unlocked!
     }
-
-    return (data || []).map((item: any, index: number) => ({
-      user_id: item.user_id,
-      bubbles: item.bubbles,
-      ocean_level: item.ocean_level,
-      rank: index + 1
-    }));
+    return false;
   }
 };

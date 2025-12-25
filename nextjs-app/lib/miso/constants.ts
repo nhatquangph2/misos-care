@@ -140,71 +140,36 @@ export const DASS21_SEVERITY_THRESHOLDS = {
 // ============================================
 
 export const VIA_NORMS: Record<string, NormData> = {
-  Hope: {
-    mean: 3.75,
-    sd: 0.67,
-    range: [1, 5],
-  },
-  Zest: {
-    mean: 3.50,
-    sd: 0.72,
-    range: [1, 5],
-  },
-  'Self-Regulation': {
-    mean: 3.25,
-    sd: 0.70,
-    range: [1, 5],
-  },
-  Gratitude: {
-    mean: 3.84,
-    sd: 0.64,
-    range: [1, 5],
-  },
-  Spirituality: {
-    mean: 3.40,
-    sd: 0.85,
-    range: [1, 5],
-  },
-  Forgiveness: {
-    mean: 3.78,
-    sd: 0.62,
-    range: [1, 5],
-  },
-  Prudence: {
-    mean: 3.45,
-    sd: 0.62,
-    range: [1, 5],
-  },
-  Love: {
-    mean: 3.98,
-    sd: 0.63,
-    range: [1, 5],
-  },
-  Kindness: {
-    mean: 4.03,
-    sd: 0.55,
-    range: [1, 5],
-  },
-  Perspective: {
-    mean: 3.82,
-    sd: 0.56,
-    range: [1, 5],
-  },
-  Curiosity: {
-    mean: 3.70,
-    sd: 0.68,
-    range: [1, 5],
-  },
-  Creativity: {
-    mean: 3.55,
-    sd: 0.74,
-    range: [1, 5],
-  },
-  Perseverance: {
-    mean: 3.68,
-    sd: 0.65,
-    range: [1, 5],
-  },
+  // Wisdom & Knowledge
+  Creativity: { mean: 3.55, sd: 0.74, range: [1, 5] },
+  Curiosity: { mean: 3.70, sd: 0.68, range: [1, 5] },
+  Judgment: { mean: 3.65, sd: 0.60, range: [1, 5] },
+  'Love of Learning': { mean: 3.50, sd: 0.75, range: [1, 5] },
+  Perspective: { mean: 3.82, sd: 0.56, range: [1, 5] },
+  // Courage
+  Bravery: { mean: 3.45, sd: 0.70, range: [1, 5] },
+  Perseverance: { mean: 3.68, sd: 0.65, range: [1, 5] },
+  Honesty: { mean: 3.90, sd: 0.58, range: [1, 5] },
+  Zest: { mean: 3.50, sd: 0.72, range: [1, 5] },
+  // Humanity
+  Love: { mean: 3.98, sd: 0.63, range: [1, 5] },
+  Kindness: { mean: 4.03, sd: 0.55, range: [1, 5] },
+  'Social Intelligence': { mean: 3.72, sd: 0.60, range: [1, 5] },
+  // Justice
+  Teamwork: { mean: 3.65, sd: 0.62, range: [1, 5] },
+  Fairness: { mean: 3.88, sd: 0.55, range: [1, 5] },
+  Leadership: { mean: 3.52, sd: 0.68, range: [1, 5] },
+  // Temperance
+  Forgiveness: { mean: 3.78, sd: 0.62, range: [1, 5] },
+  Humility: { mean: 3.40, sd: 0.65, range: [1, 5] },
+  Prudence: { mean: 3.45, sd: 0.62, range: [1, 5] },
+  'Self-Regulation': { mean: 3.25, sd: 0.70, range: [1, 5] },
+  // Transcendence
+  'Appreciation of Beauty': { mean: 3.60, sd: 0.72, range: [1, 5] },
+  Gratitude: { mean: 3.84, sd: 0.64, range: [1, 5] },
+  Hope: { mean: 3.75, sd: 0.67, range: [1, 5] },
+  Humor: { mean: 3.70, sd: 0.70, range: [1, 5] },
+  Spirituality: { mean: 3.40, sd: 0.85, range: [1, 5] },
 }
 
 // Clinical correlations (for reference)
@@ -255,22 +220,33 @@ export const BIG5_STABILITY_THRESHOLDS = {
 // ============================================
 
 // Base Vulnerability Score (BVS) weights
+// Updated based on 2022 Meta-analysis (r=0.47-0.54 for Neuroticism)
 export const BVS_WEIGHTS = {
-  N: 0.40, // Neuroticism increases vulnerability
-  C: -0.20, // Conscientiousness decreases vulnerability
-  E: -0.15, // Extraversion decreases vulnerability
+  N: 0.50, // Neuroticism (increased from 0.40)
+  C: -0.25, // Conscientiousness (increased protective factor)
+  E: -0.15, // Extraversion (stable)
+  A: -0.10, // Agreeableness (new protective factor)
 }
 
-// Resilience Capacity Score (RCS) components
-export const RCS_COMPONENTS = ['Hope', 'Zest', 'Self-Regulation', 'Gratitude']
+// Resilience Capacity Score (RCS) weights
+// Updated based on 2023-2025 Positive Psychology Meta-analyses
+export const RCS_WEIGHTS = {
+  Hope: 0.25,      // Strongest predictor of well-being
+  Zest: 0.20,      // Physical/mental energy
+  SelfReg: 0.15,   // Self-regulation
+  Gratitude: 0.15, // Positive emotion
+  Curiosity: 0.15, // Novelty seeking (Growth)
+  Love: 0.10,      // Connection (Buffering)
+}
+
 export const RCS_MBTI_J_BONUS = 0.1 // Bonus for J types (planning/structure)
 
 // Default prediction coefficients
 // Predicted_DASS = α + (β1 × BVS) - (β2 × RCS)
 export const DEFAULT_PREDICTION_COEFFICIENTS = {
   alpha: 10.0, // Baseline
-  beta1: 5.0, // BVS weight
-  beta2: 3.0, // RCS weight
+  beta1: 5.5, // BVS weight (adjusted for new range)
+  beta2: 3.5, // RCS weight (adjusted for new range)
 }
 
 // ============================================

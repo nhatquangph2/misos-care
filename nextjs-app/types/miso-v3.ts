@@ -165,6 +165,25 @@ export interface VIAAnalysis {
   control_composite?: number
   flags?: string[]
   prognosis?: string
+
+  // Expanded for Full Analysis
+  signature_strengths?: {
+    strength: string
+    name: string
+    percentile: number
+    virtue: string
+    description?: string
+  }[]
+  weaknesses?: {
+    strength: string
+    name: string
+    percentile: number
+  }[]
+  virtue_profile?: {
+    virtue: string
+    name: string
+    score: number
+  }[]
 }
 
 // ============================================
@@ -221,6 +240,25 @@ export interface Intervention {
   type: string
   priority?: InterventionPriority
   interventions?: string[]
+  // Hydrated details from library
+  details?: {
+    name: string
+    description: string
+    steps?: string[]
+    resources?: string[]
+    examples?: string[]
+    techniques?: string[]
+    when?: string[]
+    category?: InterventionCategory
+    // Evidence-based grading
+    evidence_level?: 'A' | 'B' | 'C' | 'D' // A=Meta-analysis/RCT, B=Clinical Trial, C=Observational, D=Expert Opinion
+    effect_size?: number // Cohen's d if available
+    sources?: string[] // DOI or citations
+  }
+  score?: number
+  reasoning?: string[]
+  rank?: number
+  intervention?: any // For full metadata carry-over
 }
 
 export interface InterventionPlan {
@@ -398,6 +436,36 @@ export interface MisoAnalysisResult {
   // VIA analysis
   via_analysis?: VIAAnalysis
 
+  // Causal pathways (Deep Integration)
+  mechanisms?: {
+    active: Array<{
+      id: string
+      pathway: string
+      strength: number
+      predictedDASS: { D?: number; A?: number; S?: number }
+    }>
+    compensations: Array<{
+      id: string
+      condition: string
+      mechanism: string
+      strength: string
+      percentile: number
+    }>
+    residual?: {
+      D: number
+      A: number
+      S: number
+      interpretation: string
+    }
+    via_problem_matches?: Array<{
+      id: string
+      intervention: string
+      technique: string
+      mechanism?: string
+      expected_effect: number
+    }>
+  }
+
   // Interventions
   interventions: InterventionPlan | {
     immediate: unknown[]
@@ -411,6 +479,9 @@ export interface MisoAnalysisResult {
 // ============================================
 // USER INPUT DATA
 // ============================================
+
+// Alias for UserInputData to match service usage
+export type MisoInput = UserInputData
 
 export interface UserInputData {
   dass21_raw?: DASS21RawScores

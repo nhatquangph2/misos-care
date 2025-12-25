@@ -1,8 +1,8 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Filter, Search, SlidersHorizontal, RefreshCcw } from 'lucide-react'
+import { Filter, Search, SlidersHorizontal, Loader2 } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,54 +13,63 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { MentorCard } from '@/components/features/mentors/MentorCard'
-import { getMentors, seedMentorsIfNeeded } from '@/services/mentor-booking.service'
-import { Mentor } from '@/types/database'
+import { getMentors, getSpecializations } from '@/app/actions/mentor-actions'
+import { MentorProfile, Specialization } from '@/types/mentor'
 
 export default function MentorsPage() {
     const [searchQuery, setSearchQuery] = useState('')
     const [specialtyFilter, setSpecialtyFilter] = useState('all')
 
-    const [mentors, setMentors] = useState<Mentor[]>([])
+    const [mentors, setMentors] = useState<MentorProfile[]>([])
+    const [specializations, setSpecializations] = useState<Specialization[]>([])
     const [loading, setLoading] = useState(true)
-    const [allSpecialties, setAllSpecialties] = useState<string[]>([])
 
+    // Load specializations on mount
     useEffect(() => {
-        // Initial load and seed
-        async function init() {
-            // Run seed check (safe to run multiple times, it does checks)
-            await seedMentorsIfNeeded().catch(console.error);
-            loadMentors();
-        }
-        init();
+        getSpecializations().then(setSpecializations).catch(console.error);
     }, []);
 
-    // Reload when filters change (debounced)
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            loadMentors();
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [searchQuery, specialtyFilter]);
-
-    async function loadMentors() {
+    const loadMentors = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await getMentors(searchQuery, specialtyFilter);
-            setMentors(data);
+            // Mapping UI filters to API filters
+            const filter = {
+                specialization_slug: specialtyFilter !== 'all' ? specialtyFilter : undefined,
+                // Client-side search for name typically, but we could add server-side valid search
+                // For now, let's fetch matches and filter client side for text search if API doesn't support it yet
+                // Or update API to support text search. The action I wrote didn't explicitly check query.
+                // Re-reading my action: I didn't add search_text.
+                // Let's implement client-side filtering for search query for now.
+            };
 
-            // Extract unique specialties from current data for the filter dropdown
-            // (Ideally this should be a separate API call to get all possible specialties)
-            const specs = new Set<string>();
-            data.forEach(m => m.specialties?.forEach(s => specs.add(s)));
-            if (allSpecialties.length === 0) {
-                setAllSpecialties(Array.from(specs));
-            }
+            const data = await getMentors(filter);
+
+            // Client-side text filtering
+            const filteredData = data.filter(m => {
+                if (!searchQuery) return true;
+                const lowerQuery = searchQuery.toLowerCase();
+                const nameMatch = m.user?.full_name?.toLowerCase().includes(lowerQuery);
+                const titleMatch = m.title?.toLowerCase().includes(lowerQuery);
+                const specMatch = m.detailed_specializations?.some(s => s.specialization?.name_vi?.toLowerCase().includes(lowerQuery));
+
+                return nameMatch || titleMatch || specMatch;
+            });
+
+            setMentors(filteredData);
         } catch (error) {
             console.error(error);
         } finally {
             setLoading(false);
         }
-    }
+    }, [searchQuery, specialtyFilter]);
+
+    // Debounce search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            loadMentors();
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [loadMentors]);
 
     return (
         <div className="space-y-8 pb-10">
@@ -100,8 +109,10 @@ export default function MentorsPage() {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Tất cả chuyên ngành</SelectItem>
-                            {allSpecialties.map(spec => (
-                                <SelectItem key={spec} value={spec}>{spec}</SelectItem>
+                            {specializations.map(spec => (
+                                <SelectItem key={spec.slug} value={spec.slug}>
+                                    {spec.name_vi}
+                                </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
@@ -111,13 +122,13 @@ export default function MentorsPage() {
             {/* Results Grid */}
             <div className="min-h-[300px]">
                 {loading ? (
-                    <div className="grid gap-6">
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {[1, 2, 3].map(i => (
-                            <div key={i} className="h-64 rounded-2xl bg-muted/20 animate-pulse" />
+                            <div key={i} className="h-[300px] rounded-2xl bg-muted/20 animate-pulse" />
                         ))}
                     </div>
                 ) : mentors.length > 0 ? (
-                    <div className="grid gap-6">
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {mentors.map((mentor, index) => (
                             <motion.div
                                 key={mentor.id}
@@ -132,8 +143,8 @@ export default function MentorsPage() {
                 ) : (
                     <div className="text-center py-20 bg-muted/30 rounded-2xl border border-dashed">
                         <Filter className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold">Không tìm thấy mentor phù hợp</h3>
-                        <p className="text-muted-foreground">Vui lòng thử lại với từ khóa khác.</p>
+                        <h3 className="text-lg font-semibold">Không tìm thấy chuyên gia phù hợp</h3>
+                        <p className="text-muted-foreground">Vui lòng thử lại với từ khóa khác hoặc điều chỉnh bộ lọc.</p>
                         <Button
                             variant="link"
                             onClick={() => { setSearchQuery(''); setSpecialtyFilter('all') }}

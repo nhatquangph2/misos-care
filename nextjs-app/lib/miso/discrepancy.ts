@@ -76,7 +76,7 @@ export function detectDiscrepancies(input: {
   if (N < N_LOW_THRESHOLD && isHighDASS(anxiety, 'A')) {
     discrepancies.push({
       id: 'D1',
-      name: 'Acute Situational Stress',
+      name: 'Căng thẳng tình huống cấp tính',
       severity: 'MODERATE',
       interpretation:
         'Lo âu cao nhưng Neuroticism thấp. Đây có thể là stress cấp tính từ sự kiện cụ thể (exams, deadline, conflict) chứ không phải vấn đề nhân cách mạn tính.',
@@ -99,7 +99,7 @@ export function detectDiscrepancies(input: {
   ) {
     discrepancies.push({
       id: 'D2',
-      name: 'Repressive Coping',
+      name: 'Cơ chế kìm nén (Repressive Coping)',
       severity: 'MODERATE',
       interpretation:
         'Kìm nén cảm xúc. Điểm N rất thấp nhưng Stress cao. Tâm lý tự nhận "ổn" nhưng cơ thể đang phản ứng. Nguy cơ: somatization (đau đầu, đau dạ dày).',
@@ -125,12 +125,12 @@ export function detectDiscrepancies(input: {
 
     // D4a: Hostile/Distressed (Low A)
     if (A < 30) {
-      subtype = 'Hostile/Distressed'
+      subtype = 'Thù địch/Khó chịu'
       interventions = ['forgiveness_work', 'anger_management', 'compassion_focused_therapy']
 
       discrepancies.push({
         id: 'D4a',
-        name: 'Severe Distress - Hostile Type',
+        name: 'Suy sụp nặng - Dạng Thù địch',
         severity: 'HIGH',
         interpretation:
           'Suy sụp cao độ kết hợp với thù địch (A thấp). Có thể phóng đại triệu chứng hoặc đổ lỗi cho người khác. Cần xử lý cả distress và hostility.',
@@ -140,12 +140,12 @@ export function detectDiscrepancies(input: {
     }
     // D4b: Reassurance Seeking (High A)
     else if (A > 70) {
-      subtype = 'Reassurance Seeking'
+      subtype = 'Tìm kiếm sự trấn an'
       interventions = ['validation_then_autonomy', 'self_efficacy_building', 'gradual_independence']
 
       discrepancies.push({
         id: 'D4b',
-        name: 'Severe Distress - Reassurance Seeking',
+        name: 'Suy sụp nặng - Dạng Tìm kiếm trấn an',
         severity: 'HIGH',
         interpretation:
           'Suy sụp cao độ kết hợp với tính cách dễ dãi/phụ thuộc (A cao). Có xu hướng tìm kiếm trấn an liên tục. Cần validation trước, sau đó dần xây dựng tự chủ.',
@@ -157,7 +157,7 @@ export function detectDiscrepancies(input: {
     else {
       discrepancies.push({
         id: 'D4',
-        name: 'Severe Distress',
+        name: 'Suy sụp nghiêm trọng',
         severity: 'HIGH',
         interpretation:
           'Neuroticism và DASS đều rất cao. Suy sụp cảm xúc nghiêm trọng. Có thể có xu hướng phóng đại triệu chứng hoặc vấn đề lâm sàng thực sự. Cần đánh giá kỹ.',
@@ -174,7 +174,7 @@ export function detectDiscrepancies(input: {
   if (hope > VIA_HIGH_THRESHOLD && isHighDASS(D, 'D')) {
     discrepancies.push({
       id: 'D5',
-      name: 'Hope-Depression Paradox',
+      name: 'Nghịch lý Hy vọng - Trầm cảm',
       severity: 'HIGH',
       interpretation:
         'Điểm Hope cao nhưng trầm cảm nặng. Có thể là "Smiling Depression" - che giấu đau khổ sau vẻ ngoài lạc quan. Đặc biệt nguy hiểm vì ít người nghi ngờ.',
@@ -191,11 +191,11 @@ export function detectDiscrepancies(input: {
   if (mbti && vulnerableTypes.includes(mbti.toUpperCase()) && dassTotal < 15) {
     discrepancies.push({
       id: 'D6',
-      name: 'Unexpected Resilience',
+      name: 'Khả năng phục hồi bất ngờ',
       severity: 'POSITIVE',
       interpretation:
         `MBTI ${mbti.toUpperCase()} thường có nguy cơ cao nhưng điểm DASS rất thấp. VIA strengths (đặc biệt Hope, Zest) đang bảo vệ hiệu quả. Đây là protective factors tốt!`,
-      action: 'identify_protective_factors',
+      action: 'Xác định các yếu tố bảo vệ',
       interventions: ['strength_amplification', 'maintain_current_strategies'],
     })
   }

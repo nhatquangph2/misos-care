@@ -20,7 +20,7 @@ export default async function AIConsultantPage() {
   }
 
   // Get unified profile with all test results
-  const profile = await getUnifiedProfile(user.id)
+  const profile = await getUnifiedProfile(user.id, supabase)
 
   // Check if user has completed required tests
   if (!profile.big5) {

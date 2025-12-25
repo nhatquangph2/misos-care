@@ -59,7 +59,7 @@ export async function getMentalHealthHistoryServer(
 
   if (error) throw error;
 
-  return data || [];
+  return (data as MentalHealthRecord[]) || [];
 }
 
 /**
@@ -188,7 +188,14 @@ function generateBig5Recommendations(personality: PersonalityProfile): Recommend
         O: personality.big5_openness != null && personality.big5_openness > 5 ? personality.big5_openness : ((personality.big5_openness ?? 3) - 1) / 4 * 100,
       }
     },
-    facets: {} as any
+    facets: {} as any,
+    raw_scores: {
+      N: personality.big5_neuroticism ?? 0,
+      E: personality.big5_extraversion ?? 0,
+      O: personality.big5_openness ?? 0,
+      A: personality.big5_agreeableness ?? 0,
+      C: personality.big5_conscientiousness ?? 0,
+    }
   };
 
   console.log('🔍 Generated BFI2Score for recommendations:', {
@@ -292,9 +299,37 @@ function generateBig5Recommendations(personality: PersonalityProfile): Recommend
  */
 function generateRecommendations(
   personality: PersonalityProfile | null,
-  records: MentalHealthRecord[]
+  records: MentalHealthRecord[],
+  misoAnalysis?: any
 ): Recommendation[] {
   const recommendations: Recommendation[] = [];
+
+  // 1. MISO V3 Scientific Interventions (Highest Priority)
+  if (misoAnalysis && misoAnalysis.interventions) {
+    const immediate = misoAnalysis.interventions.immediate || [];
+    const shortTerm = misoAnalysis.interventions.short_term || [];
+
+    [...immediate, ...shortTerm].slice(0, 3).forEach((i: any, idx: number) => {
+      // Look up localized name if available in MISO libraries
+      let localizedTitle = i.name || i.type?.replace(/_/g, ' ').toUpperCase() || 'Can thiệp MISO';
+
+      // Attempt lookup in ENHANCED_INTERVENTIONS
+      const { ENHANCED_INTERVENTIONS } = require('@/lib/miso/intervention-scoring');
+      if (ENHANCED_INTERVENTIONS[i.type]) {
+        localizedTitle = ENHANCED_INTERVENTIONS[i.type].name;
+      }
+
+      recommendations.push({
+        id: `miso-${idx}`,
+        type: 'activity',
+        title: `🧪 ${localizedTitle}`,
+        description: i.reasoning?.[0] || 'Dựa trên phân tích cơ chế tâm lý chuyên sâu của bạn.',
+        priority: 'high',
+        icon: '🧪',
+        actionText: 'Thực hiện ngay',
+      });
+    });
+  }
 
   // Debug logging
   console.log('🔍 Personality data:', personality);
@@ -442,18 +477,32 @@ function generateRecommendations(
  * Get profile summary with trends and recommendations (server-side)
  */
 export async function getProfileSummaryServer(userId: string): Promise<ProfileSummary> {
-  const [personality, mentalHealthRecords] = await Promise.all([
+  const supabase = await createServerClient();
+
+  const [personality, mentalHealthRecords, misoRes] = await Promise.all([
     getPersonalityProfileServer(userId),
     getMentalHealthHistoryServer(userId, 30),
+    supabase
+      .from('miso_analysis_logs')
+      .select('analysis_result')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
   ]);
 
   const trends = calculateTrends(mentalHealthRecords);
-  const recommendations = generateRecommendations(personality, mentalHealthRecords);
+  const misoAnalysis = misoRes?.data?.analysis_result as any;
+
+  // Pass analysis to recommendations for enrichment
+  const recommendations = generateRecommendations(personality, mentalHealthRecords, misoAnalysis);
 
   return {
     personality,
     mentalHealthRecords,
     trends,
     recommendations,
+    miso_analysis: misoAnalysis as any,
+    via_analysis: misoAnalysis?.via_analysis
   };
 }

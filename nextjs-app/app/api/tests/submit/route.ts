@@ -26,6 +26,9 @@ interface SubmitTestRequest {
     dimensions?: Record<string, number>
     // SISRI24 specific
     dimensionScores?: Record<string, number>
+    // DASS-21 specific
+    subscaleScores?: any[] // Array of { subscale: string, normalizedScore: number }
+    // VIA specific
     // VIA specific
     signatureStrengths?: any[]
     topVirtue?: string
@@ -83,6 +86,15 @@ export async function POST(request: NextRequest) {
           severity_level: result.severityLevel || 'normal',
           crisis_flag: result.crisisFlag || false,
           crisis_reason: result.crisisReason || null,
+          // Extract subscale scores for DASS-21
+          subscale_scores: result.subscaleScores ?
+            (Array.isArray(result.subscaleScores) ?
+              result.subscaleScores.reduce((acc: any, curr: any) => {
+                acc[curr.subscale] = curr.normalizedScore;
+                return acc;
+              }, {}) :
+              result.subscaleScores
+            ) : null,
           raw_responses: answers,
           completed_at: completedAt || new Date().toISOString(),
         } as any)

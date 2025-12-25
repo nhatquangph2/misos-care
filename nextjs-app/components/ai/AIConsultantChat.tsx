@@ -121,11 +121,10 @@ export function AIConsultantChat({ big5Score, mbtiType, viaStrengths }: AIConsul
                   key={opt.value}
                   type="button"
                   onClick={() => setIssue(opt.value)}
-                  className={`p-3 border rounded-lg text-sm transition-all ${
-                    issue === opt.value
+                  className={`p-3 border rounded-lg text-sm transition-all ${issue === opt.value
                       ? 'bg-purple-100 dark:bg-purple-900/30 border-purple-500'
                       : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
+                    }`}
                 >
                   <span className="text-xl">{opt.emoji}</span>
                   <br />
@@ -203,7 +202,7 @@ export function AIConsultantChat({ big5Score, mbtiType, viaStrengths }: AIConsul
                 Nguyên Nhân Gốc Rễ
               </h3>
               <ul className="space-y-2">
-                {response.rootCauses.map((cause, i) => (
+                {response.rootCauses?.map((cause, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="text-red-500 mt-1">●</span>
                     <span className="text-sm">{cause}</span>
@@ -216,9 +215,9 @@ export function AIConsultantChat({ big5Score, mbtiType, viaStrengths }: AIConsul
             <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border-2 border-green-200">
               <h3 className="font-bold text-lg mb-3">✅ Giải Pháp Dựa Trên Khoa Học</h3>
               <div className="space-y-2 text-sm">
-                <p><strong>Phương pháp chính:</strong> {response.evidenceBasedSolution.primaryApproach}</p>
-                <p><strong>Cơ sở nghiên cứu:</strong> {response.evidenceBasedSolution.researchBacking}</p>
-                <p><strong>Tại sao phù hợp:</strong> {response.evidenceBasedSolution.whyThisApproach}</p>
+                <p><strong>Phương pháp chính:</strong> {response.evidenceBasedSolution?.primaryApproach}</p>
+                <p><strong>Cơ sở nghiên cứu:</strong> {response.evidenceBasedSolution?.researchBacking}</p>
+                <p><strong>Tại sao phù hợp:</strong> {response.evidenceBasedSolution?.whyThisApproach}</p>
               </div>
             </div>
 
@@ -229,7 +228,7 @@ export function AIConsultantChat({ big5Score, mbtiType, viaStrengths }: AIConsul
                 Các Bước Hành Động Cụ Thể
               </h3>
               <div className="space-y-3">
-                {response.actionSteps.map((step) => (
+                {response.actionSteps?.map((step) => (
                   <div key={step.step} className="border rounded-lg p-4 bg-white dark:bg-gray-800">
                     <div className="flex items-center gap-2 mb-2">
                       <Badge variant="secondary">Bước {step.step}</Badge>
@@ -259,7 +258,7 @@ export function AIConsultantChat({ big5Score, mbtiType, viaStrengths }: AIConsul
               <AlertTitle>⚠️ Khi Nào Cần Gặp Chuyên Gia</AlertTitle>
               <AlertDescription>
                 <ul className="space-y-1 mt-2">
-                  {response.whenToSeekProfessional.map((condition, i) => (
+                  {response.whenToSeekProfessional?.map((condition, i) => (
                     <li key={i} className="text-sm">• {condition}</li>
                   ))}
                 </ul>
@@ -267,7 +266,7 @@ export function AIConsultantChat({ big5Score, mbtiType, viaStrengths }: AIConsul
             </Alert>
 
             {/* Resources */}
-            {response.resources.length > 0 && (
+            {response.resources?.length > 0 && (
               <div>
                 <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
                   <BookOpen className="w-5 h-5" />

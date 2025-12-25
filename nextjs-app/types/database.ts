@@ -44,445 +44,327 @@ export type Json =
 // TABLE TYPES
 // =====================================================
 
-export interface User {
-  id: string
-  email: string
-  phone: string | null
-  name: string
-  avatar_url: string | null
-  date_of_birth: string | null // Date stored as ISO string
-  gender: Gender | null
-  onboarding_completed: boolean
-  created_at: string
-  updated_at: string
-
-  // Extended profile fields
-  full_name: string | null
-  nickname: string | null
-  bio: string | null
-  occupation: string | null
-  education: string | null
-  location: string | null
-  timezone: string
-
-  // Contact information
-  phone_secondary: string | null
-  zalo: string | null
-  facebook: string | null
-  instagram: string | null
-  linkedin: string | null
-
-  // Emergency contact
-  emergency_contact_name: string | null
-  emergency_contact_phone: string | null
-  emergency_contact_relationship: string | null
-
-  // Role and status
-  role: UserRole
-  is_verified: boolean
-  is_active: boolean
-  profile_visibility: ProfileVisibility
-
-  // Preferences
-  language: string
-  notification_preferences: Json
-  consent_data_sharing: boolean
-  consent_mentor_access: boolean
+export type User = {
+  id: string;
+  email: string;
+  phone: string | null;
+  name: string;
+  avatar_url: string | null;
+  date_of_birth: string | null;
+  gender: Gender | null;
+  onboarding_completed: boolean;
+  created_at: string;
+  updated_at: string;
+  full_name: string | null;
+  nickname: string | null;
+  bio: string | null;
+  occupation: string | null;
+  education: string | null;
+  location: string | null;
+  timezone: string;
+  phone_secondary: string | null;
+  zalo: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  linkedin: string | null;
+  emergency_contact_name: string | null;
+  emergency_contact_phone: string | null;
+  emergency_contact_relationship: string | null;
+  role: UserRole;
+  is_verified: boolean;
+  is_active: boolean;
+  profile_visibility: ProfileVisibility;
+  language: string;
+  notification_preferences: Json;
+  consent_data_sharing: boolean;
+  consent_mentor_access: boolean;
 }
 
-export interface MentorProfile {
-  id: string
-  user_id: string
-
-  // Professional info
-  title: string | null
-  specializations: string[]
-  qualifications: string[]
-  experience_years: number
-  organization: string | null
-
-  // Bio and description
-  professional_bio: string | null
-  approach_description: string | null
-
-  // Availability
-  is_available: boolean
-  max_mentees: number
-  current_mentee_count: number
-
-  // Ratings
-  rating: number
-  total_reviews: number
-
-  // Verification
-  verified_at: string | null
-  verified_by: string | null
-
-  created_at: string
-  updated_at: string
+export type MentorProfile = {
+  id: string;
+  user_id: string;
+  title: string | null;
+  specializations: string[];
+  qualifications: string[];
+  experience_years: number;
+  organization: string | null;
+  professional_bio: string | null;
+  approach_description: string | null;
+  is_available: boolean;
+  max_mentees: number;
+  current_mentee_count: number;
+  rating: number;
+  total_reviews: number;
+  verified_at: string | null;
+  verified_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface MentorRelationship {
-  id: string
-  mentor_id: string
-  user_id: string
-
-  // Relationship status
-  status: MentorRelationshipStatus
-
-  // Request details
-  request_message: string | null
-  request_date: string
-
-  // Response details
-  response_message: string | null
-  response_date: string | null
-
-  // Access permissions
-  can_view_test_results: boolean
-  can_view_goals: boolean
-  can_view_contact_info: boolean
-  can_add_notes: boolean
-
-  // Relationship details
-  started_at: string | null
-  ended_at: string | null
-  end_reason: string | null
-
-  created_at: string
-  updated_at: string
+export type PersonalityProfile = {
+  id: string;
+  user_id: string;
+  mbti_type: MBTIType | null;
+  mbti_scores: Json | null;
+  big5_openness: number | null;
+  big5_conscientiousness: number | null;
+  big5_extraversion: number | null;
+  big5_agreeableness: number | null;
+  big5_neuroticism: number | null;
+  enneagram_type: number | null;
+  enneagram_wing: string | null;
+  last_updated: string;
+  created_at: string;
+  bfi2_score?: Json;
+  sisri24_scores?: Json;
+  via_signature_strengths?: Json;
+  via_top_virtue?: string;
+  big5_openness_raw?: number;
+  big5_conscientiousness_raw?: number;
+  big5_extraversion_raw?: number;
+  big5_agreeableness_raw?: number;
+  big5_neuroticism_raw?: number;
 }
 
-export interface MentorNote {
-  id: string
-  relationship_id: string
-  mentor_id: string
-  user_id: string
-
-  // Note content
-  title: string | null
-  content: string
-  note_type: MentorNoteType
-
-  // Reference to specific records (optional)
-  related_test_id: string | null
-  related_goal_id: string | null
-
-  // Privacy
-  is_private: boolean
-  shared_with_user: boolean
-
-  // Follow up
-  requires_follow_up: boolean
-  follow_up_date: string | null
-  follow_up_completed: boolean
-
-  created_at: string
-  updated_at: string
+export type MentalHealthRecord = {
+  id: string;
+  user_id: string;
+  test_type: TestType;
+  test_version: string;
+  total_score: number;
+  subscale_scores: Json | null;
+  severity_level: SeverityLevel;
+  crisis_flag: boolean;
+  crisis_reason: string | null;
+  raw_responses: Json | null;
+  completed_at: string;
+  created_at: string;
 }
 
-export interface UserConsentLog {
-  id: string
-  user_id: string
-  consent_type: ConsentType
-  consent_given: boolean
-  consent_version: string
-  ip_address: string | null
-  user_agent: string | null
-  created_at: string
+export type MentorRelationship = {
+  id: string;
+  mentor_id: string;
+  user_id: string;
+  status: MentorRelationshipStatus;
+  request_message: string | null;
+  request_date: string;
+  response_message: string | null;
+  response_date: string | null;
+  can_view_test_results: boolean;
+  can_view_goals: boolean;
+  can_view_contact_info: boolean;
+  can_add_notes: boolean;
+  started_at: string | null;
+  ended_at: string | null;
+  end_reason: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface PersonalityProfile {
-  id: string
-  user_id: string
-  mbti_type: MBTIType | null
-  mbti_scores: Json | null // {E: 60, I: 40, S: 45, N: 55, T: 70, F: 30, J: 65, P: 35}
-  big5_openness: number | null // 0-100
-  big5_conscientiousness: number | null
-  big5_extraversion: number | null
-  big5_agreeableness: number | null
-  big5_neuroticism: number | null
-  enneagram_type: number | null // 1-9
-  enneagram_wing: string | null
-  last_updated: string
-  created_at: string
-
-  // NEW FIELDS for MISO V3
-  bfi2_score?: Json
-  big5_openness_raw?: number // 1-5
-  big5_conscientiousness_raw?: number // 1-5
-  big5_extraversion_raw?: number // 1-5
-  big5_agreeableness_raw?: number // 1-5
-  big5_neuroticism_raw?: number // 1-5
-  sisri24_scores?: Json
-  via_signature_strengths?: Json
-  via_top_virtue?: string
+export type MentorNote = {
+  id: string;
+  relationship_id: string;
+  mentor_id: string;
+  user_id: string;
+  title: string | null;
+  content: string;
+  note_type: MentorNoteType;
+  related_test_id: string | null;
+  related_goal_id: string | null;
+  is_private: boolean;
+  shared_with_user: boolean;
+  requires_follow_up: boolean;
+  follow_up_date: string | null;
+  follow_up_completed: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface MentalHealthRecord {
-  id: string
-  user_id: string
-  test_type: TestType
-  test_version: string
-  total_score: number
-  subscale_scores: Json | null // {depression: 12, anxiety: 8, stress: 14}
-  severity_level: SeverityLevel
-  crisis_flag: boolean
-  crisis_reason: string | null
-  raw_responses: Json | null // [{question: 1, answer: 3}, ...]
-  completed_at: string
-  created_at: string
+export type Mentor = {
+  id: string;
+  name: string;
+  title: string | null;
+  email: string;
+  phone: string | null;
+  avatar_url: string | null;
+  bio: string | null;
+  credentials: string | null;
+  education: string[] | null;
+  languages: string[] | null;
+  specialties: string[];
+  personality_match: string[] | null;
+  experience_years: number;
+  hourly_rate: number;
+  currency: Currency;
+  availability: Json | null;
+  rating: number;
+  total_sessions: number;
+  total_reviews: number;
+  is_active: boolean;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ChatSession {
-  id: string
-  user_id: string
-  title: string | null
-  context_summary: string | null
-  is_active: boolean
-  message_count: number
-  started_at: string
-  last_message_at: string
-  created_at: string
+export type Booking = {
+  id: string;
+  user_id: string;
+  mentor_id: string;
+  session_date: string;
+  session_time: string;
+  duration_minutes: number;
+  total_price: number;
+  currency: Currency;
+  status: BookingStatus;
+  cancellation_reason: string | null;
+  cancelled_by: CancelledBy | null;
+  payment_status: PaymentStatus;
+  payment_method: PaymentMethod | null;
+  payment_transaction_id: string | null;
+  paid_at: string | null;
+  meeting_link: string | null;
+  meeting_platform: MeetingPlatform | null;
+  user_notes: string | null;
+  mentor_notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
-export interface ChatMessage {
-  id: string
-  session_id: string
-  role: ChatRole
-  content: string
-  model: string | null
-  tokens_used: number | null
-  prompt_tokens: number | null
-  completion_tokens: number | null
-  contains_crisis_keyword: boolean
-  moderation_flagged: boolean
-  moderation_categories: Json | null
-  created_at: string
+export type BFI2TestHistory = {
+  id: string;
+  user_id: string;
+  score: Json;
+  completed_at: string;
 }
 
-export interface Mentor {
-  id: string
-  name: string
-  title: string | null
-  email: string
-  phone: string | null
-  avatar_url: string | null
-  bio: string | null
-  credentials: string | null
-  education: string[] | null
-  languages: string[] | null
-  specialties: string[] // Array of specialty strings
-  personality_match: string[] | null // Array of MBTI types
-  experience_years: number
-  hourly_rate: number
-  currency: Currency
-  availability: Json | null // {monday: ['09:00', '10:00'], ...}
-  rating: number // 0-5
-  total_sessions: number
-  total_reviews: number
-  is_active: boolean
-  verified: boolean
-  created_at: string
-  updated_at: string
+export type VIAResultRecord = {
+  id: string;
+  user_id: string;
+  ranked_strengths: string[];
+  score: Json;
+  created_at: string;
+  completed_at: string;
+  // Strength scores (1-5)
+  hope?: number;
+  zest?: number;
+  self_regulation?: number;
+  gratitude?: number;
+  spirituality?: number;
+  forgiveness?: number;
+  prudence?: number;
+  love?: number;
+  kindness?: number;
+  perspective?: number;
+  curiosity?: number;
+  creativity?: number;
+  perseverance?: number;
+  all_strengths?: Json;
+  [key: string]: any; // Allow for dynamic strength columns
 }
 
-export interface Booking {
-  id: string
-  user_id: string
-  mentor_id: string
-  session_date: string // Date as ISO string
-  session_time: string // Time as string (HH:MM:SS)
-  duration_minutes: number
-  total_price: number
-  currency: Currency
-  status: BookingStatus
-  cancellation_reason: string | null
-  cancelled_by: CancelledBy | null
-  payment_status: PaymentStatus
-  payment_method: PaymentMethod | null
-  payment_transaction_id: string | null
-  paid_at: string | null
-  meeting_link: string | null
-  meeting_platform: MeetingPlatform | null
-  user_notes: string | null
-  mentor_notes: string | null
-  created_at: string
-  updated_at: string
+export type MBTIResultRecord = {
+  id: string;
+  user_id: string;
+  result: Json;
+  created_at: string;
 }
 
-export interface BookingReview {
-  id: string
-  booking_id: string
-  user_id: string
-  mentor_id: string
-  rating: number // 1-5
-  review_text: string | null
-  created_at: string
-}
-
-export interface Product {
-  id: string
-  name: string
-  description: string | null
-  category: ProductCategory
-  price: number
-  currency: Currency
-  image_url: string | null
-  images: Json | null // Array of image URLs
-  external_link: string | null
-  stock_quantity: number | null
-  click_count: number
-  view_count: number
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface CommunityGroup {
-  id: string
-  personality_type: CommunityGroupType | null
-  name: string
-  description: string | null
-  cover_image_url: string | null
-  rules: Json | null // [{rule: 'Be respectful', order: 1}, ...]
-  member_count: number
-  post_count: number
-  is_private: boolean
-  requires_approval: boolean
-  created_at: string
-  updated_at: string
-}
-
-export interface GroupMember {
-  id: string
-  group_id: string
-  user_id: string
-  role: GroupMemberRole
-  status: GroupMemberStatus
-  joined_at: string
-}
-
-export interface CommunityPost {
-  id: string
-  group_id: string
-  user_id: string
-  content: string
-  images: Json | null // Array of image URLs
-  moderation_status: ModerationStatus
-  moderation_reason: string | null
-  moderated_at: string | null
-  moderated_by: string | null
-  like_count: number
-  comment_count: number
-  report_count: number
-  created_at: string
-  updated_at: string
-}
-
-export interface PostReport {
-  id: string
-  post_id: string
-  reported_by: string
-  reason: ReportReason
-  description: string | null
-  status: ReportStatus
-  reviewed_by: string | null
-  reviewed_at: string | null
-  created_at: string
-}
-
-export interface CrisisAlert {
-  id: string
-  user_id: string
-  trigger_type: CrisisTriggerType
-  trigger_source_id: string | null
-  severity: CrisisSeverity
-  details: Json | null // {test_type: 'PHQ9', question_9_score: 2}
-  intervention_sent: boolean
-  intervention_type: InterventionType | null
-  resolved: boolean
-  resolved_at: string | null
-  resolved_notes: string | null
-  created_at: string
+export type SISRI24ResultRecord = {
+  id: string;
+  user_id: string;
+  scores: Json;
+  created_at: string;
 }
 
 // =====================================================
 // DATABASE TYPE
 // =====================================================
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
-      users: {
-        Row: User
-        Insert: Omit<User, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['users']['Insert']>
+      users: { Row: User; Insert: Partial<User>; Update: Partial<User>; Relationships: [] }
+      mentor_profiles: { Row: MentorProfile; Insert: Partial<MentorProfile>; Update: Partial<MentorProfile>; Relationships: [] }
+      personality_profiles: { Row: PersonalityProfile; Insert: Partial<PersonalityProfile>; Update: Partial<PersonalityProfile>; Relationships: [] }
+      mental_health_records: { Row: MentalHealthRecord; Insert: Partial<MentalHealthRecord>; Update: Partial<MentalHealthRecord>; Relationships: [] }
+      mentor_relationships: { Row: MentorRelationship; Insert: Partial<MentorRelationship>; Update: Partial<MentorRelationship>; Relationships: [] }
+      mentor_notes: { Row: MentorNote; Insert: Partial<MentorNote>; Update: Partial<MentorNote>; Relationships: [] }
+      mentors: { Row: Mentor; Insert: Partial<Mentor>; Update: Partial<Mentor>; Relationships: [] }
+      bookings: { Row: Booking; Insert: Partial<Booking>; Update: Partial<Booking>; Relationships: [] }
+      bfi2_test_history: { Row: BFI2TestHistory; Insert: Partial<BFI2TestHistory>; Update: Partial<BFI2TestHistory>; Relationships: [] }
+      via_results: { Row: VIAResultRecord; Insert: Partial<VIAResultRecord>; Update: Partial<VIAResultRecord>; Relationships: [] }
+      mbti_results: { Row: MBTIResultRecord; Insert: Partial<MBTIResultRecord>; Update: Partial<MBTIResultRecord>; Relationships: [] }
+      sisri24_results: { Row: SISRI24ResultRecord; Insert: Partial<SISRI24ResultRecord>; Update: Partial<SISRI24ResultRecord>; Relationships: [] }
+      user_goals: { Row: any; Insert: any; Update: any; Relationships: [] }
+      chat_sessions: { Row: any; Insert: any; Update: any; Relationships: [] }
+      chat_messages: { Row: any; Insert: any; Update: any; Relationships: [] }
+      user_consent_log: { Row: any; Insert: any; Update: any; Relationships: [] }
+      booking_reviews: { Row: any; Insert: any; Update: any; Relationships: [] }
+      products: { Row: any; Insert: any; Update: any; Relationships: [] }
+      community_groups: { Row: any; Insert: any; Update: any; Relationships: [] }
+      group_members: { Row: any; Insert: any; Update: any; Relationships: [] }
+      community_posts: { Row: any; Insert: any; Update: any; Relationships: [] }
+      post_reports: { Row: any; Insert: any; Update: any; Relationships: [] }
+      crisis_alerts: { Row: any; Insert: any; Update: any; Relationships: [] }
+      miso_analysis_logs: {
+        Row: {
+          id: string
+          user_id: string
+          analysis_result: Json
+          bvs: number | null
+          rcs: number | null
+          profile_id: string | null
+          risk_level: string | null
+          completeness_level: string
+          created_at: string
+        }
+        Insert: any
+        Update: any
+        Relationships: []
       }
-      personality_profiles: {
-        Row: PersonalityProfile
-        Insert: Omit<PersonalityProfile, 'id' | 'created_at' | 'last_updated'>
-        Update: Partial<Database['public']['Tables']['personality_profiles']['Insert']>
+      prediction_feedback: { Row: any; Insert: any; Update: any; Relationships: [] }
+
+      // Gamification
+      gamification_profiles: {
+        Row: {
+          user_id: string
+          current_streak: number
+          longest_streak: number
+          last_activity_date: string | null
+          total_points: number
+          level: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: any
+        Update: any
+        Relationships: []
       }
-      mental_health_records: {
-        Row: MentalHealthRecord
-        Insert: Omit<MentalHealthRecord, 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['mental_health_records']['Insert']>
+      badges: {
+        Row: {
+          id: string
+          slug: string
+          name: string
+          description: string | null
+          icon_url: string | null
+          category: string | null
+          points: number
+          created_at: string
+        }
+        Insert: any
+        Update: any
+        Relationships: []
       }
-      chat_sessions: {
-        Row: ChatSession
-        Insert: Omit<ChatSession, 'id' | 'created_at' | 'message_count' | 'last_message_at'>
-        Update: Partial<Database['public']['Tables']['chat_sessions']['Insert']>
-      }
-      chat_messages: {
-        Row: ChatMessage
-        Insert: Omit<ChatMessage, 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['chat_messages']['Insert']>
-      }
-      mentors: {
-        Row: Mentor
-        Insert: Omit<Mentor, 'id' | 'created_at' | 'updated_at' | 'rating' | 'total_sessions' | 'total_reviews'>
-        Update: Partial<Database['public']['Tables']['mentors']['Insert']>
-      }
-      bookings: {
-        Row: Booking
-        Insert: Omit<Booking, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Database['public']['Tables']['bookings']['Insert']>
-      }
-      booking_reviews: {
-        Row: BookingReview
-        Insert: Omit<BookingReview, 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['booking_reviews']['Insert']>
-      }
-      products: {
-        Row: Product
-        Insert: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'click_count' | 'view_count'>
-        Update: Partial<Database['public']['Tables']['products']['Insert']>
-      }
-      community_groups: {
-        Row: CommunityGroup
-        Insert: Omit<CommunityGroup, 'id' | 'created_at' | 'updated_at' | 'member_count' | 'post_count'>
-        Update: Partial<Database['public']['Tables']['community_groups']['Insert']>
-      }
-      group_members: {
-        Row: GroupMember
-        Insert: Omit<GroupMember, 'id' | 'joined_at'>
-        Update: Partial<Database['public']['Tables']['group_members']['Insert']>
-      }
-      community_posts: {
-        Row: CommunityPost
-        Insert: Omit<CommunityPost, 'id' | 'created_at' | 'updated_at' | 'like_count' | 'comment_count' | 'report_count'>
-        Update: Partial<Database['public']['Tables']['community_posts']['Insert']>
-      }
-      post_reports: {
-        Row: PostReport
-        Insert: Omit<PostReport, 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['post_reports']['Insert']>
-      }
-      crisis_alerts: {
-        Row: CrisisAlert
-        Insert: Omit<CrisisAlert, 'id' | 'created_at'>
-        Update: Partial<Database['public']['Tables']['crisis_alerts']['Insert']>
+      user_badges: {
+        Row: {
+          id: string
+          user_id: string
+          badge_id: string
+          earned_at: string
+        }
+        Insert: any
+        Update: any
+        Relationships: []
       }
     }
     Views: {

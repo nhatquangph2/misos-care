@@ -8,7 +8,7 @@
 import { TestSelectionCard } from '@/components/features/tests/TestSelectionCard'
 import { useRouter } from 'next/navigation'
 import { Brain, Heart, Activity, Check, AlertTriangle } from 'lucide-react'
-import { ProductTour } from '@/components/onboarding/ProductTour'
+import { ProductTour, type TourStep } from '@/components/onboarding/ProductTour'
 import { testPageTour } from '@/lib/tours/test-tour'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { useState, useEffect } from 'react'
@@ -92,7 +92,7 @@ export default function TestsPage() {
   return (
     <div className="min-h-screen">
       <ProductTour
-        steps={testPageTour.getConfig().steps as any}
+        steps={testPageTour.getConfig().steps as TourStep[]}
         tourKey="test-page"
         startTrigger={startTour}
         onComplete={() => {

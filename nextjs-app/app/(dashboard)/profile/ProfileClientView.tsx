@@ -8,13 +8,16 @@ import TestHistory from '@/components/profile/TestHistory';
 import RecommendationsCard from '@/components/profile/RecommendationsCard';
 import GoalsAndPlansView from '@/components/goals/GoalsAndPlansView';
 import { MisoInsightCard } from '@/components/profile/MisoInsightCard';
-import { exportTestHistoryData, type TimelineEntry } from '@/services/test-history.service';
+import type { TimelineEntry } from '@/services/test-history.service';
 import { createClient } from '@/lib/supabase/client';
 import type { ProfileSummary } from '@/types/profile';
 import type { UnifiedProfile } from '@/services/unified-profile.service';
 import { Button } from '@/components/ui/button';
 import { Download, Calendar, Activity, Brain, AlertTriangle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+// import UserEngagement from '@/components/gamification/UserEngagement'; - Replaced with dynamic import
+const UserEngagement = dynamic(() => import('@/components/gamification/UserEngagement'), { ssr: false });
+
 
 // Lazy load heavy chart components
 const ChartSkeleton = () => (
@@ -37,35 +40,25 @@ const MentalHealthChart = dynamic(
   }
 );
 
+
+
 interface ProfileClientViewProps {
   profileData: ProfileSummary | null;
   timeline: TimelineEntry[];
   unifiedProfile: UnifiedProfile;
   userId: string;
+  userName?: string;
 }
 
-export default function ProfileClientView({ profileData, timeline, unifiedProfile, userId }: ProfileClientViewProps) {
+export default function ProfileClientView({ profileData, timeline, unifiedProfile, userId, userName = 'User' }: ProfileClientViewProps) {
   const router = useRouter();
   const [isExporting, setIsExporting] = useState(false);
-
-  // Debug logging for profile data
-  console.log('📱 ProfileClientView - Profile Data:', {
-    hasProfile: !!profileData,
-    personality: profileData?.personality,
-    big5Values: profileData?.personality ? {
-      openness: profileData.personality.big5_openness,
-      conscientiousness: profileData.personality.big5_conscientiousness,
-      extraversion: profileData.personality.big5_extraversion,
-      agreeableness: profileData.personality.big5_agreeableness,
-      neuroticism: profileData.personality.big5_neuroticism
-    } : null,
-    recommendationsCount: profileData?.recommendations?.length || 0,
-    recommendations: profileData?.recommendations?.map(r => ({ id: r.id, title: r.title }))
-  });
 
   const handleExportHistory = async () => {
     try {
       setIsExporting(true);
+      // Dynamic import to prevent SSR crash
+      const { exportTestHistoryData } = await import('@/services/test-history.service');
       const data = await exportTestHistoryData();
 
       // Create downloadable JSON file
@@ -117,6 +110,9 @@ export default function ProfileClientView({ profileData, timeline, unifiedProfil
           </button>
         </div>
       </div>
+
+      {/* Gamification Status */}
+      <UserEngagement userId={userId} />
 
       {/* Stats Overview - Organic Shapes */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
@@ -206,7 +202,7 @@ export default function ProfileClientView({ profileData, timeline, unifiedProfil
             </div>
             <div className="space-y-6">
               <MentalHealthChart trends={profileData?.trends || []} />
-              <TestHistory records={profileData?.mentalHealthRecords.slice(0, 5) || []} />
+              <TestHistory records={profileData?.mentalHealthRecords?.slice(0, 5) || []} />
             </div>
           </div>
         </TabsContent>
@@ -216,13 +212,33 @@ export default function ProfileClientView({ profileData, timeline, unifiedProfil
           {/* Export Button */}
           <div className="flex justify-end">
             <Button
+              onClick={async () => {
+                setIsExporting(true);
+                try {
+                  const { reportGeneratorService } = await import('@/services/report-generator.service');
+                  await reportGeneratorService.generatePDF(unifiedProfile, userName);
+                } catch (e) {
+                  console.error(e);
+                  alert('Lỗi xuất PDF: ' + (e as Error).message);
+                } finally {
+                  setIsExporting(false);
+                }
+              }}
+              variant="default"
+              className="gap-2 bg-purple-600 hover:bg-purple-700"
+              disabled={isExporting}
+            >
+              <Download className="h-4 w-4" />
+              {isExporting ? 'Đang tạo...' : 'Xuất Báo Cáo (PDF)'}
+            </Button>
+            <Button
               onClick={handleExportHistory}
               variant="outline"
               className="gap-2"
               disabled={isExporting}
             >
-              <Download className="h-4 w-4" />
-              {isExporting ? 'Đang xuất...' : 'Xuất lịch sử'}
+              <Activity className="h-4 w-4" />
+              {isExporting ? 'Đang xuất...' : 'Xuất dữ liệu thô (JSON)'}
             </Button>
           </div>
 

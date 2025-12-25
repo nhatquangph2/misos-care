@@ -10,7 +10,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getCurrentUserProfile, updateUserProfile, type UserProfileData } from '@/services/user-profile.service';
-import type { User } from '@/types/database';
 import type { Gender, ProfileVisibility } from '@/types/enums';
 import {
   User as UserIcon,
@@ -32,7 +31,6 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [profile, setProfile] = useState<User | null>(null);
 
   // Form data
   const [formData, setFormData] = useState<UserProfileData>({});
@@ -47,7 +45,6 @@ export default function SettingsPage() {
 
     const userData = await getCurrentUserProfile();
     if (userData) {
-      setProfile(userData);
       setFormData({
         full_name: userData.full_name || '',
         nickname: userData.nickname || '',
@@ -76,7 +73,10 @@ export default function SettingsPage() {
   }, [router, supabase]);
 
   useEffect(() => {
-    loadProfile();
+    const timer = setTimeout(() => {
+      loadProfile();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [loadProfile]);
 
   const handleInputChange = (field: keyof UserProfileData, value: string | boolean | Gender | ProfileVisibility) => {
@@ -221,8 +221,8 @@ export default function SettingsPage() {
                           type="button"
                           onClick={() => handleInputChange('gender', option.value as Gender)}
                           className={`px-3 py-2 rounded-lg border text-sm transition-all ${formData.gender === option.value
-                              ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                              : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:text-gray-300'
+                            ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                            : 'border-gray-300 dark:border-gray-600 hover:border-purple-400 dark:text-gray-300'
                             }`}
                         >
                           {option.label}
@@ -426,8 +426,8 @@ export default function SettingsPage() {
                       <label
                         key={option.value}
                         className={`flex items-center gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${formData.profile_visibility === option.value
-                            ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30'
-                            : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/30'
+                          : 'border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                           }`}
                       >
                         <input

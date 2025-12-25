@@ -1,6 +1,4 @@
-// Goals Service - API calls for user goals, action plans, and reminders
-
-import { createClient } from '@/lib/supabase/client';
+import { BaseService } from './base.service';
 import type {
   UserGoal,
   CreateGoalInput,
@@ -16,9 +14,7 @@ import type {
   GoalsSummary
 } from '@/types/goals';
 
-export class GoalsService {
-  private supabase = createClient();
-
+export class GoalsService extends BaseService {
   // ============================================
   // USER GOALS
   // ============================================
@@ -38,9 +34,8 @@ export class GoalsService {
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
@@ -51,13 +46,10 @@ export class GoalsService {
       .from('user_goals')
       .select('*')
       .eq('id', goalId)
-      .single();
+      .maybeSingle();
 
-    if (error && error.code !== 'PGRST116') {
-      throw error;
-    }
-
-    return data;
+    if (error) throw error;
+    return data as any;
   }
 
   /**
@@ -74,22 +66,22 @@ export class GoalsService {
       .single();
 
     if (error) throw error;
-    return data as UserGoal;
+    return data as any as UserGoal;
   }
 
   /**
    * Update a goal
    */
   async updateGoal(goalId: string, input: UpdateGoalInput): Promise<UserGoal> {
-    const { data, error} = await (this.supabase as any)
+    const { data, error } = await this.supabase
       .from('user_goals')
-      .update(input)
+      .update(input as any)
       .eq('id', goalId)
       .select()
       .single();
 
     if (error) throw error;
-    return data as UserGoal;
+    return data as any as UserGoal;
   }
 
   /**
@@ -133,9 +125,8 @@ export class GoalsService {
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
@@ -150,7 +141,7 @@ export class GoalsService {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
@@ -168,22 +159,22 @@ export class GoalsService {
       .single();
 
     if (error) throw error;
-    return data as ActionPlan;
+    return data as any as ActionPlan;
   }
 
   /**
    * Update an action plan
    */
   async updateActionPlan(planId: string, input: UpdateActionPlanInput): Promise<ActionPlan> {
-    const { data, error } = await (this.supabase as any)
+    const { data, error } = await this.supabase
       .from('action_plans')
-      .update(input)
+      .update(input as any)
       .eq('id', planId)
       .select()
       .single();
 
     if (error) throw error;
-    return data as ActionPlan;
+    return data as any as ActionPlan;
   }
 
   /**
@@ -205,10 +196,7 @@ export class GoalsService {
   /**
    * Get completions for an action plan
    */
-  async getActionCompletions(
-    planId: string,
-    limit = 30
-  ): Promise<ActionCompletion[]> {
+  async getActionCompletions(planId: string, limit = 30): Promise<ActionCompletion[]> {
     const { data, error } = await this.supabase
       .from('action_completions')
       .select('*')
@@ -217,17 +205,13 @@ export class GoalsService {
       .limit(limit);
 
     if (error) throw error;
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
    * Get user's completions for a date range
    */
-  async getUserCompletions(
-    userId: string,
-    startDate: string,
-    endDate: string
-  ): Promise<ActionCompletion[]> {
+  async getUserCompletions(userId: string, startDate: string, endDate: string): Promise<ActionCompletion[]> {
     const { data, error } = await this.supabase
       .from('action_completions')
       .select('*')
@@ -237,7 +221,7 @@ export class GoalsService {
       .order('completion_date', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
@@ -259,14 +243,13 @@ export class GoalsService {
       .single();
 
     if (error) {
-      // Check if already completed today
       if (error.code === '23505') {
         throw new Error('Hành động này đã được đánh dấu hoàn thành hôm nay');
       }
       throw error;
     }
 
-    return data as ActionCompletion;
+    return data as any as ActionCompletion;
   }
 
   /**
@@ -300,9 +283,8 @@ export class GoalsService {
     }
 
     const { data, error } = await query;
-
     if (error) throw error;
-    return data || [];
+    return (data as any) || [];
   }
 
   /**
@@ -322,22 +304,22 @@ export class GoalsService {
       .single();
 
     if (error) throw error;
-    return data as TestReminder;
+    return data as any as TestReminder;
   }
 
   /**
    * Update a test reminder
    */
   async updateTestReminder(reminderId: string, input: UpdateTestReminderInput): Promise<TestReminder> {
-    const { data, error } = await (this.supabase as any)
+    const { data, error } = await this.supabase
       .from('test_reminders')
-      .update(input)
+      .update(input as any)
       .eq('id', reminderId)
       .select()
       .single();
 
     if (error) throw error;
-    return data as TestReminder;
+    return data as any as TestReminder;
   }
 
   /**
@@ -366,39 +348,30 @@ export class GoalsService {
       this.getTestReminders(userId, false),
     ]);
 
-    // Calculate stats
-    const activeGoals = goals.filter(g => g.status === 'active').length;
-    const completedGoals = goals.filter(g => g.status === 'completed').length;
-    const activeActions = actionPlans.filter(a => a.is_active).length;
+    const activeGoalsCount = goals.filter(g => g.status === 'active').length;
+    const completedGoalsCount = goals.filter(g => g.status === 'completed').length;
+    const activeActionsCount = actionPlans.filter(a => a.is_active).length;
     const longestStreak = Math.max(0, ...actionPlans.map(a => a.longest_streak));
 
-    // Get this week's completions
     const today = new Date();
     const startOfWeek = new Date(today);
     startOfWeek.setDate(today.getDate() - today.getDay());
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
 
-    const weekCompletions = await this.getUserCompletions(
-      userId,
-      startOfWeek.toISOString().split('T')[0],
-      today.toISOString().split('T')[0]
-    );
-
-    const monthCompletions = await this.getUserCompletions(
-      userId,
-      startOfMonth.toISOString().split('T')[0],
-      today.toISOString().split('T')[0]
-    );
+    const [weekCompletions, monthCompletions] = await Promise.all([
+      this.getUserCompletions(userId, startOfWeek.toISOString().split('T')[0], today.toISOString().split('T')[0]),
+      this.getUserCompletions(userId, startOfMonth.toISOString().split('T')[0], today.toISOString().split('T')[0]),
+    ]);
 
     return {
       goals,
       actionPlans,
       testReminders,
       stats: {
-        activeGoals,
-        completedGoals,
+        activeGoals: activeGoalsCount,
+        completedGoals: completedGoalsCount,
         totalActions: actionPlans.length,
-        activeActions,
+        activeActions: activeActionsCount,
         totalCompletionsThisWeek: weekCompletions.length,
         totalCompletionsThisMonth: monthCompletions.length,
         longestStreak,
@@ -408,3 +381,24 @@ export class GoalsService {
 }
 
 export const goalsService = new GoalsService();
+
+export const getUserGoals = (id: string, s?: string) => goalsService.getUserGoals(id, s);
+export const getGoalById = (id: string) => goalsService.getGoalById(id);
+export const createGoal = (id: string, input: CreateGoalInput) => goalsService.createGoal(id, input);
+export const updateGoal = (id: string, input: UpdateGoalInput) => goalsService.updateGoal(id, input);
+export const completeGoal = (id: string) => goalsService.completeGoal(id);
+export const deleteGoal = (id: string) => goalsService.deleteGoal(id);
+export const getActionPlans = (id: string, active?: boolean) => goalsService.getActionPlans(id, active);
+export const getActionPlansByGoal = (id: string) => goalsService.getActionPlansByGoal(id);
+export const createActionPlan = (id: string, input: CreateActionPlanInput) => goalsService.createActionPlan(id, input);
+export const updateActionPlan = (id: string, input: UpdateActionPlanInput) => goalsService.updateActionPlan(id, input);
+export const deleteActionPlan = (id: string) => goalsService.deleteActionPlan(id);
+export const getActionCompletions = (id: string, l?: number) => goalsService.getActionCompletions(id, l);
+export const getUserCompletions = (id: string, s: string, e: string) => goalsService.getUserCompletions(id, s, e);
+export const completeAction = (id: string, input: CreateCompletionInput) => goalsService.completeAction(id, input);
+export const deleteCompletion = (id: string) => goalsService.deleteCompletion(id);
+export const getTestReminders = (id: string, active?: boolean) => goalsService.getTestReminders(id, active);
+export const createTestReminder = (id: string, input: CreateTestReminderInput) => goalsService.createTestReminder(id, input);
+export const updateTestReminder = (id: string, input: UpdateTestReminderInput) => goalsService.updateTestReminder(id, input);
+export const deleteTestReminder = (id: string) => goalsService.deleteTestReminder(id);
+export const getGoalsSummary = (id: string) => goalsService.getGoalsSummary(id);

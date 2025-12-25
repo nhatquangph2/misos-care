@@ -17,7 +17,7 @@ import { MBTI_DESCRIPTIONS } from '@/constants/tests/mbti-questions'
 import type { MBTIResult } from '@/services/test.service'
 import { saveMBTIResult } from '@/services/personality-profile.service'
 import { createClient } from '@/lib/supabase/client'
-import { Home, Share2, Download, RefreshCw, Brain, Briefcase, Heart, AlertTriangle } from 'lucide-react'
+import { Home, Share2, RefreshCw, Brain, Briefcase, Heart, AlertTriangle } from 'lucide-react'
 
 export default function MBTIResultsPage() {
   const router = useRouter()
@@ -25,7 +25,6 @@ export default function MBTIResultsPage() {
   const [completedAt, setCompletedAt] = useState<string>('')
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error' | 'unauthenticated'>('idle')
   const [saveError, setSaveError] = useState<string | null>(null)
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   const pageRef = useFadeIn(0.8)
   const cardsRef = useStagger(0.15)
@@ -54,14 +53,12 @@ export default function MBTIResultsPage() {
         const { data: { user } } = await supabase.auth.getUser()
 
         if (!user) {
-          // User not authenticated
-          setIsAuthenticated(false)
-          setSaveStatus('unauthenticated')
+          // User not authenticated, redirect to login
+          router.push('/auth/login?redirect=/tests/mbti/results')
           return
         }
 
         // User is authenticated, save results
-        setIsAuthenticated(true)
         try {
           setSaveStatus('saving')
           await saveMBTIResult(

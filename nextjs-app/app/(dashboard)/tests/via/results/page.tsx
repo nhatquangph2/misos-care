@@ -63,7 +63,7 @@ export default function VIAResultsPage() {
             🌟 5 Điểm Mạnh Nổi Bật Nhất
           </h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {signatureStrengths.map((strength, index) => (
+            {signatureStrengths.map((strength) => (
               <div
                 key={strength.strength}
                 className="glass-card p-6 rounded-2xl hover:scale-105 transition-transform duration-300"
@@ -142,8 +142,8 @@ export default function VIAResultsPage() {
                 <div
                   key={strength.strength}
                   className={`flex items-center justify-between p-3 rounded-lg ${strength.isSignature
-                      ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800'
-                      : 'bg-gray-50 dark:bg-gray-800/50'
+                    ? 'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-purple-200 dark:border-purple-800'
+                    : 'bg-gray-50 dark:bg-gray-800/50'
                     }`}
                 >
                   <div className="flex items-center gap-3">
@@ -205,13 +205,13 @@ export default function VIAResultsPage() {
               chúng mỗi ngày.
             </p>
             <p>
-              <strong>Cách Phát Triển:</strong> Đọc kỹ "Lời khuyên" cho từng điểm mạnh và
+              <strong>Cách Phát Triển:</strong> Đọc kỹ &quot;Lời khuyên&quot; cho từng điểm mạnh và
               thực hành đều đặn. Nghiên cứu cho thấy việc sử dụng điểm mạnh giúp tăng
               hạnh phúc và thành công.
             </p>
             <p>
               <strong>Không Có Điểm Yếu:</strong> Các điểm mạnh xếp thứ hạng thấp không
-              phải là "điểm yếu" - chúng chỉ đơn giản là không phải đặc điểm nổi bật của
+              phải là &quot;điểm yếu&quot; - chúng chỉ đơn giản là không phải đặc điểm nổi bật của
               bạn.
             </p>
           </div>

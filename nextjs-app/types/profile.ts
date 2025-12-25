@@ -43,11 +43,15 @@ export interface MentalHealthTrend {
   stress: number;
 }
 
+import { MisoAnalysisResult, VIAAnalysis } from './miso-v3';
+
 export interface ProfileSummary {
   personality: PersonalityProfile | null;
   mentalHealthRecords: MentalHealthRecord[];
   trends: MentalHealthTrend[];
   recommendations: Recommendation[];
+  miso_analysis?: MisoAnalysisResult;
+  via_analysis?: VIAAnalysis;
 }
 
 export interface Recommendation {

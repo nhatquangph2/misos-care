@@ -6,7 +6,7 @@
 
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { OceanTestFlow } from '@/components/features/tests/OceanTestFlow'
 import { BFI2_QUESTIONS_FLOW } from '@/constants/tests/bfi2-questions'
 import { calculateBFI2Score } from '@/services/bfi2-scoring.service'

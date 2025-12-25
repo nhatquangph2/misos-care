@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { useFadeIn, useStagger } from '@/hooks/useGSAP'
 import { createClient } from '@/lib/supabase/client'
 import { useMascotStore } from '@/stores/mascotStore'
-import { ArrowRight, TrendingUp, Target, Brain, Heart, Sparkles } from 'lucide-react'
+import { ArrowRight, TrendingUp, Target, Brain, Heart, Sparkles, Fish, Star } from 'lucide-react'
 import { ProductTour } from '@/components/onboarding/ProductTour'
 import { dashboardTour } from '@/lib/tours/dashboard-tour'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
@@ -24,6 +24,7 @@ interface DashboardStats {
   }
   currentStreak: number
   activeGoals: number
+  topStrength?: string
 }
 
 // Define specific interfaces for DB responses to avoid 'any'
@@ -107,9 +108,45 @@ export default function DashboardPage() {
         .eq('user_id', authUser.id)
         .eq('status', 'active')
 
+      // Get VIA High Score (Top Strength)
+      const { data: viaResults } = await supabase
+        .from('via_results') // Assuming this table exists and stores raw scores/answers
+        .select('*')
+        .eq('user_id', authUser.id)
+
+      // We need to calculate top strength from via_results if they are raw answers, 
+      // OR if we store the calculated result somewhere. 
+      // Based on previous analysis, via_results stores questions/answers? 
+      // Actually `via_results` table usually stores the final result in many systems, 
+      // but here we used `analyzeVIAForDASS` which calculates from percentiles.
+      // Let's check `via-scoring.service.ts` or similar to see how results are saved.
+      // Assuming for now we can't easily calc full VIA on client without logic, 
+      // but maybe we can fetch the `miso_analysis` result if saved?
+      // Actually, Miso Analysis result is saved in `miso_analysis_history` or similar? 
+      // Let's stick to a simpler approach: check if we have VIA answers, 
+      // and if we do, maybe we can show a placeholder or fetch the latest Miso Analysis.
+
+      // Let's try to fetch the latest Miso Analysis which contains the calculated VIA
+      const { data: latestAnalysis } = await supabase
+        .from('miso_analysis_logs')
+        .select('analysis_result')
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      let topVia = undefined
+      if (latestAnalysis?.analysis_result && (latestAnalysis.analysis_result as any).via_analysis) {
+        const via = (latestAnalysis.analysis_result as any).via_analysis
+        if (via.signature_strengths && via.signature_strengths.length > 0) {
+          topVia = via.signature_strengths[0].name
+        }
+      }
+
       setStats({
         testsCompleted: count || 0,
-        personalityType: (personality as PersonalityProfile)?.mbti_type || undefined,
+        personalityType: (personality as unknown as PersonalityProfile)?.mbti_type || undefined,
+        topStrength: topVia,
         latestMentalHealthScore: latestRecord ? {
           type: latestRecord.test_type,
           severity: latestRecord.severity_level,
@@ -117,6 +154,7 @@ export default function DashboardPage() {
         } : undefined,
         currentStreak: userStats.currentStreak,
         activeGoals: goalsCount || 0,
+        topStrength: topVia,
       })
 
       // Set mascot mood based on latest score
@@ -212,6 +250,21 @@ export default function DashboardPage() {
               {stats.personalityType || '—'}
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">MBTI Type</p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
+              Điểm Mạnh Nhất
+            </CardTitle>
+            <Star className="h-4 w-4 text-amber-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
+              {stats.topStrength || '—'}
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">VIA Signature Strength</p>
           </CardContent>
         </Card>
 
@@ -338,6 +391,26 @@ export default function DashboardPage() {
               <CardContent>
                 <Button className="w-full" variant="outline">
                   Tạo mục tiêu
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/gamification">
+            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-cyan-500">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Fish className="h-5 w-5 text-cyan-500" />
+                  Vườn Cảm Xúc
+                </CardTitle>
+                <CardDescription>
+                  Nuôi dưỡng sinh vật biển & làm nhiệm vụ
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button className="w-full" variant="outline">
+                  Khám phá ngay
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>

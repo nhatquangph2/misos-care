@@ -25,7 +25,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && E < LOW_PERCENTILE && C < LOW_PERCENTILE) {
     return {
       id: 'B4',
-      name: 'Misery Triad',
+      name: 'Tam giác Khổ đau (Misery Triad)',
       risk_level: 'CRITICAL',
       predicted_dass: {
         D: 'EXTREMELY_SEVERE',
@@ -33,7 +33,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'EXTREMELY_SEVERE',
       },
       mechanism:
-        'Combined vulnerability: Dysregulation (low C) + Isolation (low E) + High negative affect (high N). Highest MDD risk.',
+        'Lỗ hổng kết hợp: Mất khả năng điều tiết (Low C) + Sự cô lập (Low E) + Cảm xúc tiêu cực cao (High N). Nguy cơ trầm cảm nặng cao nhất.',
       interventions: [
         'safety_screening',
         'hope_therapy',
@@ -50,7 +50,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && E < LOW_PERCENTILE) {
     return {
       id: 'B3',
-      name: 'Introverted Neurotic',
+      name: 'Người hướng nội lo âu (Introverted Neurotic)',
       risk_level: 'HIGH',
       predicted_dass: {
         D: 'EXTREMELY_SEVERE',
@@ -58,7 +58,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'SEVERE',
       },
       mechanism:
-        'Isolation mechanism: Lacks positive emotions (low E) to balance negative affect (high N). Prone to melancholic depression.',
+        'Cơ chế cô lập: Thiếu các cảm xúc tích cực (Low E) để cân bằng với các cảm xúc tiêu cực (High N). Dễ rơi vào trầm cảm u sầu.',
       interventions: ['zest_building', 'hope_therapy', 'social_connection'],
       flags: ['DEPRESSION_RISK_HIGH'],
     }
@@ -69,7 +69,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && C < LOW_PERCENTILE) {
     return {
       id: 'B2',
-      name: 'Vulnerable',
+      name: 'Người dễ bị tổn thương (Vulnerable)',
       risk_level: 'HIGH',
       predicted_dass: {
         D: 'SEVERE',
@@ -77,7 +77,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'MODERATE',
       },
       mechanism:
-        'Dysregulation mechanism: High anxiety (N) without self-control (C) leads to avoidance and paralysis.',
+        'Cơ chế mất điều tiết: Sự lo âu cao (N) nhưng thiếu khả năng tự kiểm soát (C) dẫn đến xu hướng né tránh và bị tê liệt trước áp lực.',
       interventions: ['self_regulation', 'behavioral_activation', 'micro_habits'],
       flags: ['INTERNALIZING_RISK', 'IMPULSIVE_COPING_RISK'],
     }
@@ -88,7 +88,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && C > HIGH_PERCENTILE) {
     return {
       id: 'B1',
-      name: 'Healthy Neurotic',
+      name: 'Người lo âu có hiệu suất (Healthy Neurotic)',
       risk_level: 'MEDIUM',
       predicted_dass: {
         D: 'NORMAL',
@@ -96,7 +96,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'SEVERE',
       },
       mechanism:
-        'Vigilance mechanism: Anxiety (N) is channeled into preparation and structure (C). Functional but stressed.',
+        'Cơ chế cảnh giác: Sự lo âu (N) được chuyển hóa thành sự chuẩn bị và cấu trúc hóa công việc (C). Hoạt động tốt nhưng luôn trong trạng thái căng thẳng.',
       interventions: ['relaxation', 'letting_go', 'self_compassion'],
       flags: ['FUNCTIONAL_STRAIN', 'BURNOUT_WATCH'],
       avoid: ['more_discipline', 'more_structure'],
@@ -108,7 +108,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && E > HIGH_PERCENTILE) {
     return {
       id: 'B6',
-      name: 'Agitated Neurotic',
+      name: 'Người bồn chồn lo âu (Agitated Neurotic)',
       risk_level: 'MEDIUM',
       predicted_dass: {
         D: 'MODERATE',
@@ -116,7 +116,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'SEVERE',
       },
       mechanism:
-        'Agitation mechanism: High energy (E) combined with anxiety (N) creates restlessness and overstimulation.',
+        'Cơ chế kích động: Năng lượng cao (E) kết hợp với lo âu (N) tạo ra trạng thái bồn chồn không yên và dễ bị quá tải kích thích.',
       interventions: ['grounding', 'anxiety_management', 'mindfulness'],
       flags: ['ANXIETY_PRIORITY'],
     }
@@ -127,7 +127,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && O > HIGH_PERCENTILE) {
     return {
       id: 'B8',
-      name: 'Sensitive Neurotic',
+      name: 'Người nhạy cảm lo âu (Sensitive Neurotic)',
       risk_level: 'MEDIUM',
       predicted_dass: {
         D: 'MODERATE',
@@ -135,7 +135,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'MODERATE',
       },
       mechanism:
-        'Sensitivity mechanism: High openness amplifies emotional experiences, leading to rumination and overthinking.',
+        'Cơ chế nhạy cảm: Sự cởi mở cao (High O) khuếch đại các trải nghiệm cảm xúc, dẫn đến xu hướng suy nghĩ quẩn quanh và quá mức.',
       interventions: ['mindfulness', 'emotional_awareness', 'cognitive_defusion'],
       flags: [],
     }
@@ -146,7 +146,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N > HIGH_PERCENTILE && O < LOW_PERCENTILE) {
     return {
       id: 'B7',
-      name: 'Rigid Neurotic',
+      name: 'Người cứng nhắc lo âu (Rigid Neurotic)',
       risk_level: 'MEDIUM',
       predicted_dass: {
         D: 'MODERATE',
@@ -154,7 +154,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'SEVERE',
       },
       mechanism:
-        'Rigidity mechanism: Strong psychological defenses (low O) against anxiety (N). Resistant to change.',
+        'Cơ chế cứng nhắc: Các lớp phòng vệ tâm lý mạnh mẽ (Low O) chống lại sự lo âu (N). Kháng cự với sự thay đổi.',
       interventions: ['behavioral_experiments', 'acceptance_commitment'],
       flags: ['CBT_RESISTANT'],
       avoid: ['traditional_CBT', 'insight_therapy'],
@@ -166,7 +166,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   if (N < LOW_PERCENTILE && C > HIGH_PERCENTILE && E > HIGH_PERCENTILE) {
     return {
       id: 'B5',
-      name: 'Resilient',
+      name: 'Người phục hồi (Resilient)',
       risk_level: 'LOW',
       predicted_dass: {
         D: 'NORMAL',
@@ -174,7 +174,7 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
         S: 'NORMAL',
       },
       mechanism:
-        'Stability mechanism: Low threat response (N), good self-control (C), and social resources (E) create robust resilience.',
+        'Cơ chế ổn định: Phản ứng thấp với mối đe dọa (Low N), khả năng tự chủ tốt (High C) và nguồn lực xã hội dồi dào (High E) tạo ra khả năng phục hồi mạnh mẽ.',
       interventions: ['growth_challenge', 'meaning_seeking'],
       flags: [],
     }
@@ -183,14 +183,14 @@ export function classifyBig5Profile(percentiles: Partial<Big5Percentiles>): Big5
   // B0: Balanced (default)
   return {
     id: 'B0',
-    name: 'Balanced',
+    name: 'Cân bằng (Balanced)',
     risk_level: 'LOW',
     predicted_dass: {
       D: 'NORMAL',
       A: 'NORMAL',
       S: 'NORMAL',
     },
-    mechanism: 'No concerning patterns detected. Traits within average range.',
+    mechanism: 'Không phát hiện mẫu hình đáng lo ngại. Các đặc điểm nằm trong phạm vi trung bình.',
     interventions: ['maintenance', 'strengths_development'],
     flags: [],
   }
