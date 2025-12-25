@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import MisoInsightCard from '@/components/profile/MisoInsightCard';
+import { MisoInsightCard } from '@/components/profile/MisoInsightCard';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -45,9 +45,7 @@ export default async function ClientDetailPage({ params }: PageProps) {
                 <div className="lg:col-span-2 space-y-6">
                     <h2 className="text-xl font-semibold">Phân Tích Tâm Lý (MISO V3)</h2>
                     <MisoInsightCard
-                        misoAnalysis={unifiedProfile.miso_analysis}
-                        isLoading={false}
-                        userName={user.name}
+                        analysis={unifiedProfile.miso_analysis}
                     />
                 </div>
 
