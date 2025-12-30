@@ -5,7 +5,7 @@
  */
 
 import {
-  DASS21_NORMS,
+  DASS21_NORMS as IMPORTED_DASS21_NORMS,
   VIA_NORMS,
   getPercentileCategory,
   type NormData,
@@ -19,6 +19,19 @@ const LOCAL_BIG5_NORMS: Record<string, NormData> = {
   A: { mean: 36.8, sd: 5.2, range: [9, 45] },
   C: { mean: 35.2, sd: 6.0, range: [9, 45] },
 }
+
+// EMERGENCY FALLBACK: Hardcode DASS21 Norms
+const LOCAL_DASS21_NORMS: Record<string, NormData> = {
+  D: { mean: 5.66, sd: 5.97, range: [0, 42] },
+  A: { mean: 4.80, sd: 4.71, range: [0, 42] },
+  S: { mean: 7.95, sd: 5.80, range: [0, 42] },
+}
+
+// Use imported if available, fallback to local
+const DASS21_NORMS: Record<string, NormData> = IMPORTED_DASS21_NORMS && Object.keys(IMPORTED_DASS21_NORMS).length > 0
+  ? IMPORTED_DASS21_NORMS
+  : LOCAL_DASS21_NORMS
+
 import type {
   Big5RawScores,
   DASS21RawScores,
