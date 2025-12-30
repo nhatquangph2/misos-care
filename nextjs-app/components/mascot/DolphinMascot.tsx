@@ -105,7 +105,7 @@ export function DolphinMascot({ context }: DolphinMascotProps) {
     <>
       {/* Floating Mascot Container */}
       <motion.div
-        className="fixed bottom-6 right-6 z-50"
+        className="fixed bottom-24 right-4 md:bottom-6 md:right-6 z-50 origin-bottom-right scale-75 md:scale-100"
         initial={{ opacity: 0, scale: 0, y: 100 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0, y: 100 }}

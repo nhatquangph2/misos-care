@@ -297,7 +297,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.testsCompleted}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Tổng số bài test</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Tổng số bài test</p>
           </CardContent>
         </Card>
 
@@ -312,7 +312,7 @@ export default function DashboardPage() {
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
               {stats.personalityType || '—'}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">MBTI Type</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Nhóm tính cách (MBTI)</p>
           </CardContent>
         </Card>
 
@@ -327,20 +327,20 @@ export default function DashboardPage() {
             <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
               {stats.topStrength || '—'}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">VIA Signature Strength</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Thế mạnh đặc trưng</p>
           </CardContent>
         </Card>
 
         <Card className="hover:shadow-lg transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Streak hiện tại
+              Chuỗi hoạt động
             </CardTitle>
             <TrendingUp className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.currentStreak}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Ngày liên tiếp</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Ngày liên tiếp</p>
           </CardContent>
         </Card>
 
@@ -353,7 +353,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.activeGoals}</div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Đang thực hiện</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Mục tiêu đang thực hiện</p>
           </CardContent>
         </Card>
       </div>
@@ -384,7 +384,12 @@ export default function DashboardPage() {
                         'destructive'
                   }
                 >
-                  {stats.latestMentalHealthScore.severity}
+                  {stats.latestMentalHealthScore.severity === 'normal' ? 'Bình thường' :
+                    stats.latestMentalHealthScore.severity === 'mild' ? 'Nhẹ' :
+                      stats.latestMentalHealthScore.severity === 'moderate' ? 'Trung bình' :
+                        stats.latestMentalHealthScore.severity === 'severe' ? 'Nặng' :
+                          stats.latestMentalHealthScore.severity === 'extremely_severe' ? 'Rất nặng' :
+                            stats.latestMentalHealthScore.severity}
                 </Badge>
               </div>
               <Separator orientation="vertical" className="h-6 hidden sm:block" />

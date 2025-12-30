@@ -80,7 +80,7 @@ export function ScientificAnalysisCard({ analysis }: ScientificAnalysisCardProps
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Brain className="h-5 w-5 text-purple-500" />
-                    Phân tích Chuyên sâu (Deep Intelligence)
+                    Phân tích Chuyên sâu (V3)
                 </CardTitle>
                 <CardDescription>
                     Đánh giá dựa trên Khoa học Phát triển & Tâm lý học
@@ -120,7 +120,7 @@ export function ScientificAnalysisCard({ analysis }: ScientificAnalysisCardProps
                         onClick={() => handleDeepAction('Low ZPD Capacity')}
                     >
                         <Sparkles className="w-4 h-4 mr-2" />
-                        Kích hoạt Chế độ "Scaffolding" (Hỗ trợ khẩn cấp)
+                        Kích hoạt Chế độ "Hỗ trợ giàn giáo" (Scaffolding)
                     </Button>
                 )}
 

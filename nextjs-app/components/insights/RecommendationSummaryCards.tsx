@@ -60,7 +60,7 @@ export function RecommendationSummaryCards({ recommendations, isLoading }: Recom
                         <CardContent>
                             <div className="flex items-center gap-2 mb-2">
                                 <span className="text-2xl font-bold text-indigo-600">{recommendations.career.hollandCode}</span>
-                                <span className="text-sm text-gray-500">Mã Holland</span>
+                                <span className="text-sm text-gray-600">Mã Holland</span>
                             </div>
                             <p className="text-sm text-gray-600 line-clamp-2">
                                 Top nghề: {recommendations.career.careers.slice(0, 2).map(c => c.titleVi).join(', ')}
@@ -86,7 +86,7 @@ export function RecommendationSummaryCards({ recommendations, isLoading }: Recom
                                 <span className="text-2xl font-bold text-emerald-600">
                                     {recommendations.learning.techniques.filter(t => t.effectivenessLevel === 'high').length}
                                 </span>
-                                <span className="text-sm text-gray-500">kỹ thuật hiệu quả cao</span>
+                                <span className="text-sm text-gray-600">kỹ thuật hiệu quả cao</span>
                             </div>
                             <p className="text-sm text-gray-600 line-clamp-2">
                                 {recommendations.learning.techniques[0]?.nameVi}
@@ -112,7 +112,7 @@ export function RecommendationSummaryCards({ recommendations, isLoading }: Recom
                                 <span className="text-2xl font-bold text-orange-600">
                                     {recommendations.sports.mentalToughnessScore}
                                 </span>
-                                <span className="text-sm text-gray-500">Mental Toughness</span>
+                                <span className="text-sm text-gray-600">Sức bền tinh thần</span>
                             </div>
                             <p className="text-sm text-gray-600 line-clamp-2">
                                 Phù hợp: {recommendations.sports.activities.slice(0, 2).map(a => a.nameVi).join(', ')}
@@ -138,7 +138,7 @@ export function RecommendationSummaryCards({ recommendations, isLoading }: Recom
                                 <span className="text-2xl font-bold text-emerald-600">
                                     {recommendations.clinical.protectiveFactorsVi.length}
                                 </span>
-                                <span className="text-sm text-gray-500">yếu tố bảo vệ</span>
+                                <span className="text-sm text-gray-600">yếu tố bảo vệ</span>
                             </div>
                             <p className="text-sm text-gray-600 line-clamp-2">
                                 {recommendations.clinical.protectiveFactorsVi[0] || 'Xem chi tiết phân tích'}
