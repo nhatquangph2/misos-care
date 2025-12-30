@@ -42,11 +42,11 @@ async function getClinicalData(userId: string) {
     if (!profile?.big5_openness) return null
 
     const big5_raw = {
-        O: profile.big5_openness || 0,
-        C: profile.big5_conscientiousness || 0,
-        E: profile.big5_extraversion || 0,
-        A: profile.big5_agreeableness || 0,
-        N: profile.big5_neuroticism || 0,
+        O: profile.big5_openness ?? profile.big5_openness_raw ?? 50,
+        C: profile.big5_conscientiousness ?? profile.big5_conscientiousness_raw ?? 50,
+        E: profile.big5_extraversion ?? profile.big5_extraversion_raw ?? 50,
+        A: profile.big5_agreeableness ?? profile.big5_agreeableness_raw ?? 50,
+        N: profile.big5_neuroticism ?? profile.big5_neuroticism_raw ?? 50,
     }
 
     const misoResult = await runMisoAnalysis({

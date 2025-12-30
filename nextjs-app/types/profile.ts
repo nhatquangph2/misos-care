@@ -10,6 +10,11 @@ export interface PersonalityProfile {
   big5_neuroticism: number | null;
   last_updated: string;
   created_at: string;
+  big5_openness_raw?: number;
+  big5_conscientiousness_raw?: number;
+  big5_extraversion_raw?: number;
+  big5_agreeableness_raw?: number;
+  big5_neuroticism_raw?: number;
 }
 
 export interface MentalHealthRecord {

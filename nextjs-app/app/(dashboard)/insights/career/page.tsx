@@ -24,11 +24,11 @@ async function getCareerData(userId: string) {
     if (!profile) return null
 
     const big5_raw = {
-        O: profile.big5_openness ?? 50,
-        C: profile.big5_conscientiousness ?? 50,
-        E: profile.big5_extraversion ?? 50,
-        A: profile.big5_agreeableness ?? 50,
-        N: profile.big5_neuroticism ?? 50,
+        O: profile.big5_openness ?? profile.big5_openness_raw ?? 50,
+        C: profile.big5_conscientiousness ?? profile.big5_conscientiousness_raw ?? 50,
+        E: profile.big5_extraversion ?? profile.big5_extraversion_raw ?? 50,
+        A: profile.big5_agreeableness ?? profile.big5_agreeableness_raw ?? 50,
+        N: profile.big5_neuroticism ?? profile.big5_neuroticism_raw ?? 50,
     }
 
     const misoResult = await runMisoAnalysis({
