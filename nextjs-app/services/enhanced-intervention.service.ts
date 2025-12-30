@@ -16,6 +16,7 @@ import { VIA_STRENGTHS, type VIAStrength } from '@/constants/knowledge/via-knowl
 import { BIG5_DISORDER_MAPPINGS, TRANSDIAGNOSTIC_PROCESSES } from '@/constants/knowledge/clinical-psychology'
 import { MBTI_TYPES, MBTI_SCIENTIFIC_CONTEXT } from '@/constants/knowledge/mbti-knowledge'
 import { LEARNING_TECHNIQUES } from '@/constants/knowledge/learning-sciences'
+import { FLOW_STATE_CONDITIONS, EXERCISE_MENTAL_HEALTH } from '@/constants/knowledge/sports-psychology'
 import type { Big5Profile } from '@/constants/knowledge'
 
 // ============================================
@@ -1078,7 +1079,6 @@ export interface FlowStateRecommendation {
 export function getFlowStateRecommendations(
     big5: { O: number; C: number; E: number; A: number; N: number }
 ): FlowStateRecommendation[] {
-    const { FLOW_STATE_CONDITIONS } = require('@/constants/knowledge/sports-psychology')
     const recommendations: FlowStateRecommendation[] = []
 
     // Determine which flow conditions might be challenged based on Big5
@@ -1134,7 +1134,6 @@ export interface ExerciseMentalHealthRecommendation {
 export function getExerciseMentalHealthEffects(
     dassProfile: { D: number; A: number; S: number }
 ): ExerciseMentalHealthRecommendation[] {
-    const { EXERCISE_MENTAL_HEALTH } = require('@/constants/knowledge/sports-psychology')
     const recommendations: ExerciseMentalHealthRecommendation[] = []
 
     // Get relevant exercise recommendations based on DASS profile
