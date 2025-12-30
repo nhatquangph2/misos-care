@@ -22,14 +22,14 @@ async function getLearningData(userId: string) {
         .eq('user_id', userId)
         .single()
 
-    if (profile?.big5_openness == null) return null
+    if (!profile) return null
 
     const big5_raw = {
-        O: profile.big5_openness || 0,
-        C: profile.big5_conscientiousness || 0,
-        E: profile.big5_extraversion || 0,
-        A: profile.big5_agreeableness || 0,
-        N: profile.big5_neuroticism || 0,
+        O: profile.big5_openness ?? 50,
+        C: profile.big5_conscientiousness ?? 50,
+        E: profile.big5_extraversion ?? 50,
+        A: profile.big5_agreeableness ?? 50,
+        N: profile.big5_neuroticism ?? 50,
     }
 
     const misoResult = await runMisoAnalysis({

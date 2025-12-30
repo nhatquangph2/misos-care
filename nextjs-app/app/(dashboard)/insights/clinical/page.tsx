@@ -27,7 +27,8 @@ async function getClinicalData(userId: string) {
         .eq('user_id', userId)
         .single()
 
-    if (profile?.big5_openness == null) return null
+    if (!profile) return null
+
     // Get DASS scores from mental_health_records
     const { data: dassRecord } = await supabase
         .from('mental_health_records')
