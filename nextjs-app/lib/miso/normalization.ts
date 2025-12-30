@@ -111,6 +111,14 @@ export function normalizeBig5(rawScores: Partial<Big5RawScores>): {
     if (raw !== undefined && raw !== null) {
       const norm = BIG5_NORMS[trait]
 
+      if (!norm) {
+        console.error(`CRITICAL ERROR: Norm missing for trait ${trait}`, {
+          BIG5_NORMS_Keys: Object.keys(BIG5_NORMS || {}),
+          Trait: trait
+        })
+      }
+
+
       // Auto-scaling logic
       if (raw <= 6.0) {
         // Likely Average Score (1-5)
