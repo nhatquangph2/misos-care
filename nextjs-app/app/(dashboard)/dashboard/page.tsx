@@ -15,7 +15,7 @@ import { dashboardTour } from '@/lib/tours/dashboard-tour'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { ScientificAnalysisCard } from '@/components/miso/ScientificAnalysisCard'
 import { RecommendationSummaryCards } from '@/components/insights/RecommendationSummaryCards'
-import { getPersonalizedRecommendations, type PersonalizedRecommendations } from '@/services/recommendation.service'
+import type { PersonalizedRecommendations } from '@/services/recommendation.service'
 import type { MisoAnalysisResult } from '@/types/miso-v3'
 import PersonalityOverview from '@/components/profile/PersonalityOverview'
 import type { PersonalityProfile } from '@/types/profile'
@@ -147,61 +147,37 @@ export default function DashboardPage() {
         setHasPriorAnalysis(true)
         const result = latestAnalysis.analysis_result as any
 
-        // Extract VIA top strength
+        // Extract VIA top strength (from cached analysis for quick display)
         if (result.via_analysis?.signature_strengths?.length > 0) {
           topVia = result.via_analysis.signature_strengths[0].name
         }
 
-        // Extract Scientific Analysis
+        // Extract Scientific Analysis (from cached analysis for quick display)
         if (result.scientific_analysis) {
           setScientificAnalysis(result.scientific_analysis)
         }
+      }
 
-        // Generate Personalized Recommendations
+      // FRESH RECOMMENDATIONS: Call API to ensure consistency with detail pages
+      // This runs the same runMisoAnalysis() as detail pages
+      if (personality) {
         try {
-          // Polyfill: If analysis snapshot is missing Big5 but DB has it, inject it!
-          if (!result.normalized) { result.normalized = {} }
-          const p = personality as unknown as PersonalityProfile
-          if ((!result.normalized.big5 || !result.normalized.big5.O) && p) {
-            // IMPORTANT: Use PERCENTILE values (0-100), NOT raw Likert scores (1-5)
-            // getPersonalizedRecommendations expects percentile values
-            result.normalized.big5 = {
-              O: p.big5_openness ?? 50,
-              C: p.big5_conscientiousness ?? 50,
-              E: p.big5_extraversion ?? 50,
-              A: p.big5_agreeableness ?? 50,
-              N: p.big5_neuroticism ?? 50
+          const recResponse = await fetch('/api/insights/recommendations')
+          const recData = await recResponse.json()
+
+          if (recData.success && recData.recommendations) {
+            setRecommendations(recData.recommendations)
+
+            // Also update scientific analysis and topVia if API provides fresher data
+            if (recData.scientificAnalysis) {
+              setScientificAnalysis(recData.scientificAnalysis)
+            }
+            if (recData.topStrength) {
+              topVia = recData.topStrength
             }
           }
-
-          const recs = getPersonalizedRecommendations(result)
-          setRecommendations(recs)
         } catch (e) {
-          console.error("Failed to generate recommendations", e)
-        }
-      } else if (personality) {
-        // Fallback: If no analysis log exists but we have personality data, generate recommendations directly
-        // This ensures users with legacy data still see the insights UI
-        try {
-          // Create a minimal analysis result structure that the service expects
-          // IMPORTANT: Use PERCENTILE values (0-100), NOT raw Likert scores (1-5)
-          const p = personality as unknown as PersonalityProfile
-          const minimalResult = {
-            normalized: {
-              big5: {
-                O: p.big5_openness ?? 50,
-                C: p.big5_conscientiousness ?? 50,
-                E: p.big5_extraversion ?? 50,
-                A: p.big5_agreeableness ?? 50,
-                N: p.big5_neuroticism ?? 50
-              }
-            }
-          }
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const recs = getPersonalizedRecommendations(minimalResult as any)
-          setRecommendations(recs)
-        } catch (e) {
-          console.error("Failed to generate fallback recommendations", e)
+          console.error("Failed to fetch fresh recommendations", e)
         }
       }
 
