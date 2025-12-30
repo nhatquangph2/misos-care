@@ -52,6 +52,7 @@ async function getClinicalData(userId: string) {
     const misoResult = await runMisoAnalysis({
         big5_raw,
         mbti: profile.mbti_type || undefined,
+        dass21_raw: dassRecord?.subscale_scores as any // Cast explicitly to match DASS21RawScores type
     }, userId)
 
     const recommendations = getPersonalizedRecommendations(misoResult)
