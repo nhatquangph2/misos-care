@@ -42,20 +42,34 @@ async function getSportsData(userId: string) {
         N: profile.big5_neuroticism_raw || profile.big5_neuroticism || 50,
     }
 
-    const misoResult = await runMisoAnalysis({
-        big5_raw,
-        mbti: profile.mbti_type || undefined,
-        dass21_raw: dassRecord?.subscale_scores as any
-    }, userId)
+    try {
+        const misoResult = await runMisoAnalysis({
+            big5_raw,
+            mbti: profile.mbti_type || undefined,
+            dass21_raw: dassRecord?.subscale_scores as any
+        }, userId)
 
-    const recommendations = getPersonalizedRecommendations(misoResult)
+        console.log('--- SPORTS DEBUG: Miso Result Generated ---')
 
-    // Get Flow State recommendations
-    const flowStates = getFlowStateRecommendations(big5_raw)
+        const recommendations = getPersonalizedRecommendations(misoResult)
+        console.log('--- SPORTS DEBUG: Recommendations ---', JSON.stringify(recommendations?.sports, null, 2))
 
-    return {
-        sports: recommendations.sports,
-        flowStates
+        // Get Flow State recommendations
+        let flowStates: FlowStateRecommendation[] = []
+        try {
+            flowStates = getFlowStateRecommendations(big5_raw)
+            console.log('--- SPORTS DEBUG: Flow States ---', JSON.stringify(flowStates, null, 2))
+        } catch (flowError) {
+            console.error('--- SPORTS DEBUG: Flow State Error ---', flowError)
+        }
+
+        return {
+            sports: recommendations.sports,
+            flowStates
+        }
+    } catch (error) {
+        console.error('--- SPORTS DEBUG: Critical Data Fetch Error ---', error)
+        return null
     }
 }
 
