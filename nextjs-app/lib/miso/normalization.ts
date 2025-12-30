@@ -391,9 +391,14 @@ export function getMBTIRiskProfile(mbti: string): MBTIRiskProfile {
  */
 export function validateRawScore(
   raw: number,
-  norm: NormData,
+  norm: NormData | undefined,
   label: string
 ): { valid: boolean; error?: string } {
+  // Defensive: if norm is undefined, skip validation (assume valid)
+  if (!norm || !norm.range) {
+    console.warn(`validateRawScore: No norm found for ${label}, skipping validation`)
+    return { valid: true }
+  }
   if (raw < norm.range[0] || raw > norm.range[1]) {
     return {
       valid: false,
@@ -431,12 +436,17 @@ export function validateDASS21Scores(
 ): { valid: boolean; errors: string[] } {
   const errors: string[] = []
 
-  for (const [scale, value] of Object.entries(scores)) {
+  // Only validate D, A, S keys - ignore other keys in subscale_scores
+  const validKeys = ['D', 'A', 'S']
+  for (const scale of validKeys) {
+    const value = (scores as Record<string, number | undefined>)[scale]
     if (value !== undefined && value !== null) {
       const norm = DASS21_NORMS[scale]
-      const validation = validateRawScore(value, norm, `DASS21-${scale}`)
-      if (!validation.valid && validation.error) {
-        errors.push(validation.error)
+      if (norm) {
+        const validation = validateRawScore(value, norm, `DASS21-${scale}`)
+        if (!validation.valid && validation.error) {
+          errors.push(validation.error)
+        }
       }
     }
   }
