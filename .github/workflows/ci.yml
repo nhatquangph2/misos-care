@@ -38,8 +38,8 @@ jobs:
 
       - name: Build Next.js App
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
         run: |
           cd nextjs-app
           npm run build
@@ -74,7 +74,7 @@ jobs:
         with:
           status: ${{ job.status }}
           text: 'Staging deployment ${{ job.status }}'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_WEBHOOK }}
 
   # Job 3: Deploy to Production (only on main branch)
   deploy-production:
@@ -106,4 +106,4 @@ jobs:
         with:
           status: ${{ job.status }}
           text: 'Production deployment ${{ job.status }}'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL || secrets.SLACK_WEBHOOK }}
