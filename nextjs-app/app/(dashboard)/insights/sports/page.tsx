@@ -138,21 +138,31 @@ export default async function SportsInsightsPage() {
                     </h2>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {flowStates.map((flow: FlowStateRecommendation, i: number) => (
-                            <div key={i} className={`p-3 rounded-lg ${flow.currentStatus === 'optimal' ? 'bg-green-100 border border-green-200' :
-                                flow.currentStatus === 'blocked' ? 'bg-red-100 border border-red-200' :
-                                    'bg-white/80 border border-gray-200'
-                                }`}>
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="font-medium text-gray-700">{flow.condition.nameVi}</span>
-                                    {flow.currentStatus === 'optimal' && <CheckCircle className="h-4 w-4 text-green-600" />}
-                                    {flow.currentStatus === 'blocked' && <AlertTriangle className="h-4 w-4 text-red-600" />}
+                        {flowStates.map((flow: FlowStateRecommendation, i: number) => {
+                            // Debug check
+                            if (typeof flow.condition?.nameVi !== 'string') {
+                                console.error(`FlowState Render Error: nameVi is ${typeof flow.condition?.nameVi}`, flow)
+                            }
+                            return (
+                                <div key={i} className={`p-3 rounded-lg ${flow.currentStatus === 'optimal' ? 'bg-green-100 border border-green-200' :
+                                    flow.currentStatus === 'blocked' ? 'bg-red-100 border border-red-200' :
+                                        'bg-white/80 border border-gray-200'
+                                    }`}>
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="font-medium text-gray-700">
+                                            {typeof flow.condition?.nameVi === 'string' ? flow.condition.nameVi : 'Điều kiện Flow'}
+                                        </span>
+                                        {flow.currentStatus === 'optimal' && <CheckCircle className="h-4 w-4 text-green-600" />}
+                                        {flow.currentStatus === 'blocked' && <AlertTriangle className="h-4 w-4 text-red-600" />}
+                                    </div>
+                                    {flow.tipsVi && flow.tipsVi.length > 0 && (
+                                        <p className="text-xs text-gray-600">Tip: {
+                                            typeof flow.tipsVi[0] === 'string' ? flow.tipsVi[0] : 'Hãy thử thách bản thân vừa đủ'
+                                        }</p>
+                                    )}
                                 </div>
-                                {flow.tipsVi && flow.tipsVi.length > 0 && (
-                                    <p className="text-xs text-gray-600">Tip: {flow.tipsVi[0]}</p>
-                                )}
-                            </div>
-                        ))}
+                            )
+                        })}
                     </div>
 
                     <p className="text-xs text-gray-500 mt-4">
@@ -172,7 +182,7 @@ export default async function SportsInsightsPage() {
                     {sportsData.dimensions.map((dim: { dimension: string; score: number; level: string }, index: number) => (
                         <div key={index} className="p-4 bg-gray-50 rounded-lg">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-gray-700">{getDimensionVi(dim.dimension)}</span>
+                                <span className="font-medium text-gray-700">{getDimensionVi(String(dim.dimension || ''))}</span>
                                 <span className="text-2xl font-bold text-orange-600">{dim.score}</span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
@@ -208,7 +218,9 @@ export default async function SportsInsightsPage() {
                                 {index + 1}
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-gray-900">{activity.nameVi}</h3>
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    {typeof activity.nameVi === 'string' ? activity.nameVi : 'Hoạt động thể thao'}
+                                </h3>
                                 <p className="text-sm text-gray-500 capitalize">{activity.category}</p>
 
                                 <div className="mt-3">
@@ -217,8 +229,8 @@ export default async function SportsInsightsPage() {
                                         <div>
                                             <p className="text-sm font-medium text-gray-700">Lợi ích tâm lý:</p>
                                             <ul className="text-sm text-gray-600 mt-1">
-                                                {activity.mentalBenefitsVi.map((benefit: string, i: number) => (
-                                                    <li key={i}>• {benefit}</li>
+                                                {Array.isArray(activity.mentalBenefitsVi) && activity.mentalBenefitsVi.map((benefit: string, i: number) => (
+                                                    <li key={i}>• {typeof benefit === 'string' ? benefit : JSON.stringify(benefit)}</li>
                                                 ))}
                                             </ul>
                                         </div>
