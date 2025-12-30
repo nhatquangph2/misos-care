@@ -20,13 +20,14 @@ export const metadata: Metadata = {
 async function getClinicalData(userId: string) {
     const supabase = await createClient()
 
-    // Get user's personality profile with correct column names
+    // Get user's personality profile
     const { data: profile } = await supabase
         .from('personality_profiles')
-        .select('big5_openness, big5_conscientiousness, big5_extraversion, big5_agreeableness, big5_neuroticism, mbti_type')
+        .select('*')
         .eq('user_id', userId)
         .single()
 
+    if (profile?.big5_openness == null) return null
     // Get DASS scores from mental_health_records
     const { data: dassRecord } = await supabase
         .from('mental_health_records')
@@ -189,8 +190,8 @@ export default async function ClinicalInsightsPage() {
                                             item.scale === 'anxiety' ? 'Lo âu (Anxiety)' : 'Căng thẳng (Stress)'}
                                     </h3>
                                     <span className={`px-3 py-1 rounded-full text-sm font-bold ${item.severity === 'severe' || item.severity === 'extremely_severe' ? 'bg-red-100 text-red-700' :
-                                            item.severity === 'moderate' ? 'bg-orange-100 text-orange-700' :
-                                                'bg-blue-100 text-blue-700'
+                                        item.severity === 'moderate' ? 'bg-orange-100 text-orange-700' :
+                                            'bg-blue-100 text-blue-700'
                                         }`}>
                                         {item.severityVi}
                                     </span>
@@ -227,7 +228,7 @@ export default async function ClinicalInsightsPage() {
                     <div className="grid md:grid-cols-2 gap-4">
                         {transdiagnostic.map((proc, index) => (
                             <div key={index} className={`p-4 rounded-lg border ${proc.process.riskLevel === 'high' ? 'bg-red-50 border-red-200' :
-                                    'bg-gray-50 border-gray-200'
+                                'bg-gray-50 border-gray-200'
                                 }`}>
                                 <div className="flex justify-between items-start mb-2">
                                     <h3 className="font-medium text-gray-900">{proc.process.nameVi}</h3>

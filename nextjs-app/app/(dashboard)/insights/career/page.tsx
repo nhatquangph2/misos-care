@@ -14,14 +14,14 @@ export const metadata: Metadata = {
 async function getCareerData(userId: string) {
     const supabase = await createClient()
 
-    // Get user's personality profile with correct column names
+    // Get user's personality profile
     const { data: profile } = await supabase
         .from('personality_profiles')
-        .select('big5_openness, big5_conscientiousness, big5_extraversion, big5_agreeableness, big5_neuroticism, mbti_type')
+        .select('*')
         .eq('user_id', userId)
         .single()
 
-    if (!profile?.big5_openness) return null
+    if (profile?.big5_openness == null) return null
 
     const big5_raw = {
         O: profile.big5_openness || 0,

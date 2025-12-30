@@ -15,14 +15,14 @@ export const metadata: Metadata = {
 async function getSportsData(userId: string) {
     const supabase = await createClient()
 
-    // Get user's personality profile with correct column names
+    // Get user's personality profile
     const { data: profile } = await supabase
         .from('personality_profiles')
-        .select('big5_openness, big5_conscientiousness, big5_extraversion, big5_agreeableness, big5_neuroticism, mbti_type')
+        .select('*')
         .eq('user_id', userId)
         .single()
 
-    if (!profile?.big5_openness) return null
+    if (profile?.big5_openness == null) return null
 
     const big5_raw = {
         O: profile.big5_openness || 0,
@@ -129,8 +129,8 @@ export default async function SportsInsightsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                         {flowStates.map((flow: FlowStateRecommendation, i: number) => (
                             <div key={i} className={`p-3 rounded-lg ${flow.currentStatus === 'optimal' ? 'bg-green-100 border border-green-200' :
-                                    flow.currentStatus === 'blocked' ? 'bg-red-100 border border-red-200' :
-                                        'bg-white/80 border border-gray-200'
+                                flow.currentStatus === 'blocked' ? 'bg-red-100 border border-red-200' :
+                                    'bg-white/80 border border-gray-200'
                                 }`}>
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="font-medium text-gray-700">{flow.condition.nameVi}</span>
