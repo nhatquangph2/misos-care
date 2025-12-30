@@ -16,7 +16,7 @@ import { VIA_STRENGTHS, type VIAStrength } from '@/constants/knowledge/via-knowl
 import { BIG5_DISORDER_MAPPINGS, TRANSDIAGNOSTIC_PROCESSES } from '@/constants/knowledge/clinical-psychology'
 import { MBTI_TYPES, MBTI_SCIENTIFIC_CONTEXT } from '@/constants/knowledge/mbti-knowledge'
 import { LEARNING_TECHNIQUES } from '@/constants/knowledge/learning-sciences'
-import { FLOW_STATE_CONDITIONS, EXERCISE_MENTAL_HEALTH } from '@/constants/knowledge/sports-psychology'
+import { FLOW_STATE_CONDITIONS, EXERCISE_MENTAL_HEALTH_EFFECTS } from '@/constants/knowledge/sports-psychology'
 import type { Big5Profile } from '@/constants/knowledge'
 
 // ============================================
@@ -1137,7 +1137,7 @@ export function getExerciseMentalHealthEffects(
     const recommendations: ExerciseMentalHealthRecommendation[] = []
 
     // Get relevant exercise recommendations based on DASS profile
-    for (const effect of EXERCISE_MENTAL_HEALTH || []) {
+    for (const effect of EXERCISE_MENTAL_HEALTH_EFFECTS || []) {
         const isRelevant =
             (dassProfile.D >= 10 && effect.condition.toLowerCase().includes('depress')) ||
             (dassProfile.A >= 8 && effect.condition.toLowerCase().includes('anxiety')) ||
