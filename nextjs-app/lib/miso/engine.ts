@@ -241,7 +241,7 @@ export async function runMisoAnalysis(
 
   // STEP 0: Check completeness
   if (result.completeness.level === 'NONE') {
-    result.summary = 'Cần DASS-21 để bắt đầu phân tích'
+    result.summary = 'Cần ít nhất DASS-21 hoặc Big-5 để bắt đầu phân tích'
     return result
   }
 

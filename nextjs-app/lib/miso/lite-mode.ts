@@ -317,15 +317,28 @@ export function assessDataCompleteness(data: {
   const hasVIA = !!data.via_raw && Object.keys(data.via_raw).length > 0;
   const hasMBTI = !!data.mbti
 
-  // No DASS = cannot analyze
+  // No DASS check revised: Allow Big5 only for partial analysis
   if (!hasDASS) {
+    if (hasBig5) {
+      // Special Case: Big5 Only (Valid for Career/Learning insights)
+      return {
+        level: 'PARTIAL_BIG5',
+        mode: 'LITE',
+        confidence: 'MEDIUM',
+        features: ['hồ sơ tính cách', 'định hướng nghề nghiệp', 'phong cách học tập'],
+        has: { dass: false, big5: true, via: hasVIA, mbti: hasMBTI },
+        message: 'Có dữ liệu tính cách (Big5). Thiếu DASS-21 để phân tích sức khỏe tinh thần.',
+        next: 'complete_dass21'
+      } as any // Force cast to avoid strict type issues if interface hasn't updated yet
+    }
+
     return {
       level: 'NONE',
       mode: null,
       confidence: 'LOW',
       features: [],
       has: { dass: false, big5: false, via: false, mbti: false },
-      message: 'Cần ít nhất DASS-21 để phân tích',
+      message: 'Cần ít nhất DASS-21 hoặc Big-5 để phân tích',
       next: 'complete_dass21',
     }
   }
