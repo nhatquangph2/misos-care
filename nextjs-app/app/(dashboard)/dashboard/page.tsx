@@ -177,6 +177,29 @@ export default function DashboardPage() {
         } catch (e) {
           console.error("Failed to generate recommendations", e)
         }
+      } else if (personality) {
+        // Fallback: If no analysis log exists but we have personality data, generate recommendations directly
+        // This ensures users with legacy data still see the insights UI
+        try {
+          // Create a minimal analysis result structure that the service expects
+          const p = personality as unknown as PersonalityProfile
+          const minimalResult = {
+            normalized: {
+              big5: {
+                O: p.big5_openness ?? 50,
+                C: p.big5_conscientiousness ?? 50,
+                E: p.big5_extraversion ?? 50,
+                A: p.big5_agreeableness ?? 50,
+                N: p.big5_neuroticism ?? 50
+              }
+            }
+          }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const recs = getPersonalizedRecommendations(minimalResult as any)
+          setRecommendations(recs)
+        } catch (e) {
+          console.error("Failed to generate fallback recommendations", e)
+        }
       }
 
       setStats({
