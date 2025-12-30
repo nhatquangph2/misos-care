@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { runMisoAnalysis } from '@/lib/miso/engine'
 import { getPersonalizedRecommendations } from '@/services/recommendation.service'
+import { BIG5_NORMS, DASS21_NORMS } from '@/lib/miso/constants'
 
 /**
  * Diagnostic API to debug why Insight Pages return null
@@ -19,6 +20,12 @@ export async function GET() {
         if (authError || !user) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
         }
+
+        log('DEBUG: BIG5_NORMS Checks', {
+            Defined: !!BIG5_NORMS,
+            Keys: BIG5_NORMS ? Object.keys(BIG5_NORMS) : 'None',
+            SampleN: BIG5_NORMS?.['N']
+        })
 
         log('User ID', user.id)
 
