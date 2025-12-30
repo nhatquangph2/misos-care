@@ -734,7 +734,17 @@ export function getMentalToughnessProfile(big5: {
         let score = 50 // Base
 
         const corr = dim.big5Correlations
-        score += (50 - big5.N) * corr.N * 0.4  // Invert N (low N = high MT)
+
+        // Mental Toughness correlations from research:
+        // N correlates NEGATIVELY with MT (high N = low MT)
+        // So we use (50 - N) to invert, then multiply by |correlation|
+        // Low N (e.g., 2) → (50-2) = 48 → positive contribution
+        // High N (e.g., 80) → (50-80) = -30 → negative contribution
+
+        // For N: use absolute value of correlation since we already inverted
+        score += (50 - big5.N) * Math.abs(corr.N) * 0.4
+
+        // For other traits: deviation from 50 * correlation weight
         score += (big5.E - 50) * corr.E * 0.2
         score += (big5.O - 50) * corr.O * 0.2
         score += (big5.A - 50) * corr.A * 0.1
