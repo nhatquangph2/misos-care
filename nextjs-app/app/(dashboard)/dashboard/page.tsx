@@ -159,8 +159,19 @@ export default function DashboardPage() {
 
         // Generate Personalized Recommendations (NEW)
         try {
-          // We need to ensure result has structure of MisoAnalysisResult
-          // getPersonalizedRecommendations handles robustly?
+          // Polyfill: If analysis snapshot is missing Big5 but DB has it, inject it!
+          if (!result.normalized) { result.normalized = {} }
+          const p = personality as unknown as PersonalityProfile
+          if ((!result.normalized.big5 || !result.normalized.big5.O) && p) {
+            result.normalized.big5 = {
+              O: p.big5_openness ?? 50,
+              C: p.big5_conscientiousness ?? 50,
+              E: p.big5_extraversion ?? 50,
+              A: p.big5_agreeableness ?? 50,
+              N: p.big5_neuroticism ?? 50
+            }
+          }
+
           const recs = getPersonalizedRecommendations(result)
           setRecommendations(recs)
         } catch (e) {
