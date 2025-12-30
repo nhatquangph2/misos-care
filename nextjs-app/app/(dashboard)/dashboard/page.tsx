@@ -163,12 +163,14 @@ export default function DashboardPage() {
           if (!result.normalized) { result.normalized = {} }
           const p = personality as unknown as PersonalityProfile
           if ((!result.normalized.big5 || !result.normalized.big5.O) && p) {
+            // IMPORTANT: Use RAW scores if available, then normalize them
+            // Dashboard should match detail pages for consistency
             result.normalized.big5 = {
-              O: p.big5_openness ?? 50,
-              C: p.big5_conscientiousness ?? 50,
-              E: p.big5_extraversion ?? 50,
-              A: p.big5_agreeableness ?? 50,
-              N: p.big5_neuroticism ?? 50
+              O: p.big5_openness_raw ?? p.big5_openness ?? 50,
+              C: p.big5_conscientiousness_raw ?? p.big5_conscientiousness ?? 50,
+              E: p.big5_extraversion_raw ?? p.big5_extraversion ?? 50,
+              A: p.big5_agreeableness_raw ?? p.big5_agreeableness ?? 50,
+              N: p.big5_neuroticism_raw ?? p.big5_neuroticism ?? 50
             }
           }
 
@@ -182,15 +184,16 @@ export default function DashboardPage() {
         // This ensures users with legacy data still see the insights UI
         try {
           // Create a minimal analysis result structure that the service expects
+          // IMPORTANT: Use RAW scores like detail pages for consistency
           const p = personality as unknown as PersonalityProfile
           const minimalResult = {
             normalized: {
               big5: {
-                O: p.big5_openness ?? 50,
-                C: p.big5_conscientiousness ?? 50,
-                E: p.big5_extraversion ?? 50,
-                A: p.big5_agreeableness ?? 50,
-                N: p.big5_neuroticism ?? 50
+                O: p.big5_openness_raw ?? p.big5_openness ?? 50,
+                C: p.big5_conscientiousness_raw ?? p.big5_conscientiousness ?? 50,
+                E: p.big5_extraversion_raw ?? p.big5_extraversion ?? 50,
+                A: p.big5_agreeableness_raw ?? p.big5_agreeableness ?? 50,
+                N: p.big5_neuroticism_raw ?? p.big5_neuroticism ?? 50
               }
             }
           }
