@@ -6,23 +6,42 @@
  */
 
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createClient as createServiceClient } from '@supabase/supabase-js'
+import { createClient as createAuthClient } from '@/lib/supabase/server'
 import { normalizeBig5 } from '@/lib/miso/normalization'
 
 export async function GET() {
     try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-        const supabase = createClient(supabaseUrl, supabaseKey)
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+
+        let supabase
+        let mode = 'GLOBAL'
+
+        if (serviceKey && supabaseUrl) {
+            // GLOBAL MODE: Fix everyone
+            supabase = createServiceClient(supabaseUrl, serviceKey)
+        } else {
+            // SELF-HEAL MODE: Fix current user only
+            mode = 'USER_ONLY (Service Key missing)'
+            supabase = await createAuthClient()
+        }
 
         // 1. Fetch Inconsistent Records (Raw exists)
-        const { data: profiles, error } = await supabase
+        let query = supabase
             .from('personality_profiles')
             .select('*')
             .not('big5_openness_raw', 'is', null)
 
+        // If in User Mode, RLS automatically restricts this to the current user
+
+        const { data: profiles, error } = await query
+
         if (error) {
-            return NextResponse.json({ error: error.message }, { status: 500 })
+            return NextResponse.json({
+                error: error.message,
+                hint: mode === 'GLOBAL' ? 'Check DB permissions' : 'You might not be logged in'
+            }, { status: 500 })
         }
 
         let updatedCount = 0
