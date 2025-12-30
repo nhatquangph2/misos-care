@@ -38,31 +38,39 @@ export async function GET() {
             return NextResponse.json({ logs, result: 'NULL PROFILE' })
         }
 
+        // 1.5 Fetch DASS Record (Mirroring Page Logic)
+        const { data: dassRecord, error: dassError } = await supabase
+            .from('mental_health_records')
+            .select('subscale_scores')
+            .eq('user_id', user.id)
+            .eq('test_type', 'DASS21')
+            .order('completed_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+        log('DASS Record Fetch', { found: !!dassRecord, error: dassError })
+
         log('Profile Raw Data', {
             big5_openness: profile.big5_openness,
             big5_openness_raw: profile.big5_openness_raw,
-            // Check others
-            C: profile.big5_conscientiousness,
-            E: profile.big5_extraversion,
-            A: profile.big5_agreeableness,
-            N: profile.big5_neuroticism,
         })
 
-        // 2. Construct Raw Input (The Fix Logic)
+        // 2. Construct Raw Input (New Priority: Raw First)
         const big5_raw = {
-            O: profile.big5_openness || profile.big5_openness_raw || 50,
-            C: profile.big5_conscientiousness || profile.big5_conscientiousness_raw || 50,
-            E: profile.big5_extraversion || profile.big5_extraversion_raw || 50,
-            A: profile.big5_agreeableness || profile.big5_agreeableness_raw || 50,
-            N: profile.big5_neuroticism || profile.big5_neuroticism_raw || 50,
+            O: profile.big5_openness_raw || profile.big5_openness || 50,
+            C: profile.big5_conscientiousness_raw || profile.big5_conscientiousness || 50,
+            E: profile.big5_extraversion_raw || profile.big5_extraversion || 50,
+            A: profile.big5_agreeableness_raw || profile.big5_agreeableness || 50,
+            N: profile.big5_neuroticism_raw || profile.big5_neuroticism || 50,
         }
-        log('Constructed Big5 Raw Input', big5_raw)
+        log('Constructed Big5 Raw Input (Raw Priority)', big5_raw)
 
         // 3. Run Miso Analysis
         try {
             const misoResult = await runMisoAnalysis({
                 big5_raw,
                 mbti: profile.mbti_type || undefined,
+                dass21_raw: dassRecord?.subscale_scores as any // Explicit pass
             }, user.id)
 
             log('Miso Result Normalized', misoResult.normalized)
