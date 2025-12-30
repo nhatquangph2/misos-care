@@ -24,11 +24,21 @@ export function RecommendationSummaryCards({ recommendations, isLoading }: Recom
         )
     }
 
-    if (!recommendations) {
+    const hasAnyRecommendation = recommendations && (
+        recommendations.career ||
+        recommendations.learning ||
+        recommendations.sports ||
+        recommendations.clinical
+    )
+
+    if (!recommendations || !hasAnyRecommendation) {
         return (
             <Card className="bg-yellow-50 border-yellow-200">
                 <CardContent className="p-6 text-center">
                     <p className="text-yellow-700">Cần hoàn thành bài kiểm tra Big Five để xem gợi ý cá nhân hóa</p>
+                    <Link href="/tests/big5" className="text-yellow-800 underline font-medium mt-2 block">
+                        Làm bài test ngay →
+                    </Link>
                 </CardContent>
             </Card>
         )

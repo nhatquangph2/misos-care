@@ -14,7 +14,11 @@ import { ProductTour } from '@/components/onboarding/ProductTour'
 import { dashboardTour } from '@/lib/tours/dashboard-tour'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import { ScientificAnalysisCard } from '@/components/miso/ScientificAnalysisCard'
+import { RecommendationSummaryCards } from '@/components/insights/RecommendationSummaryCards'
+import { getPersonalizedRecommendations, type PersonalizedRecommendations } from '@/services/recommendation.service'
 import type { MisoAnalysisResult } from '@/types/miso-v3'
+import PersonalityOverview from '@/components/profile/PersonalityOverview'
+import type { PersonalityProfile } from '@/types/profile'
 
 interface DashboardStats {
   testsCompleted: number
@@ -32,11 +36,6 @@ interface DashboardStats {
 // Define specific interfaces for DB responses to avoid 'any'
 interface UserData {
   name: string
-  [key: string]: unknown
-}
-
-interface PersonalityProfile {
-  mbti_type: string | null
   [key: string]: unknown
 }
 
@@ -61,6 +60,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [analyzing, setAnalyzing] = useState(false)
   const [scientificAnalysis, setScientificAnalysis] = useState<MisoAnalysisResult['scientific_analysis'] | undefined>(undefined)
+  const [recommendations, setRecommendations] = useState<PersonalizedRecommendations | null>(null)
+  const [personalityProfile, setPersonalityProfile] = useState<PersonalityProfile | null>(null)
   const [hasPriorAnalysis, setHasPriorAnalysis] = useState(false)
   const [dashboardTourCompleted, setDashboardTourCompleted] = useLocalStorage('dashboard-tour-completed', false)
   const [startTour, setStartTour] = useState(false)
@@ -89,6 +90,10 @@ export default function DashboardPage() {
         .select('*')
         .eq('user_id', authUser.id)
         .maybeSingle()
+
+      if (personality) {
+        setPersonalityProfile(personality as PersonalityProfile)
+      }
 
       // Get mental health records count
       const { count } = await supabase
@@ -151,11 +156,21 @@ export default function DashboardPage() {
         if (result.scientific_analysis) {
           setScientificAnalysis(result.scientific_analysis)
         }
+
+        // Generate Personalized Recommendations (NEW)
+        try {
+          // We need to ensure result has structure of MisoAnalysisResult
+          // getPersonalizedRecommendations handles robustly?
+          const recs = getPersonalizedRecommendations(result)
+          setRecommendations(recs)
+        } catch (e) {
+          console.error("Failed to generate recommendations", e)
+        }
       }
 
       setStats({
         testsCompleted: count || 0,
-        personalityType: (personality as unknown as PersonalityProfile)?.mbti_type || undefined,
+        personalityType: (personality as PersonalityProfile)?.mbti_type || undefined,
         topStrength: topVia,
         latestMentalHealthScore: latestRecord ? {
           type: latestRecord.test_type,
@@ -393,6 +408,22 @@ export default function DashboardPage() {
           </Button>
         </div>
       ) : null}
+
+      {/* Domain Insights (NEW) */}
+      {recommendations && (
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Gợi ý Chuyên sâu & Cá nhân hóa</h2>
+          <RecommendationSummaryCards recommendations={recommendations} />
+        </div>
+      )}
+
+      {/* Personality Profile (NEW) */}
+      {personalityProfile && (personalityProfile.mbti_type || personalityProfile.big5_openness) && (
+        <div className="mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Hồ sơ Tính cách của bạn</h2>
+          <PersonalityOverview profile={personalityProfile} />
+        </div>
+      )}
 
       {/* Quick Actions */}
       <div className="mb-8">
