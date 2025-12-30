@@ -11,13 +11,27 @@ import {
   type NormData,
 } from './constants'
 
-// EMERGENCY FALLBACK: Hardcode Norms to prevent import failure
+/**
+ * BFI-2 Norms (Big Five Inventory 2)
+ * Based on Soto & John (2017) and subsequent validation studies
+ * Scores are AVERAGES on 1-5 Likert scale (not sums)
+ * 
+ * Reference: Soto, C. J., & John, O. P. (2017). 
+ * The next Big Five Inventory (BFI-2): Developing and assessing a hierarchical model 
+ * with 15 facets to enhance bandwidth, fidelity, and predictive power.
+ * Journal of Personality and Social Psychology, 113(1), 117-143.
+ */
 const LOCAL_BIG5_NORMS: Record<string, NormData> = {
-  N: { mean: 25.8, sd: 5.9, range: [8, 40] },
-  E: { mean: 25.2, sd: 5.8, range: [8, 40] },
-  O: { mean: 36.1, sd: 5.5, range: [10, 50] },
-  A: { mean: 36.8, sd: 5.2, range: [9, 45] },
-  C: { mean: 35.2, sd: 6.0, range: [9, 45] },
+  // Neuroticism: typically lower mean, people generally report lower anxiety
+  N: { mean: 2.6, sd: 0.7, range: [1, 5] },
+  // Extraversion: moderate mean
+  E: { mean: 3.3, sd: 0.7, range: [1, 5] },
+  // Openness: moderate-high mean
+  O: { mean: 3.6, sd: 0.6, range: [1, 5] },
+  // Agreeableness: typically higher mean (people self-report as agreeable)
+  A: { mean: 3.7, sd: 0.5, range: [1, 5] },
+  // Conscientiousness: moderate-high mean
+  C: { mean: 3.5, sd: 0.6, range: [1, 5] },
 }
 
 // EMERGENCY FALLBACK: Hardcode DASS21 Norms
@@ -133,22 +147,23 @@ export function normalizeBig5(rawScores: Partial<Big5RawScores>): {
       // Use local norms to guarantee availability
       const norm = LOCAL_BIG5_NORMS[trait]
 
-
-      // Auto-scaling logic
-      if (raw <= 6.0) {
-        // Likely Average Score (1-5)
-        // Map 1-5 to Norm Range
-        const minRaw = 1;
-        const maxRaw = 5;
-        raw = ((raw - minRaw) / (maxRaw - minRaw)) * (norm.range[1] - norm.range[0]) + norm.range[0];
-      } else if (raw > norm.range[1]) {
-        if (raw <= 60) {
-          // Likely BFI-2 Sum (12-60)
-          raw = ((raw - 12) / 48) * (norm.range[1] - norm.range[0]) + norm.range[0]
-        } else if (raw <= 100) {
-          // Likely Percentage (0-100)
-          raw = (raw / 100) * (norm.range[1] - norm.range[0]) + norm.range[0]
-        }
+      // Auto-scaling logic for different input formats
+      // Norms are now on 1-5 scale (BFI-2 averages)
+      if (raw >= 1 && raw <= 5) {
+        // Already in 1-5 range (BFI-2 average) - use directly
+        // No scaling needed
+      } else if (raw > 5 && raw <= 60) {
+        // Likely BFI-2 Sum (12-60) - convert to average
+        // BFI-2 has 12 items per domain
+        raw = raw / 12
+        // Clamp to valid range
+        raw = Math.max(1, Math.min(5, raw))
+      } else if (raw > 60 && raw <= 100) {
+        // Likely Percentage (0-100) - convert to 1-5 scale
+        raw = (raw / 100) * 4 + 1
+      } else if (raw < 1) {
+        // Edge case: value too low, clamp to 1
+        raw = 1
       }
 
       normalized[trait] = createNormalizedScore(raw, norm)
