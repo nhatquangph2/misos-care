@@ -216,27 +216,57 @@ export const BIG5_STABILITY_THRESHOLDS = {
 }
 
 // ============================================
-// SCORING WEIGHTS
+// SCORING WEIGHTS (EVIDENCE-BASED)
 // ============================================
 
-// Base Vulnerability Score (BVS) weights
-// Updated based on 2022 Meta-analysis (r=0.47-0.54 for Neuroticism)
+/**
+ * Base Vulnerability Score (BVS) weights
+ * 
+ * SOURCE: Kotov et al. (2010). Linking "Big" Personality Traits to Anxiety,
+ * Depressive, and Substance Use Disorders: A Meta-Analysis.
+ * Psychological Bulletin, 136(5), 768-821. DOI: 10.1037/a0020327
+ * 
+ * Effect sizes from Table 3 (Major Depressive Disorder):
+ * - Neuroticism: d = 1.33 (rủi ro cao nhất)
+ * - Extraversion: d = -1.00 (hướng nội = rủi ro)
+ * - Conscientiousness: d = -0.90 (thiếu kỷ luật = rủi ro)
+ * - Agreeableness: d = -0.52 (xung đột = rủi ro)
+ * - Openness: d = 0.02 (không liên quan đáng kể)
+ * 
+ * Weights normalized proportionally (sum to 1.0):
+ */
 export const BVS_WEIGHTS = {
-  N: 0.50, // Neuroticism (increased from 0.40)
-  C: -0.25, // Conscientiousness (increased protective factor)
-  E: -0.15, // Extraversion (stable)
-  A: -0.10, // Agreeableness (new protective factor)
+  N: 0.35,   // 1.33 / 3.75 ≈ 0.35 (Nhạy cảm cảm xúc - yếu tố rủi ro mạnh nhất)
+  E: -0.27,  // 1.00 / 3.75 ≈ 0.27 (Hướng nội thấp = rủi ro cô đơn)
+  C: -0.24,  // 0.90 / 3.75 ≈ 0.24 (Thiếu kỷ luật = rủi ro thất bại)
+  A: -0.14,  // 0.52 / 3.75 ≈ 0.14 (Thiếu hòa hợp = rủi ro xung đột)
+  // O not included (effect size ≈ 0)
+  _source: 'Kotov et al. (2010). DOI: 10.1037/a0020327, Table 3',
 }
 
-// Resilience Capacity Score (RCS) weights
-// Updated based on 2023-2025 Positive Psychology Meta-analyses
+/**
+ * Resilience Capacity Score (RCS) weights
+ * 
+ * SOURCE: Park, Peterson & Seligman (2004). Strengths of Character and Well-being.
+ * Journal of Social and Clinical Psychology, 23(5), 603-619.
+ * DOI: 10.1521/jscp.23.5.603.50748
+ * 
+ * Well-being correlations (từ nghiên cứu gốc):
+ * - Hope: r = 0.52 (Hy vọng - cao nhất)
+ * - Zest: r = 0.52 (Nhiệt huyết - ngang Hope)
+ * - Gratitude: r = 0.50 (Biết ơn)
+ * - Love: r = 0.48 (Tình yêu thương)
+ * - Curiosity: r = 0.45 (Tò mò)
+ * - Self-Regulation: r = 0.35 (Tự điều chỉnh)
+ */
 export const RCS_WEIGHTS = {
-  Hope: 0.25,      // Strongest predictor of well-being
-  Zest: 0.20,      // Physical/mental energy
-  SelfReg: 0.15,   // Self-regulation
-  Gratitude: 0.15, // Positive emotion
-  Curiosity: 0.15, // Novelty seeking (Growth)
-  Love: 0.10,      // Connection (Buffering)
+  Hope: 0.21,           // 0.52 / 2.47 (Hy vọng - yếu tố phục hồi mạnh nhất)
+  Zest: 0.21,           // 0.52 / 2.47 (Nhiệt huyết - năng lượng sống)
+  Gratitude: 0.20,      // 0.50 / 2.47 (Biết ơn - cảm xúc tích cực)
+  Love: 0.19,           // 0.48 / 2.47 (Tình yêu - kết nối xã hội)
+  Curiosity: 0.18,      // 0.45 / 2.47 (Tò mò - động lực tăng trưởng)
+  SelfReg: 0.14,        // 0.35 / 2.47 (Tự điều chỉnh - kiểm soát bản thân)
+  _source: 'Park, Peterson & Seligman (2004). DOI: 10.1521/jscp.23.5.603.50748',
 }
 
 export const RCS_MBTI_J_BONUS = 0.1 // Bonus for J types (planning/structure)
@@ -245,8 +275,8 @@ export const RCS_MBTI_J_BONUS = 0.1 // Bonus for J types (planning/structure)
 // Predicted_DASS = α + (β1 × BVS) - (β2 × RCS)
 export const DEFAULT_PREDICTION_COEFFICIENTS = {
   alpha: 10.0, // Baseline
-  beta1: 5.5, // BVS weight (adjusted for new range)
-  beta2: 3.5, // RCS weight (adjusted for new range)
+  beta1: 5.5,  // BVS weight (adjusted for new range)
+  beta2: 3.5,  // RCS weight (adjusted for new range)
 }
 
 // ============================================

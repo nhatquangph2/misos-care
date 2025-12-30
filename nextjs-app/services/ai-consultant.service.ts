@@ -4,6 +4,8 @@ import { BaseService } from './base.service';
 import { BFI2Score } from '@/constants/tests/bfi2-questions';
 import { Database } from '@/types/database';
 import * as Prompts from '@/config/ai-prompts';
+import { buildKnowledgeContextForAI } from './recommendation.service';
+import { getMBTILearningProfile, buildComprehensiveAIContext } from './enhanced-intervention.service';
 
 export interface ConsultationResponse {
   situationAnalysis: string;
@@ -264,11 +266,39 @@ export class AIConsultantService extends BaseService {
         `- Extraversion: ${domains.E}/100\n` +
         `- Agreeableness: ${domains.A}/100\n` +
         `- Neuroticism: ${domains.N}/100\n\n`;
+
+      // 1.1 INJECT ACADEMIC KNOWLEDGE CONTEXT
+      try {
+        const knowledgeContext = buildKnowledgeContextForAI({
+          O: domains.O,
+          C: domains.C,
+          E: domains.E,
+          A: domains.A,
+          N: domains.N,
+        });
+        if (knowledgeContext) {
+          prompt += knowledgeContext;
+        }
+      } catch (error) {
+        console.warn('Could not inject knowledge context:', error);
+      }
     }
 
     if (profile.mbtiType) {
       prompt += `MBTI Type: ${profile.mbtiType}\n`;
-      // We could add MBTI specific descriptions here if we had a mapping
+      // Add MBTI learning style context
+      try {
+        const mbtiLearning = getMBTILearningProfile(profile.mbtiType);
+        if (mbtiLearning) {
+          prompt += `\n--- MBTI LEARNING PROFILE (McCrae & Costa, 1989) ---\n`;
+          prompt += `Phong cách học: ${mbtiLearning.learningStyle.preferredApproachVi}\n`;
+          prompt += `Điểm mạnh: ${mbtiLearning.learningStyle.strengthsVi.join(', ')}\n`;
+          prompt += `Thách thức: ${mbtiLearning.learningStyle.challengesVi.join(', ')}\n`;
+          prompt += `Môi trường lý tưởng: ${mbtiLearning.studyEnvironment.idealVi}\n`;
+        }
+      } catch (error) {
+        console.warn('Could not inject MBTI learning context:', error);
+      }
     }
 
     // VIA STRENGTHS
@@ -361,6 +391,38 @@ export class AIConsultantService extends BaseService {
           prompt += `- ${i.type.replace(/_/g, ' ')}\n`;
         });
       }
+
+      // INJECT COMPREHENSIVE KNOWLEDGE CONTEXT (Options 3-8)
+      if (profile.big5Score && misoAnalysis.normalized?.dass21) {
+        try {
+          const { domains } = profile.big5Score;
+          const dassNorm = misoAnalysis.normalized.dass21;
+          const dassProfile = {
+            D: dassNorm.D?.raw || 0,
+            A: dassNorm.A?.raw || 0,
+            S: dassNorm.S?.raw || 0
+          };
+
+          // Build VIA strengths map from analysis
+          const viaStrengths: Record<string, number> = {};
+          if (misoAnalysis.via_analysis?.signature_strengths) {
+            misoAnalysis.via_analysis.signature_strengths.forEach(s => {
+              viaStrengths[s.strength.toLowerCase().replace(/ /g, '_')] = s.percentile;
+            });
+          }
+
+          const comprehensiveContext = buildComprehensiveAIContext(
+            { O: domains.O, C: domains.C, E: domains.E, A: domains.A, N: domains.N },
+            dassProfile,
+            viaStrengths,
+            profile.mbtiType || undefined
+          );
+          prompt += comprehensiveContext;
+        } catch (error) {
+          console.warn('Could not inject comprehensive context:', error);
+        }
+      }
+
       prompt += `-------------------------------------------\n`;
     }
 

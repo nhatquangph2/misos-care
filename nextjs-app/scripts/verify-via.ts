@@ -35,7 +35,7 @@ async function verify() {
     console.log('Signature Strengths Count:', viaResult.signature_strengths.length);
     console.log('Top Strength:', viaResult.signature_strengths[0]?.name, '(', viaResult.signature_strengths[0]?.percentile, '%)');
 
-    if (viaResult.signature_strengths.length === 5 && viaResult.signature_strengths[0].name.includes('Hope')) {
+    if (viaResult.signature_strengths.length === 5 && (viaResult.signature_strengths[0].name.includes('Hope') || viaResult.signature_strengths[0].name.includes('Hy vọng'))) {
         console.log('✅ VIA Analysis Logic Passed');
     } else {
         console.log('❌ VIA Analysis Logic Failed');
@@ -62,10 +62,6 @@ async function verify() {
         interventions: { immediate: [{ type: 'breathing_exercise' }] }
     } as unknown as MisoAnalysisResult;
 
-    // Since we made buildUserPrompt public, we can call it. 
-    // But strictly it might still be private in types if we import the class type?
-    // We used 'any' cast if TS complains, but we already updated the file to public.
-
     const prompt = aiConsultantService.buildUserPrompt(
         'stress',
         'I feel overwhelmed',
@@ -84,7 +80,7 @@ async function verify() {
     }
 
     const hasVIA = prompt.includes('--- VIA CHARACTER STRENGTHS ---');
-    const hasSigStrength = prompt.includes('Hope');
+    const hasSigStrength = prompt.includes('Hope') || prompt.includes('Hy vọng');
     const hasMBTI = prompt.includes('MBTI Type: INFJ');
     const hasMiso = prompt.includes('MISO V3 DEEP PSYCHOLOGICAL ANALYSIS');
 
