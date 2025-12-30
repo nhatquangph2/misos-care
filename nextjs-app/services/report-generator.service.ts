@@ -36,7 +36,6 @@ export const reportGeneratorService = {
         doc.setFontSize(16);
         doc.setTextColor(102, 51, 153);
         doc.setFont('helvetica', 'bold');
-        // @ts-expect-error - Profile dynamic property
         const profileName = analysis.profile.name || analysis.profile.id;
         doc.text(`Core Profile: ${profileName}`, 20, yPos);
 

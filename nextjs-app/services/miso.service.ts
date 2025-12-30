@@ -83,7 +83,7 @@ export const misoService = {
             .from('personality_profiles')
             .select('mbti_type')
             .eq('user_id', userId)
-            .single()
+            .maybeSingle()
 
         return {
             hasDass: (dassCount || 0) > 0,

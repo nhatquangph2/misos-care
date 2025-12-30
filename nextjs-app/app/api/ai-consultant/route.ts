@@ -27,21 +27,27 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const body = await request.json() as ConsultationRequest
 
-    // Validate request
-    if (!body.userProfile || !body.issue || !body.specificSituation) {
-      return NextResponse.json(
-        { error: 'Missing required fields: userProfile, issue, specificSituation' },
-        { status: 400 }
-      )
-    }
+    // Validate request based on mode
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const triggerMetric = (body as any).triggerMetric;
 
-    // Validate issue type
-    const validIssues = ['stress', 'anxiety', 'depression', 'procrastination', 'relationships', 'general']
-    if (!validIssues.includes(body.issue)) {
-      return NextResponse.json(
-        { error: `Invalid issue type. Must be one of: ${validIssues.join(', ')}` },
-        { status: 400 }
-      )
+    if (!triggerMetric) {
+      // Standard Consultation Mode Validation
+      if (!body.userProfile || !body.issue || !body.specificSituation) {
+        return NextResponse.json(
+          { error: 'Missing required fields: userProfile, issue, specificSituation' },
+          { status: 400 }
+        )
+      }
+
+      // Validate issue type
+      const validIssues = ['stress', 'anxiety', 'depression', 'procrastination', 'relationships', 'general']
+      if (!validIssues.includes(body.issue)) {
+        return NextResponse.json(
+          { error: `Invalid issue type. Must be one of: ${validIssues.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
 
     // Fetch latest MISO analysis (Server-side enrichment)
@@ -58,8 +64,17 @@ export async function POST(request: NextRequest) {
       body.misoAnalysis = logData.analysis_result as unknown as MisoAnalysisResult
     }
 
-    // Call AI consultation service
-    const result = await getAIConsultation(body)
+    // Determine mode: Deep Action vs Standard Consultation
+    let result;
+    if (triggerMetric && body.misoAnalysis) {
+      // Mode: Deep Action Plan
+      const { getDeepActionPlan } = await import('@/services/ai-consultant.service');
+      result = await getDeepActionPlan(body.misoAnalysis, triggerMetric);
+    } else {
+      // Mode: Standard Consultation
+      const { getAIConsultation } = await import('@/services/ai-consultant.service');
+      result = await getAIConsultation(body);
+    }
 
     // Log consultation for analytics (optional)
     // TODO: Create ai_consultations table in database schema first

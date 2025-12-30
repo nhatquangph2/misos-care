@@ -313,7 +313,8 @@ export function assessDataCompleteness(data: {
 }): DataCompleteness {
   const hasDASS = !!data.dass21_raw
   const hasBig5 = !!data.big5_raw
-  const hasVIA = !!data.via_raw
+  // Check if VIA is present (lenient check - object with keys)
+  const hasVIA = !!data.via_raw && Object.keys(data.via_raw).length > 0;
   const hasMBTI = !!data.mbti
 
   // No DASS = cannot analyze

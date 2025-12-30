@@ -186,18 +186,45 @@ export class UnifiedProfileService extends BaseService {
       };
     }
 
-    // Fetch latest MISO analysis from logs instead of recalculating
+    // Fetch latest VALID MISO analysis from logs (must have scores/profile data)
     try {
-      const { data: misoLog } = await this.supabase
+      // First try: Get logs with actual BVS/RCS scores
+      let { data: misoLog } = await this.supabase
         .from('miso_analysis_logs')
-        .select('analysis_result')
+        .select('analysis_result, bvs, rcs, completeness_level')
         .eq('user_id', userId)
+        .not('bvs', 'is', null) // Only get logs with actual scores
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
 
+      // Fallback: If no scored logs, try to get any with analysis_result
+      if (!misoLog?.analysis_result) {
+        const { data: fallbackLog } = await this.supabase
+          .from('miso_analysis_logs')
+          .select('analysis_result, bvs, rcs, completeness_level')
+          .eq('user_id', userId)
+          .not('completeness_level', 'eq', 'NONE') // Exclude empty logs
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (fallbackLog?.analysis_result) {
+          misoLog = fallbackLog;
+        }
+      }
+
       if (misoLog?.analysis_result) {
-        profile.miso_analysis = misoLog.analysis_result as unknown as MisoAnalysisResult;
+        const result = misoLog.analysis_result as unknown as MisoAnalysisResult;
+        // Only use if it has meaningful data
+        if (result && (result.scores || result.profile)) {
+          profile.miso_analysis = result;
+          console.log('✅ Loaded MISO analysis from DB, completeness:', misoLog.completeness_level);
+        } else {
+          console.log('⚠️ MISO analysis_result exists but has no scores/profile');
+        }
+      } else {
+        console.log('ℹ️ No valid MISO analysis found in database');
       }
     } catch (error) {
       console.error('Failed to fetch MISO analysis:', error);

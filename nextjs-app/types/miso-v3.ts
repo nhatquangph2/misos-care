@@ -74,6 +74,7 @@ export interface VIARawScores {
   Curiosity?: number
   Creativity?: number
   Perseverance?: number
+  Humility?: number
 }
 
 // ============================================
@@ -254,6 +255,11 @@ export interface Intervention {
     evidence_level?: 'A' | 'B' | 'C' | 'D' // A=Meta-analysis/RCT, B=Clinical Trial, C=Observational, D=Expert Opinion
     effect_size?: number // Cohen's d if available
     sources?: string[] // DOI or citations
+    // Scientific Metadata (Deep V3)
+    sdt_targets?: ('autonomy' | 'competence' | 'relatedness')[]
+    perma_domain?: ('P' | 'E' | 'R' | 'M' | 'A')[]
+    zpd_complexity?: 1 | 2 | 3 // 1=Low (Scaffolded), 3=High (Autonomous)
+    act_quadrant?: 'lower_left' | 'lower_right' | 'upper_left' | 'upper_right'
   }
   score?: number
   reasoning?: string[]
@@ -465,6 +471,12 @@ export interface MisoAnalysisResult {
       mechanism?: string
       expected_effect: number
     }>
+  }
+
+  // Deep Intelligence (V3-Scientific)
+  scientific_analysis?: {
+    zpd: { capacity: number; level: 1 | 2 | 3 }
+    sdt: { autonomy: number; competence: number; relatedness: number }
   }
 
   // Interventions

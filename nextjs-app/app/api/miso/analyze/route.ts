@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         .from('personality_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single()
+        .maybeSingle()
 
       if (profile) {
         if (!userData.mbti && profile.mbti_type) userData.mbti = profile.mbti_type;
@@ -92,6 +92,33 @@ export async function POST(request: NextRequest) {
             A: (profile.big5_agreeableness_raw ?? profile.big5_agreeableness) ?? 0,
             C: (profile.big5_conscientiousness_raw ?? profile.big5_conscientiousness) ?? 0,
           };
+        }
+      }
+
+      // 1.5. Fallback: Fetch from bfi2_test_history if Big5 still missing
+      if (!userData.big5_raw) {
+        const { data: bfiHistory } = await supabase
+          .from('bfi2_test_history')
+          .select('raw_scores')
+          .eq('user_id', user.id)
+          .order('completed_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (bfiHistory && (bfiHistory as any).raw_scores) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const scores = (bfiHistory as any).raw_scores;
+          // Check if scores are object with N, E, O, A, C keys
+          if (scores.N !== undefined) {
+            userData.big5_raw = {
+              N: scores.N,
+              E: scores.E,
+              O: scores.O,
+              A: scores.A,
+              C: scores.C
+            };
+          }
         }
       }
 
@@ -119,13 +146,20 @@ export async function POST(request: NextRequest) {
 
           // Priority 1: Check all_strengths JSONB
           if (viaResult.all_strengths) {
-            const allS = viaResult.all_strengths as Record<string, number>;
+            let allS = viaResult.all_strengths;
+            if (typeof allS === 'string') {
+              try { allS = JSON.parse(allS); } catch (e) { console.error('Error parsing VIA JSON:', e); allS = {}; }
+            }
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const strengthsMap = allS as Record<string, number>;
+
             standardKeys.forEach(k => {
-              if (allS[k] !== undefined) viaMap[k] = allS[k];
+              if (strengthsMap[k] !== undefined) viaMap[k] = strengthsMap[k];
               // Also check lowercase/snake_case variants
               else {
                 const variant = k.toLowerCase().replace(/ /g, '_').replace(/-/g, '_');
-                if (allS[variant] !== undefined) viaMap[k] = allS[variant];
+                if (strengthsMap[variant] !== undefined) viaMap[k] = strengthsMap[variant];
               }
             });
           }
@@ -156,7 +190,11 @@ export async function POST(request: NextRequest) {
         // Fallback to signature strengths if still no VIA and no via_results record
         if (!userData.via_raw && profile?.via_signature_strengths) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const signatureStrengths = profile.via_signature_strengths as any[];
+          let signatureStrengths = profile.via_signature_strengths as any;
+          if (typeof signatureStrengths === 'string') {
+            try { signatureStrengths = JSON.parse(signatureStrengths); } catch (e) { console.error('Error parsing VIA Sigs JSON:', e); signatureStrengths = []; }
+          }
+
           if (Array.isArray(signatureStrengths) && signatureStrengths.length > 0) {
             const viaMap: Record<string, number> = {};
             const keyMapping: Record<string, string> = {
@@ -224,23 +262,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Debug: Log userData before analysis
+    console.log('📋 userData before analysis:', {
+      has_dass21_raw: !!userData.dass21_raw,
+      dass21_raw: userData.dass21_raw,
+      has_big5_raw: !!userData.big5_raw,
+      big5_raw: userData.big5_raw,
+      has_via_raw: !!userData.via_raw,
+      via_raw_keys: userData.via_raw ? Object.keys(userData.via_raw).length : 0,
+      mbti: userData.mbti,
+    });
+
     // Run analysis
     console.log('🚀 Running MISO Analysis for user:', user.id);
     const analysisResult = await runMisoAnalysis(userData, user.id, history)
     console.log('✅ Analysis complete');
+
+    // Debug: Log what we're about to save
+    console.log('📊 Analysis result structure:', {
+      hasScores: !!analysisResult.scores,
+      scores: analysisResult.scores,
+      hasProfile: !!analysisResult.profile,
+      profileId: analysisResult.profile?.id,
+      profileRiskLevel: analysisResult.profile?.risk_level,
+      completenessLevel: analysisResult.completeness?.level
+    });
 
     // Save to database
     // @ts-ignore
     const logData = {
       user_id: user.id,
       analysis_result: analysisResult,
-      bvs: analysisResult.scores?.BVS,
-      rcs: analysisResult.scores?.RCS,
+      bvs: analysisResult.scores?.BVS ?? null,
+      rcs: analysisResult.scores?.RCS ?? null,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      profile_id: ('profile' in analysisResult && analysisResult.profile && 'id' in analysisResult.profile) ? (analysisResult.profile as any).id : null,
+      profile_id: analysisResult.profile?.id ?? null,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      risk_level: ('profile' in analysisResult && analysisResult.profile && 'risk_level' in analysisResult.profile) ? (analysisResult.profile as any).risk_level : null,
-      completeness_level: analysisResult.completeness.level,
+      risk_level: analysisResult.profile?.risk_level ?? null,
+      completeness_level: analysisResult.completeness?.level ?? 'NONE',
       dass21_depression: userData.dass21_raw?.D,
       dass21_anxiety: userData.dass21_raw?.A,
       dass21_stress: userData.dass21_raw?.S,
@@ -251,13 +310,20 @@ export async function POST(request: NextRequest) {
       big5_conscientiousness: userData.big5_raw?.C,
     };
 
-    console.log('💾 Saving analysis log...');
-    const { error: saveError } = await supabase.from('miso_analysis_logs').insert(logData)
+    console.log('💾 Saving analysis log with data:', {
+      bvs: logData.bvs,
+      rcs: logData.rcs,
+      profile_id: logData.profile_id,
+      risk_level: logData.risk_level,
+      completeness_level: logData.completeness_level
+    });
+
+    const { error: saveError, data: savedLog } = await supabase.from('miso_analysis_logs').insert(logData).select('id').single();
 
     if (saveError) {
       console.error('❌ Error saving analysis:', saveError)
     } else {
-      console.log('✅ Analysis log saved');
+      console.log('✅ Analysis log saved with ID:', savedLog?.id);
     }
 
     // Save prediction feedback if we have predictions

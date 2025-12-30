@@ -11,6 +11,10 @@ export const metadata: Metadata = {
   description: 'Quản lý tính cách, theo dõi sức khỏe tinh thần và nhận đề xuất cá nhân hóa',
 };
 
+// Force dynamic rendering to always get fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default async function ProfilePage() {
   const supabase = await createClient();
 

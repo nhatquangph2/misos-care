@@ -13,6 +13,7 @@ import { analyzeDASSTrend, analyzeBig5Stability } from './temporal'
 import { analyzeDASS21Only, assessDataCompleteness } from './lite-mode'
 import { predictDASSFromBig5, applyVIACompensation, calculateResidualDistress } from './mechanisms'
 import { findVIAProblemMatches } from './mbti-via-integration'
+import { calculateZPD, assessSDTNeeds } from './scientific-scoring'
 import type {
   UserInputData,
   MisoAnalysisResult,
@@ -305,6 +306,18 @@ export async function runMisoAnalysis(
     big5Percentiles = normalized.mbti_priors as Partial<Big5Percentiles>
   }
 
+  // STEP 3.1: SCIENTIFIC SCORING (Deep Intelligence)
+  // ============================================
+  if (Object.keys(big5Percentiles).length > 0 && userData.dass21_raw) {
+    const zpd = calculateZPD(userData.dass21_raw, big5Percentiles)
+    const sdt = assessSDTNeeds(big5Percentiles, viaPercentiles)
+
+    result.scientific_analysis = {
+      zpd,
+      sdt
+    }
+  }
+
 
   // STEP 3.5: Causal Pathway Analysis (Deep Integration)
   // ============================================
@@ -428,6 +441,7 @@ export async function runMisoAnalysis(
         big5_percentiles: big5Percentiles as { N: number; E: number; O: number; A: number; C: number },
         dass_raw: userData.dass21_raw,
         mechanisms: result.mechanisms,
+        scientific_analysis: result.scientific_analysis,
       }
       : undefined
   )
@@ -447,7 +461,7 @@ function generateSummary(result: MisoAnalysisResult): string {
 
   // Mode
   const modeMap: Record<string, string> = { 'FULL': 'Đầy đủ', 'LITE': 'Rút gọn', 'BASIC': 'Cơ bản' };
-  parts.push(`Chế độ: ${modeMap[result.completeness.mode] || result.completeness.mode}`);
+  parts.push(`Chế độ: ${modeMap[result.completeness.mode || 'LITE'] || result.completeness.mode}`);
 
   // Profile
   if ('name' in result.profile) {

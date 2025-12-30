@@ -35,7 +35,13 @@ function hydrateIntervention(type: string, priority?: Intervention['priority'], 
       // Evidence
       evidence_level: (libEntry as any).evidence_level,
       effect_size: (libEntry as any).effect_size,
-      sources: (libEntry as any).sources
+      sources: (libEntry as any).sources,
+
+      // Deep V3 Metadata
+      sdt_targets: (libEntry as any).sdt_targets,
+      perma_domain: (libEntry as any).perma_domain,
+      zpd_complexity: (libEntry as any).zpd_complexity,
+      act_quadrant: (libEntry as any).act_quadrant,
     } : undefined
   }
 }
@@ -55,6 +61,9 @@ export const INTERVENTION_LIBRARY = {
     resources: ['Hotline: 1800-599-920'],
     evidence_level: 'A',
     sources: ['WHO Suicide Prevention Guidelines'],
+    sdt_targets: ['competence'],
+    perma_domain: ['M'],
+    zpd_complexity: 1, // High support needed
   },
   crisis_support: {
     category: 'immediate' as const,
@@ -96,6 +105,10 @@ export const INTERVENTION_LIBRARY = {
     evidence_level: 'A',
     effect_size: 0.78,
     sources: ['doi:10.1016/j.cpr.2020.101889'],
+    sdt_targets: ['competence', 'autonomy'],
+    perma_domain: ['E', 'A'],
+    zpd_complexity: 2,
+    act_quadrant: 'upper_right', // Toward move
   },
   micro_habits: {
     category: 'short_term' as const,
@@ -163,6 +176,10 @@ export const INTERVENTION_LIBRARY = {
     evidence_level: 'B',
     effect_size: 0.48,
     sources: ['doi:10.1007/s10902-020-00267-3'],
+    sdt_targets: ['competence'],
+    perma_domain: ['P', 'A'],
+    zpd_complexity: 2,
+    act_quadrant: 'lower_right', // Identifying values/goals
   },
   mindfulness: {
     category: 'long_term' as const,
@@ -217,6 +234,85 @@ export const INTERVENTION_LIBRARY = {
     description: 'Xây dựng năng lượng sống',
     techniques: ['Physical activity', 'Novel experiences', 'Flow activities'],
     evidence_level: 'C',
+    sdt_targets: ['autonomy'],
+    perma_domain: ['E', 'P'],
+    zpd_complexity: 2,
+  },
+
+  // ============================================
+  // DEEP INTELLEGENCE (NEW V3)
+  // ============================================
+
+  values_clarification: {
+    category: 'long_term' as const,
+    name: 'Xác định Giá trị cốt lõi (Values)',
+    when: ['Lost_Purpose', 'Mid_Life_Crisis'],
+    description: 'Xác định điều gì thực sự quan trọng',
+    steps: [
+      'Tưởng tượng bữa tiệc sinh nhật 80 tuổi của bạn',
+      'Mọi người sẽ nói gì về bạn?',
+      'Viết xuống 3 giá trị quan trọng nhất từ đó (VD: Tự do, Yêu thương)',
+      'Chọn 1 hành động nhỏ hôm nay để sống với giá trị đó',
+    ],
+    evidence_level: 'B',
+    sdt_targets: ['autonomy'],
+    perma_domain: ['M'],
+    zpd_complexity: 3, // Requires abstract thinking
+    act_quadrant: 'lower_right',
+  },
+
+  defusion_leaves_on_stream: {
+    category: 'short_term' as const,
+    name: 'Lá trên dòng suối (Defusion)',
+    when: ['Rumination', 'Overthinking'],
+    description: 'Tách rời khỏi suy nghĩ tiêu cực',
+    steps: [
+      'Nhắm mắt lại và tưởng tượng một dòng suối',
+      'Mỗi khi có suy nghĩ, đặt nó lên một chiếc lá',
+      'Để chiếc lá trôi đi nhẹ nhàng, đừng cố níu giữ',
+      'Nếu bị cuốn theo suy nghĩ, nhẹ nhàng quay lại bờ suối',
+    ],
+    evidence_level: 'A',
+    sdt_targets: ['autonomy'], // Freeing self from thought control
+    perma_domain: ['P'],
+    zpd_complexity: 2,
+    act_quadrant: 'upper_left', // Handling internal barriers
+  },
+
+  best_possible_self: {
+    category: 'long_term' as const,
+    name: 'Phiên bản tốt nhất (Best Possible Self)',
+    when: ['Low_Optimism', 'Depression'],
+    description: 'Viết về tương lai lý tưởng để tăng lạc quan',
+    steps: [
+      'Dành 15 phút viết về cuộc sống của bạn trong 5 năm tới',
+      'Hãy tưởng tượng mọi thứ diễn ra tốt đẹp nhất có thể',
+      'Mô tả chi tiết cảm xúc và hoàn cảnh',
+      'Viết mỗi ngày trong 1 tuần',
+    ],
+    evidence_level: 'A',
+    effect_size: 0.6,
+    sdt_targets: ['competence', 'autonomy'],
+    perma_domain: ['P', 'M', 'A'],
+    zpd_complexity: 2,
+  },
+
+  autonomy_mapping: {
+    category: 'short_term' as const,
+    name: 'Bản đồ Tự chủ (Autonomy Mapping)',
+    when: ['Burnout', 'Feeling_Trapped'],
+    description: 'Lấy lại quyền kiểm soát cuộc sống',
+    steps: [
+      'Vẽ vòng tròn: "Những gì tôi kiểm soát được" và "Không kiểm soát được"',
+      'Liệt kê các áp lực hiện tại vào 2 vùng này',
+      'Chọn 1 việc trong vùng kiểm soát để thay đổi ngay',
+      'Chấp nhận buông bỏ 1 việc ngoài vùng kiểm soát',
+    ],
+    evidence_level: 'C',
+    sdt_targets: ['autonomy'],
+    perma_domain: ['A'],
+    zpd_complexity: 2,
+    act_quadrant: 'upper_right',
   },
 }
 
@@ -239,6 +335,11 @@ export function allocateInterventions(
     mechanisms?: {
       active: Array<{ id: string; pathway: string; strength: number; predictedDASS: any }>
       compensations: Array<{ id: string; mechanism: string; strength: string; percentile: number }>
+    }
+    // Scientific Context
+    scientific_analysis?: {
+      zpd: { capacity: number; level: 1 | 2 | 3 }
+      sdt: { autonomy: number; competence: number; relatedness: number }
     }
   }
 ): InterventionPlan {
@@ -337,10 +438,18 @@ export function allocateInterventions(
       }
 
       return plan
+      return plan
     } catch (error) {
       console.warn('Scoring system failed, falling back to rule-based:', error)
       // Fall through to rule-based logic
     }
+  } else if (scoringContext?.scientific_analysis) {
+    // === DEEP INTELLIGENCE SCORING (V3) ===
+    // If we have scientific analysis but not full mechanism data (e.g. partial data)
+    // Or we want to enhance the rule-based selection.
+
+    // For now, let's filter the rule-based output at the end or apply sorting.
+    // But since we are modifying the MAIN engine, we should probably implement sorting AFTER rule-based.
   }
 
   // ==========================================
@@ -453,6 +562,34 @@ export function allocateInterventions(
     // Framing based on J/P
     if (mbti.length === 4) {
       plan.framing = mbti[3].toUpperCase() === 'J' ? 'plan_oriented' : 'exploration_oriented'
+    }
+  }
+
+  // PRIORITY 6: SCIENTIFIC RESCORING (ZPD & SDT)
+  // Sort and filter the selected interventions based on scientific fit
+  if (scoringContext?.scientific_analysis) {
+    const { getSDTBoost, getZPDPenalty } = require('./scientific-scoring')
+    const { zpd, sdt } = scoringContext.scientific_analysis
+
+    // Helper to score an intervention
+    const scoreInt = (int: Intervention) => {
+      let score = 50 // Base
+      score += getSDTBoost(int, sdt)
+      score += getZPDPenalty(int, zpd.level)
+      if (int.priority === 'CRITICAL') score += 100
+      if (int.priority === 'HIGH') score += 50
+      return score
+    }
+
+    // Sort lists
+    plan.immediate.sort((a, b) => scoreInt(b) - scoreInt(a))
+    plan.short_term.sort((a, b) => scoreInt(b) - scoreInt(a))
+    plan.long_term.sort((a, b) => scoreInt(b) - scoreInt(a))
+
+    // Filter out items with very low ZPD fit (score < 0 due to penalty)
+    // ONLY if we have enough items
+    if (plan.long_term.length > 5) {
+      plan.long_term = plan.long_term.filter(i => scoreInt(i) > 20)
     }
   }
 

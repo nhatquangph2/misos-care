@@ -112,9 +112,15 @@ export function normalizeBig5(rawScores: Partial<Big5RawScores>): {
       const norm = BIG5_NORMS[trait]
 
       // Auto-scaling logic
-      if (raw > norm.range[1]) {
+      if (raw <= 6.0) {
+        // Likely Average Score (1-5)
+        // Map 1-5 to Norm Range
+        const minRaw = 1;
+        const maxRaw = 5;
+        raw = ((raw - minRaw) / (maxRaw - minRaw)) * (norm.range[1] - norm.range[0]) + norm.range[0];
+      } else if (raw > norm.range[1]) {
         if (raw <= 60) {
-          // Likely BFI-2 (12-60)
+          // Likely BFI-2 Sum (12-60)
           raw = ((raw - 12) / 48) * (norm.range[1] - norm.range[0]) + norm.range[0]
         } else if (raw <= 100) {
           // Likely Percentage (0-100)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
@@ -20,10 +20,91 @@ const formatInterventionType = (intervention: any): string => {
   return 'Hành động được đề xuất';
 };
 
+
 export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult }) {
   // State for demo mode
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  // Local state to hold immediate result from API (optimistic update)
+  const [localAnalysis, setLocalAnalysis] = useState<MisoAnalysisResult | null>(null);
+
+  // Sync with server data when it arrives
+  useEffect(() => {
+    if (analysis && (analysis.scores || analysis.profile)) {
+      setLocalAnalysis(analysis);
+    }
+  }, [analysis]);
+
+  // Persist analysis in sessionStorage to survive navigation/refresh
+  useEffect(() => {
+    if (localAnalysis && localAnalysis.user_id !== 'demo') {
+      sessionStorage.setItem('miso_analysis_cache', JSON.stringify(localAnalysis));
+    }
+  }, [localAnalysis]);
+
+  // Restore from sessionStorage on mount if no data
+  useEffect(() => {
+    if (!analysis && !localAnalysis) {
+      const cached = sessionStorage.getItem('miso_analysis_cache');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached);
+          if (parsed && parsed.scores) {
+            setLocalAnalysis(parsed);
+          }
+        } catch (e) {
+          console.error('Failed to parse cached analysis:', e);
+        }
+      }
+    }
+  }, [analysis, localAnalysis]);
+
+  // Auto-fetch analysis if no data available and we have test data
+  useEffect(() => {
+    const autoFetch = async () => {
+      // Only auto-fetch if:
+      // 1. No analysis from server
+      // 2. No local analysis
+      // 3. Not already analyzing
+      // 4. Not in demo mode
+      if (!analysis && !localAnalysis && !isAnalyzing && !isDemoMode) {
+        // Check if there's cached data first
+        const cached = sessionStorage.getItem('miso_analysis_cache');
+        if (cached) return; // Don't auto-fetch if we have cache
+
+        // Don't auto-fetch on every render - use a flag
+        const lastFetch = sessionStorage.getItem('miso_last_auto_fetch');
+        const now = Date.now();
+        if (lastFetch && now - parseInt(lastFetch) < 60000) {
+          return; // Don't fetch more than once per minute
+        }
+
+        console.log('🔄 Auto-fetching MISO analysis...');
+        sessionStorage.setItem('miso_last_auto_fetch', now.toString());
+
+        try {
+          const res = await fetch('/api/miso/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ include_history: true })
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            if (data.analysis) {
+              setLocalAnalysis(data.analysis);
+            }
+          }
+        } catch (err) {
+          console.error('Auto-fetch analysis failed:', err);
+        }
+      }
+    };
+
+    // Delay auto-fetch slightly to allow server data to arrive first
+    const timer = setTimeout(autoFetch, 1000);
+    return () => clearTimeout(timer);
+  }, [analysis, localAnalysis, isAnalyzing, isDemoMode]);
 
   const handleReanalyze = async () => {
     try {
@@ -35,7 +116,20 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
       });
 
       if (res.ok) {
-        window.location.reload();
+        const data = await res.json();
+
+        // 1. Immediate UI Update: Use the data directly from response
+        if (data.analysis) {
+          setLocalAnalysis(data.analysis);
+          // Also update cache
+          sessionStorage.setItem('miso_analysis_cache', JSON.stringify(data.analysis));
+        }
+
+        // 2. Background Sync: Tell Next.js to re-fetch server data
+        // Don't use router.refresh() as it causes component remount
+        // The data is already updated in localAnalysis and sessionStorage
+
+        alert('Phân tích thành công! Dữ liệu đã được cập nhật.');
       } else {
         const errorData = await res.json();
         console.error('Analysis failed:', errorData);
@@ -189,9 +283,10 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
     summary: 'Demo Analysis'
   };
 
-  // Use real analysis if available (check for any meaningful data), otherwise check demo mode
-  const hasRealData = analysis && (analysis.scores || analysis.via_analysis || analysis.profile);
-  const activeAnalysis = hasRealData ? analysis : (isDemoMode ? demoAnalysis : null);
+  // Priority: Local State (fresh) > Prop (server) > Demo
+  const effectiveAnalysis = localAnalysis || analysis;
+  const hasRealData = effectiveAnalysis && (effectiveAnalysis.scores || effectiveAnalysis.via_analysis || effectiveAnalysis.profile);
+  const activeAnalysis = hasRealData ? effectiveAnalysis : (isDemoMode ? demoAnalysis : null);
 
   // Show "waiting for data" state if no analysis yet
   if (!activeAnalysis) {
@@ -235,6 +330,7 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
   const RCS = activeAnalysis.scores?.RCS ?? 0;
   const profile = activeAnalysis.profile as any; // Type assertion since profile structure varies
   const discrepancies = activeAnalysis.discrepancies || [];
+
 
   // Risk level styling helper
   const getRiskColor = (level: string) => {

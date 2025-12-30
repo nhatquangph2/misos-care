@@ -13,6 +13,8 @@ import { ArrowRight, TrendingUp, Target, Brain, Heart, Sparkles, Fish, Star } fr
 import { ProductTour } from '@/components/onboarding/ProductTour'
 import { dashboardTour } from '@/lib/tours/dashboard-tour'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
+import { ScientificAnalysisCard } from '@/components/miso/ScientificAnalysisCard'
+import type { MisoAnalysisResult } from '@/types/miso-v3'
 
 interface DashboardStats {
   testsCompleted: number
@@ -57,6 +59,9 @@ export default function DashboardPage() {
     activeGoals: 0,
   })
   const [loading, setLoading] = useState(true)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [scientificAnalysis, setScientificAnalysis] = useState<MisoAnalysisResult['scientific_analysis'] | undefined>(undefined)
+  const [hasPriorAnalysis, setHasPriorAnalysis] = useState(false)
   const [dashboardTourCompleted, setDashboardTourCompleted] = useLocalStorage('dashboard-tour-completed', false)
   const [startTour, setStartTour] = useState(false)
 
@@ -72,7 +77,7 @@ export default function DashboardPage() {
         .from('users')
         .select('*')
         .eq('id', authUser.id)
-        .single()
+        .maybeSingle()
 
       if (userData) {
         setUser(userData as UserData)
@@ -83,7 +88,7 @@ export default function DashboardPage() {
         .from('personality_profiles')
         .select('*')
         .eq('user_id', authUser.id)
-        .single()
+        .maybeSingle()
 
       // Get mental health records count
       const { count } = await supabase
@@ -133,11 +138,18 @@ export default function DashboardPage() {
 
       let topVia = undefined
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (latestAnalysis?.analysis_result && (latestAnalysis.analysis_result as any).via_analysis) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const via = (latestAnalysis.analysis_result as any).via_analysis
-        if (via.signature_strengths && via.signature_strengths.length > 0) {
-          topVia = via.signature_strengths[0].name
+      if (latestAnalysis?.analysis_result) {
+        setHasPriorAnalysis(true)
+        const result = latestAnalysis.analysis_result as any
+
+        // Extract VIA top strength
+        if (result.via_analysis?.signature_strengths?.length > 0) {
+          topVia = result.via_analysis.signature_strengths[0].name
+        }
+
+        // Extract Scientific Analysis
+        if (result.scientific_analysis) {
+          setScientificAnalysis(result.scientific_analysis)
         }
       }
 
@@ -152,7 +164,6 @@ export default function DashboardPage() {
         } : undefined,
         currentStreak: userStats.currentStreak,
         activeGoals: goalsCount || 0,
-        topStrength: topVia,
       })
 
       // Set mascot mood based on latest score
@@ -176,6 +187,31 @@ export default function DashboardPage() {
       setLoading(false)
     }
   }, [supabase, userStats.currentStreak, setMood, addMessage])
+
+  const handleReanalyze = async () => {
+    setAnalyzing(true)
+    try {
+      const response = await fetch('/api/miso/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}), // Empty body triggers fetch from DB
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.analysis?.scientific_analysis) {
+        setScientificAnalysis(data.analysis.scientific_analysis)
+        // Optionally refresh full stats
+        loadDashboardData()
+      }
+    } catch (error) {
+      console.error('Re-analysis failed:', error)
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   useEffect(() => {
     loadDashboardData()
@@ -331,6 +367,32 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Deep Intelligence Analysis */}
+      {scientificAnalysis ? (
+        <div className="mb-8" id="scientific-analysis">
+          <ScientificAnalysisCard analysis={scientificAnalysis} />
+        </div>
+      ) : ((stats.testsCompleted > 0 || hasPriorAnalysis) && !loading) ? (
+        <div className="mb-8 p-6 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-full">
+              <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-300" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 dark:text-gray-100">Nâng cấp Phân tích Chuyên sâu (V3)</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
+                Hệ thống MISO vừa được nâng cấp với trí tuệ khoa học mới (ZPD & SDT).
+                Cập nhật phân tích của bạn để xem các chỉ số mới này.
+              </p>
+            </div>
+          </div>
+          <Button onClick={handleReanalyze} disabled={analyzing} className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white">
+            {analyzing ? 'Đang cập nhật...' : 'Cập nhật ngay'}
+            {!analyzing && <TrendingUp className="ml-2 h-4 w-4" />}
+          </Button>
+        </div>
+      ) : null}
 
       {/* Quick Actions */}
       <div className="mb-8">

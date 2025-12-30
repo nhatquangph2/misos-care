@@ -29,6 +29,13 @@ export interface ConsultationResponse {
   }>;
 }
 
+export interface DeepActionPlan {
+  scientific_rationale: string;
+  immediate_micro_step: string;
+  sdt_connection: string;
+  zpd_adjustment: string;
+}
+
 import { MisoAnalysisResult } from '@/types/miso-v3';
 
 export interface ConsultationRequest {
@@ -132,6 +139,106 @@ export class AIConsultantService extends BaseService {
       console.error('AI Consultation Error:', error);
       return this.getFallbackResponse(error);
     }
+  }
+
+  /**
+   * Generates a "Deep Action Plan" based on MISO V3 Scientific Analysis
+   */
+  async getDeepActionPlan(
+    misoAnalysis: MisoAnalysisResult,
+    triggerMetric: string
+  ): Promise<DeepActionPlan> {
+    try {
+      const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
+      if (!apiKey || !this.genAI) {
+        if (!this.genAI && apiKey) this.genAI = new GoogleGenerativeAI(apiKey);
+        else throw new Error('GOOGLE_GEMINI_API_KEY not configured');
+      }
+
+      const prompt = this.buildDeepCoachingPrompt(misoAnalysis, triggerMetric);
+
+      const model = this.genAI!.getGenerativeModel({
+        model: 'gemini-2.0-flash-exp',
+        systemInstruction: Prompts.BASE_SYSTEM_PROMPT, // Use base persona
+        generationConfig: {
+          responseMimeType: 'application/json',
+        },
+      });
+
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+
+      // Basic JSON cleanup
+      const jsonText = text.replace(/```json\n/g, '').replace(/```/g, '').trim();
+      const parsed = JSON.parse(jsonText);
+
+      return {
+        scientific_rationale: parsed.scientific_rationale || 'Phân tích dựa trên dữ liệu tâm lý của bạn.',
+        immediate_micro_step: parsed.immediate_micro_step || 'Hít thở sâu trong 2 phút.',
+        sdt_connection: parsed.sdt_connection || 'Giúp bạn bình tĩnh lại.',
+        zpd_adjustment: parsed.zpd_adjustment || 'Phù hợp với mức năng lượng hiện tại.',
+      };
+
+    } catch (error) {
+      console.error('Deep Action Plan Error:', error);
+      return {
+        scientific_rationale: 'Hệ thống đang bảo trì logic phân tích chuyên sâu.',
+        immediate_micro_step: 'Hãy nghỉ ngơi 5 phút.',
+        sdt_connection: 'Tạm thời giảm tải nhận thức.',
+        zpd_adjustment: 'Chế độ an toàn.',
+      };
+    }
+  }
+
+  private buildDeepCoachingPrompt(analysis: MisoAnalysisResult, triggerMetric: string): string {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const sci = (analysis as any).scientific_analysis;
+    const profile = analysis.profile;
+    const scores = analysis.scores;
+
+    let prompt = `You are "MISO Deep Coach", an advanced psychological AI.
+    
+    USER CONTEXT:
+    - User Trigger: The user clicked "${triggerMetric}" because it is flagged as critical.
+    - Core Profile: ${profile?.name || 'Unknown'} (Risk: ${profile?.risk_level})
+    - Global Stores: BVS (Vulnerability) = ${scores?.BVS.toFixed(2)}, RCS (Resilience) = ${scores?.RCS.toFixed(2)}.
+    `;
+
+    if (sci) {
+      prompt += `
+      SCIENTIFIC DATA (MISO V3):
+      1. ZPD (Zone of Proximal Development):
+         - Level: ${sci.zpd_level} (${sci.zpd_level === 1 ? 'Crisis/Safety' : sci.zpd_level === 2 ? 'Scaffolding' : 'Growth'})
+         - Capacity Score: ${sci.zpd_capacity}/100
+      
+      2. SDT (Self-Determination Needs) Satisfaction:
+         - Autonomy: ${sci.sdt_needs?.autonomy}%
+         - Competence: ${sci.sdt_needs?.competence}%
+         - Relatedness: ${sci.sdt_needs?.relatedness}%
+      `;
+    }
+
+    prompt += `
+    TASK: Generate a "Scientific Micro-Intervention" (Deep Action Plan).
+    
+    PROTOCOL (Chain-of-Thought):
+    1. DIAGNOSIS: Explain WHY this metric is low using the profile data. Link BVS/Neuroticism to the user's struggle.
+    2. SCAFFOLDING logic:
+       - If ZPD Level = 1 (Capacity < 40): Action MUST be <2 mins, purely behavioral, zero cognitive load. Nudge gently.
+       - If ZPD Level = 2: Action can be 5-10 mins, involve simple reflection.
+       - If ZPD Level = 3: Action can be a challenge or deep value work.
+    3. NEEDS TARGETING: The action MUST specifically boost the triggered metric (e.g., if trigger is "Low Autonomy", give them a choice-based task).
+
+    OUTPUT FORMAT (JSON):
+    {
+      "scientific_rationale": "Direct explanation of the link between their personality/scores and this issue. (Vietnamese)",
+      "immediate_micro_step": "A concrete, single, do-it-now action. (Vietnamese)",
+      "sdt_connection": "Why this specific action helps restore ${triggerMetric}. (Vietnamese)",
+      "zpd_adjustment": "Explain why this difficulty level fits their current ZPD capacity. (Vietnamese)"
+    }
+    `;
+
+    return prompt;
   }
 
   private determineSystemPrompt(issue: string): string {
@@ -311,5 +418,6 @@ export class AIConsultantService extends BaseService {
 
 export const aiConsultantService = new AIConsultantService();
 export const getAIConsultation = (request: ConsultationRequest) => aiConsultantService.getConsultation(request);
+export const getDeepActionPlan = (analysis: MisoAnalysisResult, metric: string) => aiConsultantService.getDeepActionPlan(analysis, metric);
 export const getQuickRecommendations = (b: BFI2Score, i: 'stress' | 'anxiety' | 'depression' | 'procrastination') => aiConsultantService.getQuickRecommendations(b, i);
 export const SYSTEM_PROMPTS = Prompts;

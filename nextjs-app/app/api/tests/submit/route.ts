@@ -29,9 +29,9 @@ interface SubmitTestRequest {
     // DASS-21 specific
     subscaleScores?: any[] // Array of { subscale: string, normalizedScore: number }
     // VIA specific
-    // VIA specific
     signatureStrengths?: any[]
     topVirtue?: string
+    strengthScores?: any[] // Added for full result storage
     // NEW: MISO V3
     raw_scores?: any
     score?: any
@@ -176,6 +176,30 @@ export async function POST(request: NextRequest) {
         // VIA Character Strengths
         profileData.via_signature_strengths = result.signatureStrengths
         profileData.via_top_virtue = result.topVirtue
+
+        // --- NEW: Save detailed results to via_results table ---
+        if (result.strengthScores) {
+          const viaInsertData = {
+            user_id: user.id,
+            ranked_strengths: result.strengthScores.map((s: any) => s.strength),
+            score: result.strengthScores.reduce((acc: any, s: any) => {
+              acc[s.strength] = s.percentageScore;
+              return acc;
+            }, {}),
+            all_strengths: result.strengthScores, // Full detail for robust parsing
+            responses: answers, // NEW: Save raw responses
+            created_at: new Date().toISOString()
+          };
+
+          const { error: viaError } = await supabase
+            .from('via_results')
+            .insert(viaInsertData);
+
+          if (viaError) {
+            console.error('Error saving via_results:', viaError);
+          }
+        }
+        // -------------------------------------------------------
       }
 
       // Upsert personality profile
