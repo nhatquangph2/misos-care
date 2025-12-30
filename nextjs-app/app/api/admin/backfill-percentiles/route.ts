@@ -48,7 +48,6 @@ export async function GET() {
         const logs = []
 
         for (const p of profiles || []) {
-            let needsUpdate = false
             const updates: any = {}
 
             const big5_raw = {
@@ -63,30 +62,30 @@ export async function GET() {
 
             const { normalized } = normalizeBig5(big5_raw)
 
-            // Compare
-            if (p.big5_openness == null || (p.big5_openness === 0 && normalized.O.percentile > 0)) {
-                updates.big5_openness = normalized.O.percentile
-                needsUpdate = true
-            }
-            if (p.big5_conscientiousness == null || (p.big5_conscientiousness === 0 && normalized.C.percentile > 0)) {
-                updates.big5_conscientiousness = normalized.C.percentile
-                needsUpdate = true
-            }
-            if (p.big5_extraversion == null || (p.big5_extraversion === 0 && normalized.E.percentile > 0)) {
-                updates.big5_extraversion = normalized.E.percentile
-                needsUpdate = true
-            }
-            if (p.big5_agreeableness == null || (p.big5_agreeableness === 0 && normalized.A.percentile > 0)) {
-                updates.big5_agreeableness = normalized.A.percentile
-                needsUpdate = true
-            }
-            if (p.big5_neuroticism == null || (p.big5_neuroticism === 0 && normalized.N.percentile > 0)) {
-                updates.big5_neuroticism = normalized.N.percentile
-                needsUpdate = true
-            }
+            // ALWAYS update percentiles from fresh normalization to ensure consistency
+            // This fixes the issue where old percentiles were calculated with different logic
+            const newO = Math.round(normalized.O.percentile * 10) / 10
+            const newC = Math.round(normalized.C.percentile * 10) / 10
+            const newE = Math.round(normalized.E.percentile * 10) / 10
+            const newA = Math.round(normalized.A.percentile * 10) / 10
+            const newN = Math.round(normalized.N.percentile * 10) / 10
 
-            if (needsUpdate) {
+            // Check if any value actually changed (to avoid unnecessary updates)
+            const changed =
+                Math.abs((p.big5_openness || 0) - newO) > 0.5 ||
+                Math.abs((p.big5_conscientiousness || 0) - newC) > 0.5 ||
+                Math.abs((p.big5_extraversion || 0) - newE) > 0.5 ||
+                Math.abs((p.big5_agreeableness || 0) - newA) > 0.5 ||
+                Math.abs((p.big5_neuroticism || 0) - newN) > 0.5
+
+            if (changed) {
+                updates.big5_openness = newO
+                updates.big5_conscientiousness = newC
+                updates.big5_extraversion = newE
+                updates.big5_agreeableness = newA
+                updates.big5_neuroticism = newN
                 updates.last_updated = new Date().toISOString()
+
                 const { error: updateError } = await supabase
                     .from('personality_profiles')
                     .update(updates)
@@ -94,7 +93,11 @@ export async function GET() {
 
                 if (!updateError) {
                     updatedCount++
-                    logs.push(`Fixed user ${p.user_id}`)
+                    logs.push({
+                        userId: p.user_id?.substring(0, 8) + '...',
+                        before: { O: p.big5_openness, C: p.big5_conscientiousness, E: p.big5_extraversion, A: p.big5_agreeableness, N: p.big5_neuroticism },
+                        after: { O: newO, C: newC, E: newE, A: newA, N: newN }
+                    })
                 }
             }
         }
