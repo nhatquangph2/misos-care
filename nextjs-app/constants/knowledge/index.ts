@@ -141,10 +141,16 @@ export interface Big5Profile {
     N: number
 }
 
+import { VIAAnalysis } from '@/types/miso-v3'
+
 /**
  * Get comprehensive personalized recommendations across all domains
  */
-export function getComprehensiveRecommendations(big5: Big5Profile) {
+export function getComprehensiveRecommendations(
+    big5: Big5Profile,
+    mbti?: string,
+    via?: VIAAnalysis
+) {
     return {
         career: {
             hollandCode: calculateHollandFromBig5(big5),

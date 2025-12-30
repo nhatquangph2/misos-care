@@ -259,6 +259,10 @@ export function getPersonalizedRecommendations(
 ): PersonalizedRecommendations {
     const big5 = extractBig5Profile(misoAnalysis.normalized)
 
+    // Extract MBTI and VIA if available
+    const mbti = misoAnalysis.profile?.mbti_type || undefined
+    const via = misoAnalysis.via_analysis || undefined
+
     if (!big5) {
         return {
             career: null,
@@ -270,7 +274,8 @@ export function getPersonalizedRecommendations(
     }
 
     try {
-        const comprehensive = getComprehensiveRecommendations(big5)
+        // Pass all available data to the recommendation engine
+        const comprehensive = getComprehensiveRecommendations(big5, mbti, via)
 
         return {
             career: formatCareerRecommendation(comprehensive.career),
