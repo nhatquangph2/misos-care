@@ -147,12 +147,16 @@ export async function POST(request: NextRequest) {
           // FUTURE-PROOFING: Force recalculation of percentiles on backend
           // This guarantees data consistency regardless of frontend logic
           try {
-            // We need to import normalizeBig5. Ideally at top of file, but dynamic import or helper usage here is fine?
-            // Actually, simplest is to assume we can import it. I'll add the import to top of file in a separate edit.
-            // For now, let's assume result.dimensions is populated. If not, we SHOULD populate it.
-            // But adding complex logic here might be risky without import.
-            // Let's modify the file to ADD the import first.
-          } catch (e) { console.error('Normalization error', e) }
+            const { normalized } = normalizeBig5(result.raw_scores)
+            // Prioritize our backend calculation over frontend's result.dimensions
+            if (normalized?.O) profileData.big5_openness = normalized.O.percentile
+            if (normalized?.C) profileData.big5_conscientiousness = normalized.C.percentile
+            if (normalized?.E) profileData.big5_extraversion = normalized.E.percentile
+            if (normalized?.A) profileData.big5_agreeableness = normalized.A.percentile
+            if (normalized?.N) profileData.big5_neuroticism = normalized.N.percentile
+          } catch (e) {
+            console.error('Failed to normalize Big5 on backend:', e)
+          }
         }
 
         // NEW: Store complete BFI-2 score object
