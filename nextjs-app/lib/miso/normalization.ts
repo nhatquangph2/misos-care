@@ -112,10 +112,7 @@ export function normalizeBig5(rawScores: Partial<Big5RawScores>): {
       const norm = BIG5_NORMS[trait]
 
       if (!norm) {
-        console.error(`CRITICAL ERROR: Norm missing for trait ${trait}`, {
-          BIG5_NORMS_Keys: Object.keys(BIG5_NORMS || {}),
-          Trait: trait
-        })
+        throw new Error(`CRITICAL_DEBUG: Norm missing for trait '${trait}'. BIG5_NORMS Keys: ${JSON.stringify(Object.keys(BIG5_NORMS || {}))}`)
       }
 
 
