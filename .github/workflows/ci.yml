@@ -60,16 +60,17 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy Supabase Edge Functions (Staging)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_ID }}
-        run: |
-          cd supabase
-          supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+      # - name: Deploy Supabase Edge Functions (Staging)
+      #   env:
+      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      #     SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_STAGING_PROJECT_ID }}
+      #   run: |
+      #     cd supabase
+      #     # supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
 
       - name: Send Slack notification
         if: always()
+        continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -92,16 +93,17 @@ jobs:
         with:
           version: latest
 
-      - name: Deploy Supabase Edge Functions (Production)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_ID }}
-        run: |
-          cd supabase
-          supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
+      # - name: Deploy Supabase Edge Functions (Production)
+      #   env:
+      #     SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      #     SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PRODUCTION_PROJECT_ID }}
+      #   run: |
+      #     cd supabase
+      #     # supabase functions deploy --project-ref $SUPABASE_PROJECT_ID
 
       - name: Send Slack notification
         if: always()
+        continue-on-error: true
         uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
