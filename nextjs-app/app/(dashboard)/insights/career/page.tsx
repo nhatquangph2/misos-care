@@ -21,19 +21,30 @@ async function getCareerData(userId: string) {
         .eq('user_id', userId)
         .single()
 
+    // Get DASS scores for holistic analysis
+    const { data: dassRecord } = await supabase
+        .from('mental_health_records')
+        .select('subscale_scores')
+        .eq('user_id', userId)
+        .eq('test_type', 'DASS21')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
     if (!profile) return null
 
     const big5_raw = {
-        O: profile.big5_openness || profile.big5_openness_raw || 50,
-        C: profile.big5_conscientiousness || profile.big5_conscientiousness_raw || 50,
-        E: profile.big5_extraversion || profile.big5_extraversion_raw || 50,
-        A: profile.big5_agreeableness || profile.big5_agreeableness_raw || 50,
-        N: profile.big5_neuroticism || profile.big5_neuroticism_raw || 50,
+        O: profile.big5_openness_raw || profile.big5_openness || 50,
+        C: profile.big5_conscientiousness_raw || profile.big5_conscientiousness || 50,
+        E: profile.big5_extraversion_raw || profile.big5_extraversion || 50,
+        A: profile.big5_agreeableness_raw || profile.big5_agreeableness || 50,
+        N: profile.big5_neuroticism_raw || profile.big5_neuroticism || 50,
     }
 
     const misoResult = await runMisoAnalysis({
         big5_raw,
         mbti: profile.mbti_type || undefined,
+        dass21_raw: dassRecord?.subscale_scores as any
     }, userId)
 
     const recommendations = getPersonalizedRecommendations(misoResult)
