@@ -84,11 +84,11 @@ function extractBig5Profile(normalized: MisoAnalysisResult['normalized']): Big5P
 
     const big5 = normalized.big5
     return {
-        O: typeof big5.O === 'number' ? big5.O : 50,
-        C: typeof big5.C === 'number' ? big5.C : 50,
-        E: typeof big5.E === 'number' ? big5.E : 50,
-        A: typeof big5.A === 'number' ? big5.A : 50,
-        N: typeof big5.N === 'number' ? big5.N : 50,
+        O: typeof big5.O === 'object' ? (big5.O as any).percentile : (typeof big5.O === 'number' ? big5.O : 50),
+        C: typeof big5.C === 'object' ? (big5.C as any).percentile : (typeof big5.C === 'number' ? big5.C : 50),
+        E: typeof big5.E === 'object' ? (big5.E as any).percentile : (typeof big5.E === 'number' ? big5.E : 50),
+        A: typeof big5.A === 'object' ? (big5.A as any).percentile : (typeof big5.A === 'number' ? big5.A : 50),
+        N: typeof big5.N === 'object' ? (big5.N as any).percentile : (typeof big5.N === 'number' ? big5.N : 50),
     }
 }
 
