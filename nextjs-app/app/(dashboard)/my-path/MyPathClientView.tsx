@@ -311,7 +311,7 @@ export default function ProfileClientView({
                                             </div>
 
                                             <div className="flex-1">
-                                                <div className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100 dark:border-gray-700">
+                                                <div className="glass-card backdrop-blur-md p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                                                     <div className="flex items-start justify-between mb-3">
                                                         <div>
                                                             <h4 className="font-bold text-lg mb-1">{entry.testName}</h4>
@@ -337,11 +337,11 @@ export default function ProfileClientView({
 
                                                     {entry.type === 'mental_health' && entry.score !== undefined && (
                                                         <div className="grid grid-cols-2 gap-4 mt-4">
-                                                            <div className="bg-white/70 dark:bg-gray-600/30 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                                            <div className="bg-white/20 dark:bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/30 dark:border-white/10">
                                                                 <p className="text-xs text-gray-500 mb-1">Điểm số</p>
                                                                 <p className="text-2xl font-bold text-purple-600">{entry.score}</p>
                                                             </div>
-                                                            <div className="bg-white/70 dark:bg-gray-600/30 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                                            <div className="bg-white/20 dark:bg-white/5 backdrop-blur-sm rounded-lg p-3 border border-white/30 dark:border-white/10">
                                                                 <p className="text-xs text-gray-500 mb-1">Mức độ</p>
                                                                 <Badge variant="outline" className="mt-1">
                                                                     {entry.severity === 'normal' && 'Bình thường'}
@@ -387,7 +387,7 @@ export default function ProfileClientView({
                     <PersonalityOverview profile={profileData?.personality || null} />
 
                     {(profileData?.personality?.mbti_type || unifiedProfile?.mbti?.type) && (
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 sm:p-8 rounded-2xl">
+                        <div className="glass-card backdrop-blur-md bg-purple-500/10 dark:bg-purple-500/20 p-6 sm:p-8 rounded-2xl">
                             <h3 className="text-xl sm:text-2xl font-bold mb-4">Về Tính Cách {profileData?.personality?.mbti_type || unifiedProfile?.mbti?.type}</h3>
                             <div className="prose max-w-none dark:prose-invert">
                                 <p className="text-gray-700 dark:text-gray-300 mb-4">
@@ -404,7 +404,7 @@ export default function ProfileClientView({
                     <MentalHealthChart trends={profileData?.trends || []} />
                     <TestHistory records={profileData?.mentalHealthRecords || []} />
 
-                    <div className="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-xl">
+                    <div className="glass-card backdrop-blur-md bg-blue-500/10 dark:bg-blue-500/20 p-6 rounded-xl">
                         <h4 className="font-semibold mb-2 flex items-center gap-2">
                             <span>ℹ️</span>
                             Lưu Ý Quan Trọng
@@ -426,7 +426,7 @@ export default function ProfileClientView({
                     <RecommendationsCard recommendations={profileData?.recommendations || []} />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 p-6 rounded-xl">
+                        <div className="glass-card backdrop-blur-md bg-green-500/10 dark:bg-green-500/20 p-6 rounded-xl">
                             <h4 className="font-semibold mb-3 flex items-center gap-2">
                                 <span>🌱</span>
                                 Thói Quen Lành Mạnh
@@ -451,7 +451,7 @@ export default function ProfileClientView({
                             </ul>
                         </div>
 
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 p-6 rounded-xl">
+                        <div className="glass-card backdrop-blur-md bg-purple-500/10 dark:bg-purple-500/20 p-6 rounded-xl">
                             <h4 className="font-semibold mb-3 flex items-center gap-2">
                                 <span>📚</span>
                                 Tài Nguyên Hữu Ích
