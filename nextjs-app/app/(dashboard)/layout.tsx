@@ -1,3 +1,5 @@
+'use client'
+
 import Sidebar from '@/components/layout/Sidebar'
 import MobileNav from '@/components/layout/MobileNav'
 import dynamic from 'next/dynamic'
