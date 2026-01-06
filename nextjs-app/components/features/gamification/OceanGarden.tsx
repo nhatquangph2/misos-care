@@ -3,143 +3,161 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { UserOceanItem } from '@/types/gamification';
 import { Card } from '@/components/ui/card';
+import { OceanCreature } from './OceanCreature';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface OceanGardenProps {
     items: UserOceanItem[];
     className?: string;
 }
 
+interface FoodPellet {
+    id: number;
+    x: number;
+    y: number;
+}
+
 export function OceanGarden({ items, className }: OceanGardenProps) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-    const requestRef = useRef<number>(0);
-    const timeRef = useRef<number>(0);
+    const [food, setFood] = useState<FoodPellet | null>(null);
+    const [bubbles, setBubbles] = useState<Array<{ id: number; x: number; size: number; duration: number }>>([]);
 
-    // Preload images
-    const imagesRef = useRef<Record<string, HTMLImageElement>>({});
-
+    // Initialize size
     useEffect(() => {
-        // Determine unique item IDs to load
-        const uniqueSlugs = new Set(items.map(i => i.item?.slug).filter(Boolean));
-        uniqueSlugs.add('bg_gradient'); // Virtual BG
-
-        const loadImages = () => {
-            items.forEach(userItem => {
-                const item = userItem.item;
-                if (item && item.image_url && !imagesRef.current[item.slug]) {
-                    const img = new Image();
-                    img.src = item.image_url;
-                    imagesRef.current[item.slug] = img;
-                }
-            });
-        };
-        loadImages();
-    }, [items]);
-
-    useEffect(() => {
-        const handleResize = () => {
-            if (canvasRef.current?.parentElement) {
-                const { offsetWidth, offsetHeight } = canvasRef.current.parentElement;
-                setContainerSize({ width: offsetWidth, height: offsetHeight });
-                if (canvasRef.current) {
-                    canvasRef.current.width = offsetWidth;
-                    canvasRef.current.height = offsetHeight;
-                }
+        const updateSize = () => {
+            if (containerRef.current) {
+                setContainerSize({
+                    width: containerRef.current.offsetWidth,
+                    height: containerRef.current.offsetHeight
+                });
             }
         };
 
-        window.addEventListener('resize', handleResize);
-        handleResize();
-
-        return () => window.removeEventListener('resize', handleResize);
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
     }, []);
 
-    const draw = (time: number) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const width = canvas.width;
-        const height = canvas.height;
-
-        // Clear
-        ctx.clearRect(0, 0, width, height);
-
-        // Draw Background
-        // Create gradient
-        const gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, '#e0f7fa'); // Top: Light surface
-        gradient.addColorStop(1, '#0288d1'); // Bottom: Deep ocean
-        ctx.fillStyle = gradient;
-        ctx.fillRect(0, 0, width, height);
-
-        // Draw bubbles (simple)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        for (let i = 0; i < 10; i++) {
-            const bubbleY = (time * 0.05 + i * 50) % height;
-            const bubbleX = (Math.sin(time * 0.001 + i) * 20) + (width * (i / 10));
-            ctx.beginPath();
-            ctx.arc(bubbleX, height - bubbleY, 5 + (i % 5), 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        // Draw Items
-        items.forEach(userItem => {
-            const item = userItem.item;
-            if (!item) return;
-
-            const img = imagesRef.current[item.slug];
-            if (!img || !img.complete) {
-                // Fallback placeholder
-                ctx.fillStyle = item.type === 'fish' ? 'orange' : 'green';
-                const x = (userItem.position_x / 100) * width;
-                const y = (userItem.position_y / 100) * height;
-                ctx.beginPath();
-                ctx.arc(x, y, 10, 0, Math.PI * 2);
-                ctx.fill();
-                return;
-            }
-
-            let x = (userItem.position_x / 100) * width;
-            let y = (userItem.position_y / 100) * height;
-
-            // Swim logic for fish
-            if (item.type === 'fish') {
-                const speed = 0.02 + (item.slug.length % 3) * 0.01;
-                const range = 50;
-                const offsetX = Math.sin(time * speed) * range;
-                const offsetY = Math.cos(time * speed * 0.5) * (range / 2);
-
-                x += offsetX;
-                y += offsetY;
-
-                // Flip image if swimming left (not implemented native 2d ctx flip easily without save/restore)
-            }
-
-            const size = 64 * (userItem.scale || 1);
-            ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
-        });
-    };
-
-    const animate = (time: number) => {
-        timeRef.current = time;
-        draw(time);
-        requestRef.current = requestAnimationFrame(animate);
-    };
-
+    // Bubble Generator
     useEffect(() => {
-        requestRef.current = requestAnimationFrame(animate);
-        return () => cancelAnimationFrame(requestRef.current);
-    });
+        const interval = setInterval(() => {
+            const newBubble = {
+                id: Date.now(),
+                x: Math.random() * 100, // percentage
+                size: 5 + Math.random() * 15,
+                duration: 5 + Math.random() * 10
+            };
+
+            setBubbles(prev => [...prev.slice(-15), newBubble]); // Keep max 15 bubbles
+        }, 1500);
+        return () => clearInterval(interval);
+    }, []);
+
+    const handleFeed = (e: React.MouseEvent) => {
+        if (!containerRef.current) return;
+
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        setFood({ id: Date.now(), x, y });
+
+        // Remove food after 5 seconds if not eaten (or just timeout for simulation)
+        setTimeout(() => setFood(null), 5000);
+    };
 
     return (
-        <Card className={`overflow-hidden rounded-xl border-none shadow-inner ${className}`}>
-            <div className="relative w-full h-full min-h-[300px]">
-                <canvas ref={canvasRef} className="absolute inset-0 block" />
+        <Card className={`overflow-hidden rounded-xl border-none shadow-inner relative group ${className}`}>
+            {/* Dynamic Background */}
+            <div
+                ref={containerRef}
+                className="relative w-full h-full min-h-[400px] cursor-crosshair overflow-hidden"
+                style={{
+                    background: 'linear-gradient(to bottom, #bae6fd 0%, #0ea5e9 40%, #0369a1 100%)'
+                }}
+                onClick={handleFeed}
+            >
+                {/* Sun Rays / Light Effect */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" />
+                <div className="absolute top-0 left-1/4 w-1/2 h-full bg-gradient-to-b from-white/20 to-transparent transform -skew-x-12 blur-xl pointer-events-none" />
+
+                {/* Floating Bubbles */}
+                {bubbles.map(bubble => (
+                    <motion.div
+                        key={bubble.id}
+                        initial={{ y: '110%', x: `${bubble.x}%`, opacity: 0 }}
+                        animate={{ y: '-10%', opacity: [0, 0.6, 0] }}
+                        transition={{ duration: bubble.duration, ease: "linear" }}
+                        className="absolute rounded-full bg-white/30 border border-white/40 backdrop-blur-sm pointer-events-none"
+                        style={{ width: bubble.size, height: bubble.size }}
+                    />
+                ))}
+
+                {/* Food Pellet */}
+                <AnimatePresence>
+                    {food && (
+                        <motion.div
+                            key={food.id}
+                            initial={{ y: 0, opacity: 0, scale: 0 }}
+                            animate={{ y: food.y, opacity: 1, scale: 1 }}
+                            exit={{ scale: 0, opacity: 0 }}
+                            className="absolute w-4 h-4 bg-amber-700 rounded-full shadow-sm z-20 pointer-events-none"
+                            style={{ left: food.x - 8 }} // center
+                        />
+                    )}
+                </AnimatePresence>
+
+                {/* Sea Floor / Plants (Static Decor) */}
+                <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+
+                {/* Creatures and Items */}
+                {containerSize.width > 0 && items.map(userItem => {
+                    const item = userItem.item;
+                    if (!item) return null;
+
+                    // Separate render logic for Fish vs Stationary items
+                    if (item.type === 'fish') {
+                        return (
+                            <OceanCreature
+                                key={userItem.id}
+                                item={userItem}
+                                containerSize={containerSize}
+                                foodTarget={food}
+                                onEat={() => {
+                                    // Could play sound or update score here
+                                    // For now just visual in OceanCreature
+                                }}
+                            />
+                        );
+                    } else {
+                        // Stationary items (Plants, Decor)
+                        return (
+                            <motion.div
+                                key={userItem.id}
+                                className="absolute bottom-[5%]"
+                                style={{
+                                    left: `${userItem.position_x}%`,
+                                    width: 64 * (userItem.scale || 1),
+                                    height: 64 * (userItem.scale || 1),
+                                }}
+                                whileHover={{ scale: 1.1 }}
+                            >
+                                {item.image_url ? (
+                                    <img src={item.image_url} alt={item.name} className="w-full h-full object-contain drop-shadow-md" />
+                                ) : (
+                                    <div className="w-full h-full bg-green-600 rounded-lg skew-x-12" />
+                                )}
+                            </motion.div>
+                        );
+                    }
+                })}
+
+                {/* Empty State */}
                 {items.length === 0 && (
-                    <div className="absolute inset-0 flex items-center justify-center text-white/80 font-medium">
-                        Đại dương của bạn còn trống. Hãy mua thêm sinh vật!
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white/80 pointer-events-none">
+                        <p className="text-xl font-bold mb-2">Đại dương trống vắng...</p>
+                        <p className="text-sm">Hãy ghé Cửa hàng mua thêm sinh vật nhé! 🐠</p>
                     </div>
                 )}
             </div>
