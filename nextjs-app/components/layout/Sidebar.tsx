@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Map, Flower2, Atom, Settings, LogOut, Activity, Briefcase, GraduationCap, HeartPulse, Trophy, ChartSpline } from 'lucide-react';
+import { Home, Map, Flower2, Atom, Settings, LogOut, Activity, Briefcase, GraduationCap, HeartPulse, Trophy, ChartSpline, UserCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -17,6 +17,7 @@ export default function Sidebar() {
         { name: 'Sanctuary', href: '/sanctuary', icon: Flower2, label: 'Vườn Cảm Xúc' },
         { name: 'Expertise', href: '/expertise', icon: Atom, label: 'Chuyên gia AI' },
     ];
+
 
     const insightItems = [
         { name: 'Career', href: '/insights/career', icon: Briefcase, label: 'Nghề nghiệp' },
