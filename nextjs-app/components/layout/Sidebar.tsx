@@ -16,7 +16,6 @@ export default function Sidebar() {
         { name: 'My Path', href: '/my-path', icon: Map, label: 'Hành trình' },
         { name: 'Sanctuary', href: '/sanctuary', icon: Flower2, label: 'Vườn Cảm Xúc' },
         { name: 'Expertise', href: '/expertise', icon: Atom, label: 'Chuyên gia AI' },
-        { name: 'Glossary', href: '/glossary', icon: BookOpen, label: 'Thuật ngữ' },
     ];
 
 
