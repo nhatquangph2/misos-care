@@ -15,6 +15,15 @@ import {
     Clock
 } from 'lucide-react'
 
+// BFI2Score structure from unified-profile.service.ts
+interface BFI2Score {
+    domains?: { O: number; C: number; E: number; A: number; N: number }
+    facets?: Record<string, unknown>
+    tScores?: { domains: { O: number; C: number; E: number; A: number; N: number } }
+    percentiles?: { domains: { O: number; C: number; E: number; A: number; N: number } }
+    raw_scores?: { O: number; C: number; E: number; A: number; N: number }
+}
+
 interface ProfileClientViewProps {
     profileData: {
         mbtiType?: string
@@ -39,22 +48,49 @@ interface ProfileClientViewProps {
     }>
     unifiedProfile: {
         mbti?: { type: string }
-        big5?: { O: number; C: number; E: number; A: number; N: number }
+        big5?: BFI2Score
         dass?: { D: number; A: number; S: number }
         via?: Record<string, number>
+        miso_analysis?: {
+            scores?: { BVS?: number; RCS?: number }
+        }
     }
     userId: string
     userName: string
+}
+
+// Helper to extract Big5 percentiles from nested structure
+function getBig5Percentiles(big5?: BFI2Score): { O: number; C: number; E: number; A: number; N: number } | null {
+    if (!big5) return null
+
+    // Try percentiles first (most accurate for display)
+    if (big5.percentiles?.domains) {
+        return big5.percentiles.domains
+    }
+
+    // Fallback to domains (raw scores)
+    if (big5.domains) {
+        return big5.domains
+    }
+
+    // Fallback to raw_scores
+    if (big5.raw_scores) {
+        return big5.raw_scores
+    }
+
+    return null
 }
 
 export default function ProfileClientView({
     profileData,
     timeline,
     unifiedProfile,
-    userId,
     userName
 }: ProfileClientViewProps) {
     const [activeTab, setActiveTab] = useState('overview')
+
+    // Extract Big5 data properly
+    const big5Data = getBig5Percentiles(unifiedProfile?.big5)
 
     return (
         <div className="space-y-6">
@@ -118,10 +154,10 @@ export default function ProfileClientView({
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
-                                {unifiedProfile?.big5 ? (
+                                {big5Data ? (
                                     <div className="flex flex-wrap gap-2">
-                                        {['O', 'C', 'E', 'A', 'N'].map((trait) => {
-                                            const value = (unifiedProfile.big5 as Record<string, unknown>)?.[trait]
+                                        {(['O', 'C', 'E', 'A', 'N'] as const).map((trait) => {
+                                            const value = big5Data[trait]
                                             if (typeof value !== 'number') return null
                                             return (
                                                 <Badge key={trait} variant="secondary">
@@ -156,6 +192,32 @@ export default function ProfileClientView({
                                 )}
                             </CardContent>
                         </Card>
+
+                        {/* MISO Analysis Card */}
+                        {unifiedProfile?.miso_analysis?.scores && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <TrendingUp className="w-5 h-5 text-green-500" />
+                                        MISO Analysis
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="flex flex-wrap gap-2">
+                                        {unifiedProfile.miso_analysis.scores.BVS !== undefined && (
+                                            <Badge variant="secondary">
+                                                BVS: {Math.round(unifiedProfile.miso_analysis.scores.BVS)}
+                                            </Badge>
+                                        )}
+                                        {unifiedProfile.miso_analysis.scores.RCS !== undefined && (
+                                            <Badge variant="secondary">
+                                                RCS: {Math.round(unifiedProfile.miso_analysis.scores.RCS)}
+                                            </Badge>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 </TabsContent>
 
@@ -169,10 +231,10 @@ export default function ProfileClientView({
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            {unifiedProfile?.big5 ? (
+                            {big5Data ? (
                                 <div className="space-y-4">
-                                    {['O', 'C', 'E', 'A', 'N'].map((trait) => {
-                                        const value = (unifiedProfile.big5 as Record<string, unknown>)?.[trait]
+                                    {(['O', 'C', 'E', 'A', 'N'] as const).map((trait) => {
+                                        const value = big5Data[trait]
                                         if (typeof value !== 'number') return null
                                         return (
                                             <div key={trait} className="space-y-2">
@@ -183,7 +245,7 @@ export default function ProfileClientView({
                                                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                                                     <div
                                                         className="bg-blue-500 h-2 rounded-full transition-all"
-                                                        style={{ width: `${value}%` }}
+                                                        style={{ width: `${Math.min(value, 100)}%` }}
                                                     />
                                                 </div>
                                             </div>
