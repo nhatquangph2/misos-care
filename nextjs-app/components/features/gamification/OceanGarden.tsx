@@ -113,7 +113,7 @@ export function OceanGarden({ items, className }: OceanGardenProps) {
 
                 {/* Creatures and Items */}
                 {containerSize.width > 0 && items
-                    .filter(i => i.position_x <= 100) // Render only visible items
+                    .filter(i => i.position_x > 0) // Render only placed items (pos > 0)
                     .map(userItem => {
                         const item = userItem.item;
                         if (!item) return null;

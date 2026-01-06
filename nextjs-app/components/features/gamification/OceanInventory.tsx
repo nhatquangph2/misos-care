@@ -19,9 +19,9 @@ interface OceanInventoryProps {
 export function OceanInventory({ shopItems, userItems, userPoints }: OceanInventoryProps) {
     const [isPending, startTransition] = useTransition();
 
-    // Filter items (Convention: > 100 is in bag)
-    const inventoryItems = userItems.filter(item => item.position_x > 100);
-    const placedItems = userItems.filter(item => item.position_x <= 100);
+    // Filter items (Convention: 0 is in bag, > 0 is placed)
+    const inventoryItems = userItems.filter(item => item.position_x === 0);
+    const placedItems = userItems.filter(item => item.position_x > 0);
 
     const handleBuy = (itemId: string) => {
         startTransition(async () => {

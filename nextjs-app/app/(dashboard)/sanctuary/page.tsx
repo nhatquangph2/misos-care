@@ -27,8 +27,8 @@ export default async function SanctuaryPage() {
         .select('*')
         .order('unlock_price', { ascending: true });
 
-    // Filter items: Ocean gets placed items only (pos <= 100)
-    const placedItems = state.oceanItems.filter(item => item.position_x <= 100);
+    // Filter items: Ocean gets placed items only (pos > 0)
+    const placedItems = state.oceanItems.filter(item => item.position_x > 0);
 
     return (
         <div className="space-y-8">
