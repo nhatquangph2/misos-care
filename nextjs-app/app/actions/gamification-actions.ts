@@ -172,14 +172,35 @@ export async function buyOceanItem(itemId: string): Promise<{ success: boolean; 
         total_points: profile.total_points - item.unlock_price
     }).eq('user_id', user.id);
 
-    // 3. Add to inventory
+    // 3. Add to inventory (In Bag by default: position -1)
     await (supabase as any).from('user_ocean_items').insert({
         user_id: user.id,
         item_id: item.id,
-        position_x: 50, // Default center
-        position_y: 50
+        position_x: -1,
+        position_y: -1
     });
 
-    revalidatePath('/dashboard/garden');
-    return { success: true, message: `Đã mua ${item.name}!` };
+    revalidatePath('/sanctuary');
+    return { success: true, message: `Đã thêm ${item.name} vào Túi!` };
+}
+
+export async function toggleItemPlacement(itemId: string, shouldPlace: boolean): Promise<{ success: boolean; message: string }> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, message: 'Unauthorized' };
+
+    const updateData = shouldPlace
+        ? { position_x: 50, position_y: 50 } // Default center when placing
+        : { position_x: -1, position_y: -1 }; // Hide when storing
+
+    const { error } = await (supabase as any)
+        .from('user_ocean_items')
+        .update(updateData)
+        .eq('id', itemId)
+        .eq('user_id', user.id);
+
+    if (error) return { success: false, message: 'Failed to update item' };
+
+    revalidatePath('/sanctuary');
+    return { success: true, message: shouldPlace ? 'Đã thả sinh vật ra!' : 'Đã cất sinh vật vào túi!' };
 }

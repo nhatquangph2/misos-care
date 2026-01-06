@@ -112,46 +112,48 @@ export function OceanGarden({ items, className }: OceanGardenProps) {
                 <div className="absolute bottom-0 w-full h-24 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
 
                 {/* Creatures and Items */}
-                {containerSize.width > 0 && items.map(userItem => {
-                    const item = userItem.item;
-                    if (!item) return null;
+                {containerSize.width > 0 && items
+                    .filter(i => i.position_x >= 0) // Extra safety check
+                    .map(userItem => {
+                        const item = userItem.item;
+                        if (!item) return null;
 
-                    // Separate render logic for Fish vs Stationary items
-                    if (item.type === 'fish') {
-                        return (
-                            <OceanCreature
-                                key={userItem.id}
-                                item={userItem}
-                                containerSize={containerSize}
-                                foodTarget={food}
-                                onEat={() => {
-                                    // Could play sound or update score here
-                                    // For now just visual in OceanCreature
-                                }}
-                            />
-                        );
-                    } else {
-                        // Stationary items (Plants, Decor)
-                        return (
-                            <motion.div
-                                key={userItem.id}
-                                className="absolute bottom-[5%]"
-                                style={{
-                                    left: `${userItem.position_x}%`,
-                                    width: 64 * (userItem.scale || 1),
-                                    height: 64 * (userItem.scale || 1),
-                                }}
-                                whileHover={{ scale: 1.1 }}
-                            >
-                                {item.image_url ? (
-                                    <img src={item.image_url} alt={item.name} className="w-full h-full object-contain drop-shadow-md" />
-                                ) : (
-                                    <div className="w-full h-full bg-green-600 rounded-lg skew-x-12" />
-                                )}
-                            </motion.div>
-                        );
-                    }
-                })}
+                        // Separate render logic for Fish vs Stationary items
+                        if (item.type === 'fish') {
+                            return (
+                                <OceanCreature
+                                    key={userItem.id}
+                                    item={userItem}
+                                    containerSize={containerSize}
+                                    foodTarget={food}
+                                    onEat={() => {
+                                        // Could play sound or update score here
+                                        // For now just visual in OceanCreature
+                                    }}
+                                />
+                            );
+                        } else {
+                            // Stationary items (Plants, Decor)
+                            return (
+                                <motion.div
+                                    key={userItem.id}
+                                    className="absolute bottom-[5%]"
+                                    style={{
+                                        left: `${userItem.position_x}%`,
+                                        width: 64 * (userItem.scale || 1),
+                                        height: 64 * (userItem.scale || 1),
+                                    }}
+                                    whileHover={{ scale: 1.1 }}
+                                >
+                                    {item.image_url ? (
+                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-contain drop-shadow-md" />
+                                    ) : (
+                                        <div className="w-full h-full bg-green-600 rounded-lg skew-x-12" />
+                                    )}
+                                </motion.div>
+                            );
+                        }
+                    })}
 
                 {/* Empty State */}
                 {items.length === 0 && (

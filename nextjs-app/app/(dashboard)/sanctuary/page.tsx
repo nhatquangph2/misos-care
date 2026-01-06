@@ -1,7 +1,7 @@
-import React from 'react';
 import { GlossaryHighlighter } from '@/components/ui/GlossaryTooltip';
-import { getGamificationState, buyOceanItem } from '@/app/actions/gamification-actions';
+import { getGamificationState } from '@/app/actions/gamification-actions';
 import { OceanGarden } from '@/components/features/gamification/OceanGarden';
+import { OceanInventory } from '@/components/features/gamification/OceanInventory';
 import { QuestList } from '@/components/features/gamification/QuestList';
 import UserEngagement from '@/components/gamification/UserEngagement';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,11 +27,8 @@ export default async function SanctuaryPage() {
         .select('*')
         .order('unlock_price', { ascending: true });
 
-    const handleBuy = async (formData: FormData) => {
-        'use server';
-        const itemId = formData.get('itemId') as string;
-        await buyOceanItem(itemId);
-    };
+    // Filter items: Ocean gets placed items only
+    const placedItems = state.oceanItems.filter(item => item.position_x >= 0);
 
     return (
         <div className="space-y-8">
@@ -72,52 +69,15 @@ export default async function SanctuaryPage() {
                             </CardTitle>
                         </CardHeader>
                         <div className="h-[400px] relative bg-blue-900/10 backdrop-blur-sm">
-                            <OceanGarden items={state.oceanItems} className="h-full rounded-none bg-transparent" />
+                            <OceanGarden items={placedItems} className="h-full rounded-none bg-transparent" />
                         </div>
                     </Card>
 
-                    <Card className="glass-card border-0">
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <ShoppingBag className="h-5 w-5" />
-                                Cửa hàng
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {shopItems?.map((item: OceanItem) => {
-                                    const owned = state.oceanItems.some(i => i.item_id === item.id);
-                                    const canAfford = (state.profile?.total_points || 0) >= item.unlock_price;
-
-                                    return (
-                                        <div key={item.id} className="group relative bg-white/40 dark:bg-slate-800/40 border border-white/20 rounded-xl p-3 text-center transition-all hover:scale-105 hover:bg-white/60 hover:shadow-lg">
-                                            <div className="h-16 w-16 mx-auto mb-2 bg-slate-50 rounded-full flex items-center justify-center">
-                                                {item.type === 'fish' ? <Fish className="text-orange-400" /> :
-                                                    item.type === 'plant' ? <Flower2 className="text-green-500" /> : <Box className="text-slate-400" />}
-                                            </div>
-                                            <h4 className="font-semibold text-sm truncate">{item.name}</h4>
-                                            <div className="flex items-center justify-center gap-1 text-xs text-amber-600 font-medium my-2">
-                                                <Coins className="h-3 w-3" />
-                                                {item.unlock_price}
-                                            </div>
-
-                                            <form action={handleBuy}>
-                                                <input type="hidden" name="itemId" value={item.id} />
-                                                <Button
-                                                    size="sm"
-                                                    variant={owned ? "secondary" : "default"}
-                                                    disabled={owned || !canAfford}
-                                                    className="w-full text-xs h-8"
-                                                >
-                                                    {owned ? "Đã sở hữu" : "Mua"}
-                                                </Button>
-                                            </form>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <OceanInventory
+                        shopItems={shopItems}
+                        userItems={state.oceanItems}
+                        userPoints={state.profile?.total_points || 0}
+                    />
                 </div>
 
                 <div className="space-y-6">
