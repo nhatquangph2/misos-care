@@ -172,13 +172,18 @@ export async function buyOceanItem(itemId: string): Promise<{ success: boolean; 
         total_points: profile.total_points - item.unlock_price
     }).eq('user_id', user.id);
 
-    // 3. Add to inventory (In Bag by default: position -1)
-    await (supabase as any).from('user_ocean_items').insert({
+    // 3. Add to inventory (In Bag by default: position 9999)
+    const { error: insertError } = await (supabase as any).from('user_ocean_items').insert({
         user_id: user.id,
         item_id: item.id,
-        position_x: -1,
-        position_y: -1
+        position_x: 9999,
+        position_y: 9999
     });
+
+    if (insertError) {
+        console.error('Buy Item Error:', insertError);
+        return { success: false, message: 'Lỗi hệ thống: Không thể thêm vật phẩm vào kho.' };
+    }
 
     revalidatePath('/sanctuary');
     return { success: true, message: `Đã thêm ${item.name} vào Túi!` };
@@ -191,7 +196,7 @@ export async function toggleItemPlacement(itemId: string, shouldPlace: boolean):
 
     const updateData = shouldPlace
         ? { position_x: 50, position_y: 50 } // Default center when placing
-        : { position_x: -1, position_y: -1 }; // Hide when storing
+        : { position_x: 9999, position_y: 9999 }; // Hide when storing
 
     const { error } = await (supabase as any)
         .from('user_ocean_items')

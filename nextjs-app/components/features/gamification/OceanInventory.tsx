@@ -9,7 +9,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingBag, Backpack, Fish, Flower2, Box, Coins, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import { GlossaryHighlighter } from '@/components/ui/GlossaryTooltip';
 
 interface OceanInventoryProps {
     shopItems: OceanItem[];
@@ -20,9 +19,9 @@ interface OceanInventoryProps {
 export function OceanInventory({ shopItems, userItems, userPoints }: OceanInventoryProps) {
     const [isPending, startTransition] = useTransition();
 
-    // Filter items
-    const inventoryItems = userItems.filter(item => item.position_x < 0);
-    const placedItems = userItems.filter(item => item.position_x >= 0);
+    // Filter items (Convention: > 100 is in bag)
+    const inventoryItems = userItems.filter(item => item.position_x > 100);
+    const placedItems = userItems.filter(item => item.position_x <= 100);
 
     const handleBuy = (itemId: string) => {
         startTransition(async () => {
