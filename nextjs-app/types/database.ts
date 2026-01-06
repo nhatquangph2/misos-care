@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Database Types (Auto-generated structure from Supabase Schema)
  * These types match the SQL schema exactly
@@ -278,6 +277,265 @@ export type SISRI24ResultRecord = {
 }
 
 // =====================================================
+// USER GOALS & ACTION PLANS
+// =====================================================
+
+export type GoalCategory = 'mental_health' | 'personality_growth' | 'habits' | 'relationships' | 'career' | 'custom';
+export type GoalStatus = 'active' | 'completed' | 'paused' | 'abandoned';
+export type ActionType = 'daily_habit' | 'weekly_habit' | 'one_time' | 'test_schedule' | 'custom';
+export type FrequencyType = 'daily' | 'weekly' | 'monthly' | 'custom';
+export type MoodType = 'great' | 'good' | 'okay' | 'bad' | 'terrible';
+
+export type UserGoal = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  category: GoalCategory;
+  target_metric: string | null;
+  target_value: number | null;
+  current_value: number;
+  start_date: string;
+  target_date: string;
+  status: GoalStatus;
+  completion_percentage: number;
+  motivation_text: string | null;
+  reward_text: string | null;
+  completed_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ActionPlan = {
+  id: string;
+  goal_id: string | null;
+  user_id: string;
+  title: string;
+  description: string | null;
+  action_type: ActionType;
+  frequency_type: FrequencyType | null;
+  frequency_value: number | null;
+  frequency_days: string[] | null;
+  reminder_enabled: boolean;
+  reminder_time: string | null;
+  reminder_days: string[] | null;
+  total_completions: number;
+  current_streak: number;
+  longest_streak: number;
+  last_completed_at: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ActionCompletion = {
+  id: string;
+  action_plan_id: string;
+  user_id: string;
+  completed_at: string;
+  completion_date: string;
+  notes: string | null;
+  mood: MoodType | null;
+  created_at: string;
+}
+
+// =====================================================
+// CHAT SYSTEM
+// =====================================================
+
+export type ChatSession = {
+  id: string;
+  user_id: string;
+  title: string | null;
+  context_summary: string | null;
+  is_active: boolean;
+  message_count: number;
+  started_at: string;
+  last_message_at: string;
+  created_at: string;
+}
+
+export type ChatMessage = {
+  id: string;
+  session_id: string;
+  role: ChatRole;
+  content: string;
+  model: string | null;
+  tokens_used: number | null;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  contains_crisis_keyword: boolean;
+  moderation_flagged: boolean;
+  moderation_categories: Json | null;
+  created_at: string;
+}
+
+// =====================================================
+// CRISIS ALERTS
+// =====================================================
+
+export type CrisisAlert = {
+  id: string;
+  user_id: string;
+  trigger_type: CrisisTriggerType;
+  trigger_source_id: string | null;
+  severity: CrisisSeverity;
+  details: Json | null;
+  intervention_sent: boolean;
+  intervention_type: InterventionType | null;
+  resolved: boolean;
+  resolved_at: string | null;
+  resolved_notes: string | null;
+  created_at: string;
+}
+
+// =====================================================
+// BOOKING & REVIEWS
+// =====================================================
+
+export type BookingReview = {
+  id: string;
+  booking_id: string;
+  user_id: string;
+  mentor_id: string;
+  rating: number;
+  review_text: string | null;
+  created_at: string;
+}
+
+// =====================================================
+// PRODUCTS
+// =====================================================
+
+export type Product = {
+  id: string;
+  name: string;
+  description: string | null;
+  category: ProductCategory;
+  price: number;
+  currency: Currency;
+  image_url: string | null;
+  images: Json | null;
+  external_link: string | null;
+  stock_quantity: number | null;
+  click_count: number;
+  view_count: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// =====================================================
+// COMMUNITY
+// =====================================================
+
+export type CommunityGroup = {
+  id: string;
+  personality_type: CommunityGroupType | null;
+  name: string;
+  description: string | null;
+  cover_image_url: string | null;
+  rules: Json | null;
+  member_count: number;
+  post_count: number;
+  is_private: boolean;
+  requires_approval: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export type GroupMember = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  role: GroupMemberRole;
+  status: GroupMemberStatus;
+  joined_at: string;
+}
+
+export type CommunityPost = {
+  id: string;
+  group_id: string;
+  user_id: string;
+  content: string;
+  images: Json | null;
+  moderation_status: ModerationStatus;
+  moderation_reason: string | null;
+  moderated_at: string | null;
+  moderated_by: string | null;
+  like_count: number;
+  comment_count: number;
+  report_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PostReport = {
+  id: string;
+  post_id: string;
+  reported_by: string;
+  reason: ReportReason;
+  description: string | null;
+  status: ReportStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  created_at: string;
+}
+
+// =====================================================
+// TEST REMINDERS
+// =====================================================
+
+export type ReminderTestType = 'DASS21' | 'PHQ9' | 'GAD7' | 'PSS' | 'MBTI' | 'BIG5' | 'SISRI24';
+export type ReminderFrequency = 'weekly' | 'biweekly' | 'monthly' | 'quarterly';
+
+export type TestReminder = {
+  id: string;
+  user_id: string;
+  test_type: ReminderTestType;
+  frequency: ReminderFrequency;
+  next_reminder_date: string;
+  last_completed_date: string | null;
+  reminder_enabled: boolean;
+  reminder_time: string;
+  reminder_method: string[];
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+// =====================================================
+// CONSENT LOG
+// =====================================================
+
+export type UserConsentLog = {
+  id: string;
+  user_id: string;
+  consent_type: ConsentType;
+  consented: boolean;
+  ip_address: string | null;
+  user_agent: string | null;
+  created_at: string;
+}
+
+// =====================================================
+// PREDICTION FEEDBACK
+// =====================================================
+
+export type PredictionFeedback = {
+  id: string;
+  user_id: string;
+  miso_analysis_id: string | null;
+  prediction_type: string;
+  predicted_value: Json;
+  actual_value: Json | null;
+  feedback_rating: number | null;
+  feedback_text: string | null;
+  created_at: string;
+}
+
+
+// =====================================================
 // DATABASE TYPE
 // =====================================================
 
@@ -296,17 +554,17 @@ export type Database = {
       via_results: { Row: VIAResultRecord; Insert: Partial<VIAResultRecord>; Update: Partial<VIAResultRecord>; Relationships: [] }
       mbti_results: { Row: MBTIResultRecord; Insert: Partial<MBTIResultRecord>; Update: Partial<MBTIResultRecord>; Relationships: [] }
       sisri24_results: { Row: SISRI24ResultRecord; Insert: Partial<SISRI24ResultRecord>; Update: Partial<SISRI24ResultRecord>; Relationships: [] }
-      user_goals: { Row: any; Insert: any; Update: any; Relationships: [] }
-      chat_sessions: { Row: any; Insert: any; Update: any; Relationships: [] }
-      chat_messages: { Row: any; Insert: any; Update: any; Relationships: [] }
-      user_consent_log: { Row: any; Insert: any; Update: any; Relationships: [] }
-      booking_reviews: { Row: any; Insert: any; Update: any; Relationships: [] }
-      products: { Row: any; Insert: any; Update: any; Relationships: [] }
-      community_groups: { Row: any; Insert: any; Update: any; Relationships: [] }
-      group_members: { Row: any; Insert: any; Update: any; Relationships: [] }
-      community_posts: { Row: any; Insert: any; Update: any; Relationships: [] }
-      post_reports: { Row: any; Insert: any; Update: any; Relationships: [] }
-      crisis_alerts: { Row: any; Insert: any; Update: any; Relationships: [] }
+      user_goals: { Row: UserGoal; Insert: Partial<UserGoal>; Update: Partial<UserGoal>; Relationships: [] }
+      chat_sessions: { Row: ChatSession; Insert: Partial<ChatSession>; Update: Partial<ChatSession>; Relationships: [] }
+      chat_messages: { Row: ChatMessage; Insert: Partial<ChatMessage>; Update: Partial<ChatMessage>; Relationships: [] }
+      user_consent_log: { Row: UserConsentLog; Insert: Partial<UserConsentLog>; Update: Partial<UserConsentLog>; Relationships: [] }
+      booking_reviews: { Row: BookingReview; Insert: Partial<BookingReview>; Update: Partial<BookingReview>; Relationships: [] }
+      products: { Row: Product; Insert: Partial<Product>; Update: Partial<Product>; Relationships: [] }
+      community_groups: { Row: CommunityGroup; Insert: Partial<CommunityGroup>; Update: Partial<CommunityGroup>; Relationships: [] }
+      group_members: { Row: GroupMember; Insert: Partial<GroupMember>; Update: Partial<GroupMember>; Relationships: [] }
+      community_posts: { Row: CommunityPost; Insert: Partial<CommunityPost>; Update: Partial<CommunityPost>; Relationships: [] }
+      post_reports: { Row: PostReport; Insert: Partial<PostReport>; Update: Partial<PostReport>; Relationships: [] }
+      crisis_alerts: { Row: CrisisAlert; Insert: Partial<CrisisAlert>; Update: Partial<CrisisAlert>; Relationships: [] }
       miso_analysis_logs: {
         Row: {
           id: string
@@ -319,15 +577,35 @@ export type Database = {
           completeness_level: string
           created_at: string
         }
-        Insert: any
-        Update: any
+        Insert: Partial<{
+          id: string
+          user_id: string
+          analysis_result: Json
+          bvs: number | null
+          rcs: number | null
+          profile_id: string | null
+          risk_level: string | null
+          completeness_level: string
+          created_at: string
+        }>
+        Update: Partial<{
+          id: string
+          user_id: string
+          analysis_result: Json
+          bvs: number | null
+          rcs: number | null
+          profile_id: string | null
+          risk_level: string | null
+          completeness_level: string
+          created_at: string
+        }>
         Relationships: []
       }
-      action_plans: { Row: any; Insert: any; Update: any; Relationships: [] }
-      action_completions: { Row: any; Insert: any; Update: any; Relationships: [] }
-      test_reminders: { Row: any; Insert: any; Update: any; Relationships: [] }
+      action_plans: { Row: ActionPlan; Insert: Partial<ActionPlan>; Update: Partial<ActionPlan>; Relationships: [] }
+      action_completions: { Row: ActionCompletion; Insert: Partial<ActionCompletion>; Update: Partial<ActionCompletion>; Relationships: [] }
+      test_reminders: { Row: TestReminder; Insert: Partial<TestReminder>; Update: Partial<TestReminder>; Relationships: [] }
 
-      prediction_feedback: { Row: any; Insert: any; Update: any; Relationships: [] }
+      prediction_feedback: { Row: PredictionFeedback; Insert: Partial<PredictionFeedback>; Update: Partial<PredictionFeedback>; Relationships: [] }
 
       // Gamification
       gamification_profiles: {
@@ -341,8 +619,26 @@ export type Database = {
           created_at: string
           updated_at: string
         }
-        Insert: any
-        Update: any
+        Insert: Partial<{
+          user_id: string
+          current_streak: number
+          longest_streak: number
+          last_activity_date: string | null
+          total_points: number
+          level: number
+          created_at: string
+          updated_at: string
+        }>
+        Update: Partial<{
+          user_id: string
+          current_streak: number
+          longest_streak: number
+          last_activity_date: string | null
+          total_points: number
+          level: number
+          created_at: string
+          updated_at: string
+        }>
         Relationships: []
       }
       badges: {
@@ -356,8 +652,26 @@ export type Database = {
           points: number
           created_at: string
         }
-        Insert: any
-        Update: any
+        Insert: Partial<{
+          id: string
+          slug: string
+          name: string
+          description: string | null
+          icon_url: string | null
+          category: string | null
+          points: number
+          created_at: string
+        }>
+        Update: Partial<{
+          id: string
+          slug: string
+          name: string
+          description: string | null
+          icon_url: string | null
+          category: string | null
+          points: number
+          created_at: string
+        }>
         Relationships: []
       }
       user_badges: {
@@ -367,8 +681,18 @@ export type Database = {
           badge_id: string
           earned_at: string
         }
-        Insert: any
-        Update: any
+        Insert: Partial<{
+          id: string
+          user_id: string
+          badge_id: string
+          earned_at: string
+        }>
+        Update: Partial<{
+          id: string
+          user_id: string
+          badge_id: string
+          earned_at: string
+        }>
         Relationships: []
       }
     }

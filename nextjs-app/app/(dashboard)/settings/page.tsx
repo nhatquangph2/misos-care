@@ -22,6 +22,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import NotificationSettingsCard from '@/components/settings/NotificationSettingsCard';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -490,21 +491,7 @@ export default function SettingsPage() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications">
-            <Card className="glass-card shape-organic-4">
-              <CardHeader>
-                <CardTitle className="dark:text-gray-100">Cài đặt thông báo</CardTitle>
-                <CardDescription className="dark:text-gray-400">
-                  Chọn cách bạn muốn nhận thông báo
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Tính năng thông báo sẽ sớm được cập nhật!
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <NotificationSettingsCard />
           </TabsContent>
         </Tabs>
 

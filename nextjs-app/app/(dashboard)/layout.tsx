@@ -1,14 +1,6 @@
-/**
- * Dashboard Layout
- * Protected layout for authenticated users
- *
- * Updated with FloatingDock navigation - modern iOS/macOS style
- */
-
-'use client'
-
+import Sidebar from '@/components/layout/Sidebar'
+import MobileNav from '@/components/layout/MobileNav'
 import dynamic from 'next/dynamic'
-import FloatingDock from '@/components/layout/FloatingDock'
 
 const DolphinMascot = dynamic(
   () => import('@/components/mascot/DolphinMascot').then(mod => ({ default: mod.DolphinMascot })),
@@ -21,18 +13,21 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative min-h-screen">
-      {/* Removed background gradient - OceanBackground handles it now */}
+    <div className="relative min-h-screen bg-background">
+      {/* Sidebar for Desktop */}
+      <Sidebar />
 
-      {/* Main content */}
-      <main className="container mx-auto px-4 py-8 pb-32">
-        {children}
-      </main>
+      {/* Main content area - shifted right on desktop */}
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        <main className="flex-1 container mx-auto p-4 sm:p-8 pb-24 lg:pb-8 max-w-7xl">
+          {children}
+        </main>
+      </div>
 
-      {/* Floating Dock Navigation */}
-      <FloatingDock />
+      {/* Mobile Navigation */}
+      <MobileNav />
 
-      {/* Dolphin Mascot */}
+      {/* Dolphin Mascot - Adjusted position if needed, or kept as fixed */}
       <DolphinMascot />
     </div>
   )

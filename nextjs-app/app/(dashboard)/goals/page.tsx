@@ -1,17 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
-import { GoalsAndRemindersPage } from './GoalsAndRemindersPage';
+import { redirect } from 'next/navigation'
 
-export default async function GoalsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect('/auth/login');
-  }
-
-  return <GoalsAndRemindersPage userId={user.id} />;
+// Redirect /goals to /my-path (Goals is now a tab within My Path)
+export default function GoalsRedirect() {
+  redirect('/my-path')
 }

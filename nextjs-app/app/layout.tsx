@@ -3,7 +3,6 @@ import { Inter, Quicksand } from "next/font/google";
 import "./globals.css";
 import { MascotProvider } from "@/components/mascot/MascotProvider";
 import { defaultMetadata } from "@/lib/metadata";
-import RippleCursor from "@/components/effects/RippleCursor";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
@@ -52,9 +51,6 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${quicksand.variable} antialiased font-sans text-slate-800 dark:text-slate-100`}
       >
-        {/* Con trỏ gợn sóng - Ripple cursor effect */}
-        <RippleCursor />
-
         {/* Nội dung chính - Positioned above environment */}
         <div className="relative z-0 min-h-screen pb-24">
           {children}

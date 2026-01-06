@@ -1,576 +1,168 @@
-'use client'
+'use client';
 
-import { useEffect, useState, useCallback } from 'react'
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { useFadeIn, useStagger } from '@/hooks/useGSAP'
-import { createClient } from '@/lib/supabase/client'
-import { useMascotStore } from '@/stores/mascotStore'
-import { ArrowRight, TrendingUp, Target, Brain, Heart, Sparkles, Fish, Star } from 'lucide-react'
-import { ProductTour } from '@/components/onboarding/ProductTour'
-import { dashboardTour } from '@/lib/tours/dashboard-tour'
-import { useLocalStorage } from '@/hooks/useLocalStorage'
-import { ScientificAnalysisCard } from '@/components/miso/ScientificAnalysisCard'
-import { RecommendationSummaryCards } from '@/components/insights/RecommendationSummaryCards'
-import type { PersonalizedRecommendations } from '@/services/recommendation.service'
-import type { MisoAnalysisResult } from '@/types/miso-v3'
-import PersonalityOverview from '@/components/profile/PersonalityOverview'
-import type { PersonalityProfile } from '@/types/profile'
-
-interface DashboardStats {
-  testsCompleted: number
-  personalityType?: string
-  latestMentalHealthScore?: {
-    type: string
-    severity: string
-    date: string
-  }
-  currentStreak: number
-  activeGoals: number
-  topStrength?: string
-}
-
-// Define specific interfaces for DB responses to avoid 'any'
-interface UserData {
-  name: string
-  [key: string]: unknown
-}
-
-interface MentalHealthRecord {
-  test_type: string
-  severity_level: string
-  completed_at: string
-  [key: string]: unknown
-}
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, Flame, Quote } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import CheckInOverlay from '@/components/dashboard/CheckInOverlay';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useMascotStore } from '@/stores/mascotStore';
+import { getTodayQuote } from '@/constants/quotes';
+import { getRecommendationByMood, type UserMood } from '@/lib/mood-recommendations';
 
 export default function DashboardPage() {
-  const fadeRef = useFadeIn()
-  const staggerRef = useStagger(0.1)
-  const supabase = createClient()
+  // Check-in state
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [lastCheckIn, setLastCheckIn] = useLocalStorage<string>('last_daily_checkin', '');
+  const [currentMood, setCurrentMood] = useLocalStorage<UserMood>('current_mood', 'neutral');
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [isClient, setIsClient] = useState(false);
 
-  const [user, setUser] = useState<UserData | null>(null)
-  const [stats, setStats] = useState<DashboardStats>({
-    testsCompleted: 0,
-    currentStreak: 0,
-    activeGoals: 0,
-  })
-  const [loading, setLoading] = useState(true)
-  const [analyzing, setAnalyzing] = useState(false)
-  const [scientificAnalysis, setScientificAnalysis] = useState<MisoAnalysisResult['scientific_analysis'] | undefined>(undefined)
-  const [recommendations, setRecommendations] = useState<PersonalizedRecommendations | null>(null)
-  const [personalityProfile, setPersonalityProfile] = useState<PersonalityProfile | null>(null)
-  const [hasPriorAnalysis, setHasPriorAnalysis] = useState(false)
-  const [dashboardTourCompleted, setDashboardTourCompleted] = useLocalStorage('dashboard-tour-completed', false)
-  const [startTour, setStartTour] = useState(false)
+  // Get streak from mascot store
+  const { userStats, updateStreak } = useMascotStore();
 
-  const { userStats, setMood, addMessage } = useMascotStore()
+  // Get today's quote (memoized)
+  const todayQuote = useMemo(() => getTodayQuote(), []);
 
-  const loadDashboardData = useCallback(async () => {
-    try {
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      if (!authUser) return
-
-      // Get user profile
-      const { data: userData } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', authUser.id)
-        .maybeSingle()
-
-      if (userData) {
-        setUser(userData as UserData)
-      }
-
-      // Get personality profile
-      const { data: personality } = await supabase
-        .from('personality_profiles')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .maybeSingle()
-
-      if (personality) {
-        setPersonalityProfile(personality as PersonalityProfile)
-      }
-
-      // Get mental health records count
-      const { count } = await supabase
-        .from('mental_health_records')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', authUser.id)
-
-      // Get latest mental health record
-      const { data: latestRecords } = await supabase
-        .from('mental_health_records')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .order('completed_at', { ascending: false })
-        .limit(1)
-
-      const latestRecord = latestRecords?.[0] as MentalHealthRecord | undefined
-
-      // Get active goals count
-      const { count: goalsCount } = await supabase
-        .from('user_goals')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', authUser.id)
-        .eq('status', 'active')
-
-
-
-      // We need to calculate top strength from via_results if they are raw answers, 
-      // OR if we store the calculated result somewhere. 
-      // Based on previous analysis, via_results stores questions/answers? 
-      // Actually `via_results` table usually stores the final result in many systems, 
-      // but here we used `analyzeVIAForDASS` which calculates from percentiles.
-      // Let's check `via-scoring.service.ts` or similar to see how results are saved.
-      // Assuming for now we can't easily calc full VIA on client without logic, 
-      // but maybe we can fetch the `miso_analysis` result if saved?
-      // Actually, Miso Analysis result is saved in `miso_analysis_history` or similar? 
-      // Let's stick to a simpler approach: check if we have VIA answers, 
-      // and if we do, maybe we can show a placeholder or fetch the latest Miso Analysis.
-
-      // Let's try to fetch the latest Miso Analysis which contains the calculated VIA
-      const { data: latestAnalysis } = await supabase
-        .from('miso_analysis_logs')
-        .select('analysis_result')
-        .eq('user_id', authUser.id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      let topVia = undefined
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (latestAnalysis?.analysis_result) {
-        setHasPriorAnalysis(true)
-        const result = latestAnalysis.analysis_result as any
-
-        // Extract VIA top strength (from cached analysis for quick display)
-        if (result.via_analysis?.signature_strengths?.length > 0) {
-          topVia = result.via_analysis.signature_strengths[0].name
-        }
-
-        // Extract Scientific Analysis (from cached analysis for quick display)
-        if (result.scientific_analysis) {
-          setScientificAnalysis(result.scientific_analysis)
-        }
-      }
-
-      // FRESH RECOMMENDATIONS: Call API to ensure consistency with detail pages
-      // This runs the same runMisoAnalysis() as detail pages
-      if (personality) {
-        try {
-          const recResponse = await fetch('/api/insights/recommendations')
-          const recData = await recResponse.json()
-
-          if (recData.success && recData.recommendations) {
-            setRecommendations(recData.recommendations)
-
-            // Also update scientific analysis and topVia if API provides fresher data
-            if (recData.scientificAnalysis) {
-              setScientificAnalysis(recData.scientificAnalysis)
-            }
-            if (recData.topStrength) {
-              topVia = recData.topStrength
-            }
-          }
-        } catch (e) {
-          console.error("Failed to fetch fresh recommendations", e)
-        }
-      }
-
-      setStats({
-        testsCompleted: count || 0,
-        personalityType: (personality as PersonalityProfile)?.mbti_type || undefined,
-        topStrength: topVia,
-        latestMentalHealthScore: latestRecord ? {
-          type: latestRecord.test_type,
-          severity: latestRecord.severity_level,
-          date: new Date(latestRecord.completed_at).toLocaleDateString('vi-VN'),
-        } : undefined,
-        currentStreak: userStats.currentStreak,
-        activeGoals: goalsCount || 0,
-      })
-
-      // Set mascot mood based on latest score
-      if (latestRecord) {
-        const severity = latestRecord.severity_level
-        if (severity === 'normal' || severity === 'mild') {
-          setMood('happy')
-        } else if (severity === 'severe' || severity === 'extremely_severe') {
-          setMood('concerned')
-        } else {
-          setMood('encouraging')
-        }
-      } else {
-        setMood('waving')
-        addMessage('Chào mừng bạn đến với Miso\'s Care! Hãy bắt đầu với một bài test nhé 🌊', 'mascot', 'dashboard')
-      }
-
-    } catch (error) {
-      console.error('Error loading dashboard:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase, userStats.currentStreak, setMood, addMessage])
-
-  const handleReanalyze = async () => {
-    setAnalyzing(true)
-    try {
-      const response = await fetch('/api/miso/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({}), // Empty body triggers fetch from DB
-      })
-
-      const data = await response.json()
-
-      if (data.success && data.analysis?.scientific_analysis) {
-        setScientificAnalysis(data.analysis.scientific_analysis)
-        // Optionally refresh full stats
-        loadDashboardData()
-      }
-    } catch (error) {
-      console.error('Re-analysis failed:', error)
-    } finally {
-      setAnalyzing(false)
-    }
-  }
+  // Get recommendation based on mood
+  const recommendation = useMemo(() => getRecommendationByMood(currentMood), [currentMood]);
 
   useEffect(() => {
-    loadDashboardData()
-  }, [loadDashboardData])
-
-  useEffect(() => {
-    // Trigger tour for first-time visitors after data loads
-    if (!loading && !dashboardTourCompleted && stats.testsCompleted >= 0) {
-      const timer = setTimeout(() => setStartTour(true), 1000)
-      return () => clearTimeout(timer)
+    setIsClient(true);
+    // Update streak on page load
+    updateStreak();
+    // Show check-in if not done today
+    if (lastCheckIn !== todayStr) {
+      setShowCheckIn(true);
     }
-  }, [loading, dashboardTourCompleted, stats.testsCompleted])
+  }, [lastCheckIn, todayStr, updateStreak]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
-        </div>
-      </div>
-    )
-  }
+  const handleCheckInComplete = (mood: UserMood) => {
+    setLastCheckIn(todayStr);
+    setCurrentMood(mood);
+    setShowCheckIn(false);
+    // Restoration of scroll
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = '';
+    }
+  };
+
+  if (!isClient) return null;
+
+  const RecommendationIcon = recommendation.icon;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl" ref={fadeRef}>
-      <ProductTour
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        steps={dashboardTour.getConfig().steps as any}
-        tourKey="dashboard"
-        startTrigger={startTour}
-        onComplete={() => {
-          setStartTour(false)
-          setDashboardTourCompleted(true)
-        }}
-      />
-      {/* Welcome Section */}
-      <div id="dashboard-welcome" className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          Xin chào, {user?.name || 'bạn'}! 👋
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 text-lg">
-          Chào mừng trở lại với Miso&apos;s Care. Hãy cùng chăm sóc sức khỏe tinh thần của bạn!
-        </p>
-      </div>
+    <div className="min-h-[80vh] flex flex-col items-center justify-center relative">
+      {showCheckIn && <CheckInOverlay onComplete={handleCheckInComplete} />}
 
-      {/* Stats Cards */}
-      <div id="stats-summary" className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8" ref={staggerRef}>
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Bài test đã làm
-            </CardTitle>
-            <Brain className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.testsCompleted}</div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Tổng số bài test</p>
-          </CardContent>
-        </Card>
+      <div className="w-full max-w-4xl space-y-10">
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Loại tính cách
-            </CardTitle>
-            <Sparkles className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-              {stats.personalityType || '—'}
+        {/* Streak Badge */}
+        {userStats.currentStreak > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex justify-center"
+          >
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full shadow-lg">
+              <Flame className="h-5 w-5" />
+              <span className="font-bold">{userStats.currentStreak} ngày liên tiếp!</span>
             </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Nhóm tính cách (MBTI)</p>
-          </CardContent>
-        </Card>
+          </motion.div>
+        )}
 
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Điểm Mạnh Nhất
-            </CardTitle>
-            <Star className="h-4 w-4 text-amber-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 truncate">
-              {stats.topStrength || '—'}
-            </div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Thế mạnh đặc trưng</p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Chuỗi hoạt động
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.currentStreak}</div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Ngày liên tiếp</p>
-          </CardContent>
-        </Card>
-
-        <Card className="hover:shadow-lg transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              Mục tiêu
-            </CardTitle>
-            <Target className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.activeGoals}</div>
-            <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Mục tiêu đang thực hiện</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Latest Mental Health Status */}
-      {stats.latestMentalHealthScore && (
-        <Card className="mb-8 border-l-4 border-l-blue-500">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-red-500" />
-              Tình trạng sức khỏe tinh thần gần nhất
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-              <div>
-                <Badge variant="outline" className="text-sm">
-                  {stats.latestMentalHealthScore.type}
-                </Badge>
-              </div>
-              <Separator orientation="vertical" className="h-6 hidden sm:block" />
-              <div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">Mức độ: </span>
-                <Badge
-                  variant={
-                    stats.latestMentalHealthScore.severity === 'normal' ? 'default' :
-                      stats.latestMentalHealthScore.severity === 'mild' ? 'secondary' :
-                        'destructive'
-                  }
-                >
-                  {stats.latestMentalHealthScore.severity === 'normal' ? 'Bình thường' :
-                    stats.latestMentalHealthScore.severity === 'mild' ? 'Nhẹ' :
-                      stats.latestMentalHealthScore.severity === 'moderate' ? 'Trung bình' :
-                        stats.latestMentalHealthScore.severity === 'severe' ? 'Nặng' :
-                          stats.latestMentalHealthScore.severity === 'extremely_severe' ? 'Rất nặng' :
-                            stats.latestMentalHealthScore.severity}
-                </Badge>
-              </div>
-              <Separator orientation="vertical" className="h-6 hidden sm:block" />
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                {stats.latestMentalHealthScore.date}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Deep Intelligence Analysis */}
-      {scientificAnalysis ? (
-        <div className="mb-8" id="scientific-analysis">
-          <ScientificAnalysisCard analysis={scientificAnalysis} />
-        </div>
-      ) : ((stats.testsCompleted > 0 || hasPriorAnalysis) && !loading) ? (
-        <div className="mb-8 p-6 bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 rounded-xl border border-purple-100 dark:border-purple-800 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-purple-100 dark:bg-purple-800 rounded-full">
-              <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-300" />
-            </div>
-            <div>
-              <h3 className="font-bold text-gray-900 dark:text-gray-100">Nâng cấp Phân tích Chuyên sâu (V3)</h3>
-              <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">
-                Hệ thống MISO vừa được nâng cấp với trí tuệ khoa học mới (ZPD & SDT).
-                Cập nhật phân tích của bạn để xem các chỉ số mới này.
-              </p>
-            </div>
+        {/* Daily Quote */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center space-y-3"
+        >
+          <div className="inline-flex items-center gap-2 text-slate-400 dark:text-slate-500">
+            <Quote className="h-4 w-4" />
+            <span className="text-xs uppercase tracking-widest font-medium">Châm ngôn hôm nay</span>
           </div>
-          <Button onClick={handleReanalyze} disabled={analyzing} className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white">
-            {analyzing ? 'Đang cập nhật...' : 'Cập nhật ngay'}
-            {!analyzing && <TrendingUp className="ml-2 h-4 w-4" />}
-          </Button>
-        </div>
-      ) : null}
+          <p className="text-xl md:text-2xl font-serif text-slate-700 dark:text-slate-200 max-w-2xl mx-auto leading-relaxed italic">
+            "{todayQuote.text}"
+          </p>
+          {todayQuote.author && (
+            <p className="text-sm text-slate-500 dark:text-slate-400">— {todayQuote.author}</p>
+          )}
+        </motion.div>
 
-      {/* Domain Insights (NEW) */}
-      {recommendations && (
-        <div className="mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Gợi ý Chuyên sâu & Cá nhân hóa</h2>
-          <RecommendationSummaryCards recommendations={recommendations} />
-        </div>
-      )}
+        {/* Mood-based Recommendation Card */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3, duration: 0.6 }}
+          className="w-full"
+        >
+          <Card className={`border-none shadow-xl bg-gradient-to-br ${recommendation.colorClass} overflow-hidden relative`}>
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/20 dark:bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
-      {/* Personality Profile (NEW) */}
-      {personalityProfile && (personalityProfile.mbti_type || personalityProfile.big5_openness) && (
-        <div className="mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Hồ sơ Tính cách của bạn</h2>
-          <PersonalityOverview profile={personalityProfile} />
-        </div>
-      )}
+            <CardContent className="p-8 md:p-10 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+              <div className="p-5 bg-white dark:bg-slate-800 rounded-full shadow-sm shrink-0">
+                <RecommendationIcon className={`h-10 w-10 ${recommendation.iconColorClass}`} />
+              </div>
 
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">Hành động nhanh</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Link href="/tests">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-blue-500">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Brain className="h-5 w-5 text-blue-500" />
-                  Làm bài test
-                </CardTitle>
-                <CardDescription>
-                  Khám phá tính cách và sức khỏe tinh thần
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Bắt đầu ngay
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
+              <div className="space-y-3 flex-1 text-center md:text-left">
+                <div className="uppercase tracking-widest text-xs font-bold text-slate-500 dark:text-slate-400">
+                  Gợi ý cho bạn
+                </div>
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-800 dark:text-slate-100">
+                  {recommendation.title}
+                </h3>
+                <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+                  {recommendation.description}
+                </p>
+                <div className="pt-2">
+                  <Link href={recommendation.actionHref}>
+                    <Button className="rounded-full px-6">
+                      {recommendation.actionLabel} <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* Quick Links */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4"
+        >
+          <Link href="/tests" className="group">
+            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+              <div className="text-2xl mb-2">📝</div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Bài Test</span>
+            </div>
           </Link>
-
-          <Link href="/profile">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-purple-500">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Sparkles className="h-5 w-5 text-purple-500" />
-                  Xem hồ sơ
-                </CardTitle>
-                <CardDescription>
-                  Theo dõi tiến trình và kết quả
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Xem chi tiết
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
+          <Link href="/my-path" className="group">
+            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+              <div className="text-2xl mb-2">📊</div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Hành trình</span>
+            </div>
           </Link>
-
-          <Link href="/goals">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-green-500">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Target className="h-5 w-5 text-green-500" />
-                  Đặt mục tiêu
-                </CardTitle>
-                <CardDescription>
-                  Tạo kế hoạch cải thiện bản thân
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Tạo mục tiêu
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
+          <Link href="/sanctuary" className="group">
+            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+              <div className="text-2xl mb-2">🌸</div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Vườn</span>
+            </div>
           </Link>
-
-          <Link href="/gamification">
-            <Card className="hover:shadow-lg transition-all hover:scale-105 cursor-pointer border-2 hover:border-cyan-500">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Fish className="h-5 w-5 text-cyan-500" />
-                  Vườn Cảm Xúc
-                </CardTitle>
-                <CardDescription>
-                  Nuôi dưỡng sinh vật biển & làm nhiệm vụ
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button className="w-full" variant="outline">
-                  Khám phá ngay
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
+          <Link href="/expertise" className="group">
+            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+              <div className="text-2xl mb-2">🤖</div>
+              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">AI Chat</span>
+            </div>
           </Link>
-        </div>
+        </motion.div>
+
       </div>
-
-      {/* Recommendations */}
-      {stats.testsCompleted === 0 && (
-        <Card id="recommended-tests" className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 border-none">
-          <CardHeader>
-            <CardTitle className="text-xl">Bắt đầu hành trình của bạn</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-gray-700 dark:text-gray-300">
-              Chúng tôi khuyến nghị bạn bắt đầu với:
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500 dark:text-blue-400 font-bold">1.</span>
-                <div className="text-gray-800 dark:text-gray-200">
-                  <strong>MBTI Test</strong> - Khám phá loại tính cách của bạn
-                  <Link href="/tests/mbti" className="ml-2 text-blue-600 dark:text-blue-400 hover:underline">
-                    Làm ngay →
-                  </Link>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500 dark:text-blue-400 font-bold">2.</span>
-                <div className="text-gray-800 dark:text-gray-200">
-                  <strong>PHQ-9</strong> - Đánh giá mức độ trầm cảm
-                  <Link href="/tests/phq9" className="ml-2 text-blue-600 dark:text-blue-400 hover:underline">
-                    Làm ngay →
-                  </Link>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-blue-500 dark:text-blue-400 font-bold">3.</span>
-                <div className="text-gray-800 dark:text-gray-200">
-                  <strong>GAD-7</strong> - Đánh giá mức độ lo âu
-                  <Link href="/tests/gad7" className="ml-2 text-blue-600 dark:text-blue-400 hover:underline">
-                    Làm ngay →
-                  </Link>
-                </div>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-      )}
     </div>
-  )
+  );
 }
