@@ -120,11 +120,15 @@ export default function ProfileClientView({
                             <CardContent>
                                 {unifiedProfile?.big5 ? (
                                     <div className="flex flex-wrap gap-2">
-                                        {Object.entries(unifiedProfile.big5).map(([trait, value]) => (
-                                            <Badge key={trait} variant="secondary">
-                                                {trait}: {value}%
-                                            </Badge>
-                                        ))}
+                                        {['O', 'C', 'E', 'A', 'N'].map((trait) => {
+                                            const value = (unifiedProfile.big5 as Record<string, unknown>)?.[trait]
+                                            if (typeof value !== 'number') return null
+                                            return (
+                                                <Badge key={trait} variant="secondary">
+                                                    {trait}: {Math.round(value)}%
+                                                </Badge>
+                                            )
+                                        })}
                                     </div>
                                 ) : (
                                     <p className="text-gray-500">Chưa hoàn thành</p>
@@ -167,20 +171,24 @@ export default function ProfileClientView({
                         <CardContent>
                             {unifiedProfile?.big5 ? (
                                 <div className="space-y-4">
-                                    {Object.entries(unifiedProfile.big5).map(([trait, value]) => (
-                                        <div key={trait} className="space-y-2">
-                                            <div className="flex justify-between">
-                                                <span className="font-medium">{getTraitName(trait)}</span>
-                                                <span>{value}%</span>
+                                    {['O', 'C', 'E', 'A', 'N'].map((trait) => {
+                                        const value = (unifiedProfile.big5 as Record<string, unknown>)?.[trait]
+                                        if (typeof value !== 'number') return null
+                                        return (
+                                            <div key={trait} className="space-y-2">
+                                                <div className="flex justify-between">
+                                                    <span className="font-medium">{getTraitName(trait)}</span>
+                                                    <span>{Math.round(value)}%</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                                    <div
+                                                        className="bg-blue-500 h-2 rounded-full transition-all"
+                                                        style={{ width: `${value}%` }}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                                <div
-                                                    className="bg-blue-500 h-2 rounded-full transition-all"
-                                                    style={{ width: `${value}%` }}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        )
+                                    })}
                                 </div>
                             ) : (
                                 <p className="text-gray-500 text-center py-8">
