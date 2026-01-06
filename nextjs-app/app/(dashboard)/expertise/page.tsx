@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getUnifiedProfile } from '@/services/unified-profile.service'
 import { AIConsultantChat } from '@/components/ai/AIConsultantChat'
+import { GlossaryHighlighter } from '@/components/ui/GlossaryTooltip';
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -62,16 +63,16 @@ export default async function ExpertisePage() {
             />
 
             {/* Info Section */}
-            <div className="bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 p-6 rounded-xl">
+            <div className="glass-card bg-indigo-500/10 border-indigo-200/20 p-6 rounded-xl">
                 <h3 className="font-bold mb-3">📚 Về Tính Năng Này</h3>
                 <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                     <p>
                         <strong>Tư vấn AI</strong> sử dụng các phương pháp điều trị dựa trên bằng chứng khoa học:
                     </p>
                     <ul className="list-disc ml-6 space-y-1">
-                        <li><strong>CBT (Cognitive Behavioral Therapy):</strong> Xác định và thách thức suy nghĩ tiêu cực</li>
-                        <li><strong>ACT (Acceptance and Commitment Therapy):</strong> Hành động dựa trên giá trị cá nhân</li>
-                        <li><strong>Problem-Solving Therapy:</strong> Giải quyết vấn đề có hệ thống</li>
+                        <li><strong><GlossaryHighlighter text="CBT (Cognitive Behavioral Therapy)" />:</strong> Xác định và thách thức suy nghĩ tiêu cực</li>
+                        <li><strong><GlossaryHighlighter text="ACT (Acceptance and Commitment Therapy)" />:</strong> Hành động dựa trên giá trị cá nhân</li>
+                        <li><strong><GlossaryHighlighter text="Problem-Solving Therapy" />:</strong> Giải quyết vấn đề có hệ thống</li>
                     </ul>
                     <p className="mt-4 font-semibold text-red-600 dark:text-red-400">
                         ⚠️ Lưu ý: AI này KHÔNG thay thế chuyên gia sức khỏe tinh thần chuyên nghiệp.
@@ -80,7 +81,7 @@ export default async function ExpertisePage() {
             </div>
 
             {/* Crisis Resources */}
-            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-6 rounded-xl">
+            <div className="glass-card bg-red-500/10 border-red-200/20 p-6 rounded-xl">
                 <h3 className="font-bold mb-3 text-red-800 dark:text-red-300">🆘 Cần Hỗ Trợ Khẩn Cấp?</h3>
                 <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                     <p>Nếu bạn đang có ý định tự tử hoặc cần hỗ trợ khẩn cấp:</p>

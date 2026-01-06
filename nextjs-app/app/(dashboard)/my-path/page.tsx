@@ -8,7 +8,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: 'Hành trình của tôi | Misos Care',
-    description: 'Theo dõi tiến độ, xem lịch sử đánh giá và kết quả tính cách của bạn',
+    description: 'Theo dõi tiến độ sức khỏe tinh thần, xem lịch sử các bài test (DASS-21, Big Five, MBTI) và nhận phân tích chuyên sâu MISO.',
 };
 
 export const dynamic = 'force-dynamic';
