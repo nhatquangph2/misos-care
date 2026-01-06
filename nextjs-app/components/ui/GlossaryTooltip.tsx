@@ -108,13 +108,13 @@ export function GlossaryTooltip({ term, children, className }: GlossaryTooltipPr
                     id={`tooltip-${term}`}
                     role="tooltip"
                     className={cn(
-                        "absolute z-50 left-0 top-full mt-2",
+                        "absolute z-[9999] left-0 bottom-full mb-2",
                         "w-72 sm:w-80 p-4",
                         "glass-card backdrop-blur-xl",
                         "bg-white/95 dark:bg-slate-900/95",
                         "border border-purple-200 dark:border-purple-800",
                         "rounded-xl shadow-xl",
-                        "animate-in fade-in-0 zoom-in-95 duration-200"
+                        "animate-in fade-in-0 zoom-in-95 slide-in-from-bottom-2 duration-200"
                     )}
                 >
                     {/* Header */}
