@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Download, Calendar, Activity, Brain, AlertTriangle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { GlossaryHighlighter } from '@/components/ui/GlossaryTooltip';
 
 const UserEngagement = dynamic(() => import('@/components/gamification/UserEngagement'), { ssr: false });
 
@@ -314,7 +315,9 @@ export default function ProfileClientView({
                                                 <div className="glass-card backdrop-blur-md p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
                                                     <div className="flex items-start justify-between mb-3">
                                                         <div>
-                                                            <h4 className="font-bold text-lg mb-1">{entry.testName}</h4>
+                                                            <h4 className="font-bold text-lg mb-1">
+                                                                <GlossaryHighlighter text={entry.testName} />
+                                                            </h4>
                                                             <p className="text-sm text-gray-500 flex items-center gap-2">
                                                                 <Calendar className="h-3 w-3" />
                                                                 {new Date(entry.date).toLocaleDateString('vi-VN', {
@@ -391,8 +394,7 @@ export default function ProfileClientView({
                             <h3 className="text-xl sm:text-2xl font-bold mb-4">Về Tính Cách {profileData?.personality?.mbti_type || unifiedProfile?.mbti?.type}</h3>
                             <div className="prose max-w-none dark:prose-invert">
                                 <p className="text-gray-700 dark:text-gray-300 mb-4">
-                                    Tính cách {profileData?.personality?.mbti_type || unifiedProfile?.mbti?.type} là một trong 16 loại tính cách theo MBTI.
-                                    Mỗi chữ cái đại diện cho một sở thích cá nhân.
+                                    <GlossaryHighlighter text={`Tính cách ${profileData?.personality?.mbti_type || unifiedProfile?.mbti?.type} là một trong 16 loại tính cách theo MBTI. Mỗi chữ cái đại diện cho một sở thích cá nhân.`} />
                                 </p>
                             </div>
                         </div>
@@ -469,7 +471,7 @@ export default function ProfileClientView({
                                 </li>
                                 <li>
                                     <span className="text-gray-600 dark:text-gray-400">
-                                        🎯 Bài tập CBT hướng dẫn (Sắp ra mắt)
+                                        <GlossaryHighlighter text="🎯 Bài tập CBT hướng dẫn (Sắp ra mắt)" />
                                     </span>
                                 </li>
                             </ul>

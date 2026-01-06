@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { CausalPathwayCard } from "@/components/profile/CausalPathwayCard";
 import { InterventionReasonCard } from "@/components/profile/InterventionReasonCard";
 import { QuickActionCard } from "@/components/profile/QuickActionCard";
+import { GlossaryHighlighter } from "@/components/ui/GlossaryTooltip";
 
 // Helper to safely extract intervention type
 const formatInterventionType = (intervention: any): string => {
@@ -378,7 +379,7 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
             🧠 Bạn thuộc nhóm: <span className="text-purple-600 dark:text-purple-400">"{profile.name || 'Chưa xác định'}"</span>
           </h3>
           <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
-            {profile.mechanism || 'Chưa có thông tin chi tiết.'}
+            <GlossaryHighlighter text={profile.mechanism || 'Chưa có thông tin chi tiết.'} />
           </p>
         </div>
 
@@ -389,7 +390,7 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-1.5 text-sm font-semibold text-red-700 dark:text-red-400">
                 <AlertTriangle className="h-4 w-4" />
-                Độ Tổn Thương (Stress)
+                <GlossaryHighlighter text="BVS (Độ Tổn Thương)" />
               </div>
               <span className="text-xs font-bold text-slate-500">{((BVS + 3) / 6 * 100).toFixed(0)}%</span>
             </div>
@@ -409,7 +410,7 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-1.5 text-sm font-semibold text-green-700 dark:text-green-400">
                 <Shield className="h-4 w-4" />
-                Năng Lực Phục Hồi
+                <GlossaryHighlighter text="RCS (Năng Lực Phục Hồi)" />
               </div>
               <span className="text-xs font-bold text-slate-500">{((RCS + 3) / 6 * 100).toFixed(0)}%</span>
             </div>
@@ -440,7 +441,7 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
                   </div>
                   <div>
                     <div className="font-bold text-slate-800 dark:text-slate-100 flex justify-between">
-                      {s.name}
+                      <GlossaryHighlighter text={s.name} />
                       <span className="text-xs text-amber-600 font-normal">{s.percentile}%</span>
                     </div>
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -470,7 +471,9 @@ export function MisoInsightCard({ analysis }: { analysis?: MisoAnalysisResult })
                 <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
                 <div>
                   <h4 className="text-sm font-bold text-red-800 dark:text-red-400">{disc.name}</h4>
-                  <p className="text-xs text-red-700/80 dark:text-red-500/80 mt-1">{disc.interpretation}</p>
+                  <p className="text-xs text-red-700/80 dark:text-red-500/80 mt-1">
+                    <GlossaryHighlighter text={disc.interpretation} />
+                  </p>
                 </div>
               </div>
             ))}

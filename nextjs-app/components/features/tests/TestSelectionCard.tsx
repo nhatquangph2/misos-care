@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useCardHover } from '@/hooks/useGSAP'
 import { Clock, FileText, Brain, Heart } from 'lucide-react'
+import { GlossaryHighlighter } from '@/components/ui/GlossaryTooltip'
 
 interface TestSelectionCardProps {
   title: string
@@ -40,17 +41,17 @@ export function TestSelectionCard({
   // Simplified color scheme - Professional
   const colorScheme = testType === 'personality'
     ? {
-        iconBg: 'bg-primary',
-        iconColor: 'text-white',
-        accentColor: 'text-primary',
-        hoverBorder: 'hover:border-primary/50',
-      }
+      iconBg: 'bg-primary',
+      iconColor: 'text-white',
+      accentColor: 'text-primary',
+      hoverBorder: 'hover:border-primary/50',
+    }
     : {
-        iconBg: 'bg-secondary',
-        iconColor: 'text-white',
-        accentColor: 'text-secondary',
-        hoverBorder: 'hover:border-secondary/50',
-      }
+      iconBg: 'bg-secondary',
+      iconColor: 'text-white',
+      accentColor: 'text-secondary',
+      hoverBorder: 'hover:border-secondary/50',
+    }
 
   const difficultyConfig = {
     easy: { label: 'Dễ', color: 'bg-green-50 text-green-700 border border-green-200' },
@@ -81,7 +82,9 @@ export function TestSelectionCard({
         </div>
 
         <CardTitle className="text-xl font-bold mb-2 leading-tight">{title}</CardTitle>
-        <CardDescription className="text-sm leading-relaxed text-muted-foreground">{description}</CardDescription>
+        <CardDescription className="text-sm leading-relaxed text-muted-foreground">
+          <GlossaryHighlighter text={description} />
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-4">

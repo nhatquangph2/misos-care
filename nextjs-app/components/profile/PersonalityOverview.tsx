@@ -2,6 +2,7 @@
 
 import { Card } from '@/components/ui/card';
 import type { PersonalityProfile } from '@/types/profile';
+import { GlossaryHighlighter } from '@/components/ui/GlossaryTooltip';
 
 interface PersonalityOverviewProps {
   profile: PersonalityProfile | null;
@@ -68,30 +69,32 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
               <div className="text-3xl font-bold">{mbtiType}</div>
             </div>
             <div className="flex-1 w-full">
-              <h4 className="text-2xl font-bold mb-2 text-center sm:text-left">{mbtiInfo.name}</h4>
+              <h4 className="text-2xl font-bold mb-2 text-center sm:text-left">
+                <GlossaryHighlighter text={mbtiInfo.name} />
+              </h4>
               <div className="grid grid-cols-4 gap-1 sm:gap-2 text-sm mt-4">
                 <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <div className="font-semibold">{mbtiType[0]}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {mbtiType[0] === 'E' ? 'Hướng Ngoại' : 'Hướng Nội'}
+                    <GlossaryHighlighter text={mbtiType[0] === 'E' ? 'Hướng Ngoại' : 'Hướng Nội'} />
                   </div>
                 </div>
                 <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <div className="font-semibold">{mbtiType[1]}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {mbtiType[1] === 'S' ? 'Thực Tế' : 'Trực Giác'}
+                    <GlossaryHighlighter text={mbtiType[1] === 'S' ? 'Thực Tế' : 'Trực Giác'} />
                   </div>
                 </div>
                 <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <div className="font-semibold">{mbtiType[2]}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {mbtiType[2] === 'T' ? 'Lý Trí' : 'Cảm Xúc'}
+                    <GlossaryHighlighter text={mbtiType[2] === 'T' ? 'Lý Trí' : 'Cảm Xúc'} />
                   </div>
                 </div>
                 <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                   <div className="font-semibold">{mbtiType[3]}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
-                    {mbtiType[3] === 'J' ? 'Nguyên Tắc' : 'Linh Hoạt'}
+                    <GlossaryHighlighter text={mbtiType[3] === 'J' ? 'Nguyên Tắc' : 'Linh Hoạt'} />
                   </div>
                 </div>
               </div>
@@ -140,7 +143,9 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">{info.icon}</span>
-                      <span className={`font-medium ${info.color}`}>{info.name}</span>
+                      <span className={`font-medium ${info.color}`}>
+                        <GlossaryHighlighter text={info.name} />
+                      </span>
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-semibold">{rawScore.toFixed(1)}/5</span>
@@ -149,17 +154,18 @@ export default function PersonalityOverview({ profile }: PersonalityOverviewProp
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                     <div
-                      className={`h-full transition-all duration-500 ${
-                        isNeuroticism
+                      className={`h-full transition-all duration-500 ${isNeuroticism
                           ? (percentage >= 60 ? 'bg-red-500' : percentage >= 40 ? 'bg-yellow-500' : 'bg-green-500')
                           : (percentage >= 60 ? 'bg-green-500' : percentage >= 40 ? 'bg-blue-500' : 'bg-orange-500')
-                      }`}
+                        }`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>
                   <div className="mt-1 flex justify-between items-center">
                     <span className="text-xs text-gray-600 dark:text-gray-400">{displayLabel}</span>
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{info.description}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      <GlossaryHighlighter text={info.description} />
+                    </span>
                   </div>
                 </div>
               );
