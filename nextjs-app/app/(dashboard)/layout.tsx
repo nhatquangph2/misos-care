@@ -15,7 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative min-h-screen">
       {/* Sidebar for Desktop */}
       <Sidebar />
 

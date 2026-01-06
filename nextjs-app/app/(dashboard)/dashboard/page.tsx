@@ -137,25 +137,25 @@ export default function DashboardPage() {
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
         >
           <Link href="/tests" className="group">
-            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+            <div className="p-4 rounded-2xl glass-card backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all text-center">
               <div className="text-2xl mb-2">📝</div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Bài Test</span>
             </div>
           </Link>
           <Link href="/my-path" className="group">
-            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+            <div className="p-4 rounded-2xl glass-card backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all text-center">
               <div className="text-2xl mb-2">📊</div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Hành trình</span>
             </div>
           </Link>
           <Link href="/sanctuary" className="group">
-            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+            <div className="p-4 rounded-2xl glass-card backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all text-center">
               <div className="text-2xl mb-2">🌸</div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Vườn</span>
             </div>
           </Link>
           <Link href="/expertise" className="group">
-            <div className="p-4 rounded-2xl bg-white/60 dark:bg-white/5 hover:bg-white dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 text-center">
+            <div className="p-4 rounded-2xl glass-card backdrop-blur-sm hover:bg-white/20 dark:hover:bg-white/10 transition-all text-center">
               <div className="text-2xl mb-2">🤖</div>
               <span className="text-sm font-medium text-slate-700 dark:text-slate-300">AI Chat</span>
             </div>
